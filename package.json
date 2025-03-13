@@ -1,0 +1,16 @@
+{
+    "name": "barangay",
+    "version": "1.0.0",
+    "description": "",
+    "main": "server.js",
+    "scripts": {
+      "start": "node backend/server.js",
+      "frontend": "cd frontend && npm start",
+      "backend": "cd backend && node server.js"
+    },
+    "dependencies": {},
+    "devDependencies": {},
+    "author": "",
+    "license": "ISC"
+  }
+  

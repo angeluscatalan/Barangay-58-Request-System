@@ -1,0 +1,57 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body, #root, .indexBg {
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+.indexBg {
+    background-image: url("../assets/indexBG.png"); 
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+
+.indexTitle1{
+    position: absolute;
+    width: 725px;
+    height: 368px;
+    left: 125px;
+    top: 150px;
+    
+    font-family: 'Montserrat', sans-serif;
+    font-style: normal;
+    font-weight: 800;
+    font-size: 76px;
+    line-height: 117px;
+    letter-spacing: 0.09em;
+    
+    color: #DA1C6F;
+
+    z-index: 2;
+    
+}
+
+.indexImage {
+    position: absolute;
+    width: 1109px;
+    height: 950px;
+    left: 50%;
+    top: 50%;
+    left: calc(50% - 1109px/2 - 567.5px);
+    top: calc(50% - 1109px/2 + 107.5px);
+    z-index: 1; 
+}
+
