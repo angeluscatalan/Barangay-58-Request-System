@@ -1,31 +1,22 @@
 import React, { useState, useEffect } from "react";
-import backgroundImage from "./assets/indexBG.png";
-import pinkGradient from "./assets/pinkGradient_1.png";
-import "./styles/App.css";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import Home from './pages/Home';
+import ReqPage from "./pages/reqPage";
 
 
 function App() {
     return (
+        <Router>
+            <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/Request" element={<ReqPage />} />
+            </Routes>
+        </Router>
 
-        <div className="App">
-            <div className="indexBg">
-
-            </div>
-
-            <div className = "indexText">
-                
-                <div className="indexTitle">
-                    <img src={pinkGradient} alt="Pink Gradient" className="indexImage" />
-                    <h1 className="indexTitle1">
-                    Fast & Easy Barangay Services!
-                    </h1>
-                </div>
-
-            </div>
-            
-        </div>
         
     );
+
+    
 }
 
 export default App;

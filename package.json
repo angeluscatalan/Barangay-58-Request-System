@@ -4,13 +4,10 @@
     "description": "",
     "main": "server.js",
     "scripts": {
-      "start": "node backend/server.js",
-      "frontend": "cd frontend && npm start",
-      "backend": "cd backend && node server.js"
+        "start": "node backend/server.js",
+        "frontend": "cd frontend && npm start",
+        "backend": "cd backend && node server.js"
     },
-    "dependencies": {},
-    "devDependencies": {},
     "author": "",
     "license": "ISC"
-  }
-  
+}
