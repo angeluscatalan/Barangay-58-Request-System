@@ -1,0 +1,42 @@
+.reqFormDate {
+    width: 251px !important;
+    height: 48px !important;
+    background: #FFFEFE;
+    border-radius: 5px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px;
+    font-weight: 400;
+    text-transform: uppercase;
+    padding-left: 10px;
+    color: black;
+    border: 1px solid #ccc;
+}
+
+.flatpickr-input {
+    width: 110px !important; 
+}
+
+.flatpickr-calendar {
+    width: 250px !important;
+    font-family: 'Manrope', sans-serif;
+}
+
+.flatpickr-months {
+    background-color: #DA1C6F; 
+    color: white;
+    border-radius: 5px 5px 0 0;
+}
+
+.flatpickr-day {
+    font-size: 14px;
+    color: black;
+}
+
+.flatpickr-day.selected {
+    background: #DA1C6F !important;
+    color: white !important;
+}
+
+.flatpickr-day.today {
+    border: 1px solid #DA1C6F;
+}

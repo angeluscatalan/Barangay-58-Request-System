@@ -4,6 +4,10 @@ import step1 from "../assets/step1.png";
 import step2 from "../assets/step2.png";
 import step3 from "../assets/step3.png";
 import step4 from "../assets/step4.png";
+import numberIcon from "../assets/numberIcon.png";
+import facebookIcon from "../assets/facebookIcon.png";
+import emailIcon from "../assets/emailIcon.png";
+import BirthdatePicker from "../components/BirthdatePicker";
 import { Link } from "react-router-dom";
 import "../styles/reqPage.css";
 
@@ -83,11 +87,54 @@ function reqPage(){
                 <div className="reqFillUp">
                     <h1 className="fillUpTitle">Complete the Form to Request your Certificate.</h1>
 
-                    <div className="lastName">
-                        <input type="text" placeholder="LAST NAME" required value="" />
+                    <div className="reqForm">
+
+                        <div className="reqFormPersonal">
+                            <h1 className="reqFormPersonalTitle">PERSONAL</h1>
+
+                            <input type="text" id="lname" name="lname" placeholder="LAST NAME" className="reqFormInput"/>
+                            <input type="text" id="fname" name="fname" placeholder="FIRST NAME" className="reqFormInput"/>
+                            <input type="text" id="mname" name="mname" placeholder="MIDDLE NAME" className="reqFormInput"/>
+
+                            <select id="suffix" name="suffix" className="reqFormSelect">
+                            <option value="" disabled selected>SUFFIX</option>
+                            </select>
+
+                            <select id="sex" name="sex" className="reqFormSelect">
+                            <option value="" disabled selected>SEX</option>
+                            </select>
+
+                            <BirthdatePicker />
+
+                            <input type="number" id="contactNum" name="contactNum" placeholder="CONTACT NO." className="reqFormNum"/>
+                            <input type="email" id="email" name="email" placeholder="EMAIL ADDRESS" className="reqFormEmail"/>
+
+                            <input type="text" id="address" name="address" placeholder="ADDRESS" className="reqFormAddress"/>
+                        </div>
+
                     </div>
+                    
                 </div>
 
+                <div className="reqContact">
+                    <h1 className="reqContactTitle">For inquiries or follow-ups, reach us at</h1>
+
+                    <div className="reqContactNumber">
+                    <img src={numberIcon} alt="numberIcon"/>
+                    <h2>0905xxxxxxx</h2>
+                    </div>
+
+                    <div className="reqContactFacebook">
+                    <img src={facebookIcon} alt="facebookIcon"/>
+                    <h2>Baranggay 58</h2>
+                    </div>
+
+                    <div className="reqContactEmail">
+                    <img src={emailIcon} alt="emailIcon"/>
+                    <h2>baranggay58.pasay.city@gmail.com</h2>
+                    </div>
+
+                </div>
                 
         </div> 
     );

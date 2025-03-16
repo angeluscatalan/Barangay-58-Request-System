@@ -43,7 +43,7 @@ function Home() {
                         Simply submit your request online, get notified when it's ready, and pick it up hassle-free. Join us in modernizing our barangay services—start your request today!
                     </h1>
 
-                    <button className="indexRequestBtn">Click here to Request a Certificate</button>
+                    <button className="indexRequestBtn"><Link to ="/Request">Click here to Request a Certificate</Link></button>
                 </div>
             </div>
         </div>
