@@ -26,7 +26,7 @@ function reqPage(){
             </div>
 
             <div className="indexHeader">
-                            <div className="indexLogoContainer">
+                            <div className="indexLogoContainer">    
                                 <img src={brgyLogo} alt="Barangay Logo" className="indexLogo" />
                                 <h1 className="indexTitle">BARANGAY 58</h1>
                             </div>
@@ -110,6 +110,31 @@ function reqPage(){
                             <input type="email" id="email" name="email" placeholder="EMAIL ADDRESS" className="reqFormEmail"/>
 
                             <input type="text" id="address" name="address" placeholder="ADDRESS" className="reqFormAddress"/>
+                        </div>
+
+                        <div className="reqFormCert">
+                            <h1 className="reqFormCertTitle">CERTIFICATE DETAILS</h1>
+
+                            <select id="certType" name="certTyoe" className="reqFormCertSelect">
+                            <option value="" disabled selected>TYPE OF CERTIFICATE</option>
+                            </select>
+
+                            <input type="text" id="reqPurpose" name="reqPurpose" placeholder="PURPOSE OF REQUEST" className="reqFormInput"/>
+
+                            <select id="copyAmount" name="copyAmount" className="reqFormCopyAmount">
+                            <option value="" disabled selected>Number of Copies</option>
+                            </select>
+                        </div>
+
+                        <div className="reqFormTermsContainer">
+                            <input type="checkbox" id="terms" name="terms" className="reqFormTerms" />
+                            <label htmlFor="terms" className="reqFormTermsLabel">
+                                I confirm that the information provided is correct and understand that false details may result in request denial.
+                            </label>
+                        </div>
+
+                        <div className="reqFormSubmitContainer">
+                            <button className="reqFormSubmit">SUBMIT</button>
                         </div>
 
                     </div>

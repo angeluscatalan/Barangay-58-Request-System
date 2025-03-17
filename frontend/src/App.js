@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Home from './pages/Home';
-import ReqPage from "./pages/reqPage";
+import Home from './pages/Home.js';
+import ReqPage from "./pages/reqPage.js";
 
 
 function App() {
