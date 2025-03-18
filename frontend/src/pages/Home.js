@@ -30,7 +30,7 @@ function Home() {
                 <button className="loginBtn">Login</button>
             </div>
 
-            /*test*/
+
 
             <div className="indexText">
                 <div className="indexTitle">
