@@ -17,7 +17,7 @@ function Home() {
 
                 <nav className="indexNav">
                     <Link to="/">HOME</Link>
-                    <Link to="#">TEAM</Link>
+                    <Link to="/Team">TEAM</Link>
                     <div className="dropdown1">
                         <Link to="/Request">SERVICES</Link>
                     </div>
