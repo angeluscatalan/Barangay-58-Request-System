@@ -138,9 +138,8 @@ function reqPage(){
 
                             <input type="text" id="reqPurpose" name="reqPurpose" placeholder="PURPOSE OF REQUEST" className="reqFormInput"/>
 
-                            <select id="copyAmount" name="copyAmount" className="reqFormCopyAmount">
-                            <option value="" disabled selected>Number of Copies</option>
-                            </select>
+                            <input type="number" id="copyAmount" className="reqFormCopyAmount" name="copyAmount" min="1">Number of Copies</input>
+                            
                         </div>
 
                         <div className="reqFormTermsContainer">
