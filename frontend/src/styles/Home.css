@@ -9,207 +9,212 @@
 }
 
 html, body, #root, .indexBg {
-    height: 100vh;
-    width: 100vw;
+    height: 100%;
+    width: 100%;
     overflow: hidden;
 }
 
 .indexBg {
-    background-image: url("../assets/indexBG.png"); 
-    background-size: cover; 
-    background-position: center top; 
+    background-image: url("../assets/indexBG.png");
+    background-size: cover;
+    background-position: center center;
     background-repeat: no-repeat;
+    background-attachment: fixed;
 
-    width: 100vw;
-    height: 100vh;
+    min-height: 100vh;
+    width: 100%;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
+    padding: 5%;
+    position: relative;
+
+    overflow:hidden;
+    z-index: -5;
 }
-
-
-
-
-.indexTitle1{
-    position: absolute;
-    width: 725px;
-    height: 368px;
-    left: 11%;
-    top: 140px;
-    transform:translateX(-11%); 
-
-    font-family: 'Montserrat', sans-serif;
-    font-style: normal;
-    font-weight: 800;
-    font-size: 76px;
-    line-height: 117px;
-    letter-spacing: 0.09em;
-    
-    color: #DA1C6F;
-
-    z-index: 2;
-    
-}
-
-.indexImage {
-    position: absolute;
-    width: 1109px;
-    height: 950px;
-    left: 50%;
-    top: 50%;
-    left: calc(50% - 1109px/2 - 567.5px);
-    top: calc(50% - 1109px/2 + 107.5px);
-
-    z-index: 1; 
-}
-
-.indexSubtext1 {
-    position: absolute;
-    width: max-content; 
-    white-space: nowrap; 
-    left: 12%;
-    top: 500px;
-    transform:translateX(-12%); 
-    
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 700;
-    font-size: 32px;
-    line-height: 39px;
-
-    z-index: 2;
-}
-
-.indexSubtext2 {
-    position: absolute;
-    width: 700px; 
-    left: 10%;
-    top: 570px;
-    transform: translateX(-10%); 
-    
-    font-family: 'Montserrat', sans-serif;
-    font-style: normal;
-    font-weight: 400;
-    font-size: 24px;
-    line-height: 29px;
-    text-align: justify;
-
-    z-index: 2;
-
-    white-space: normal; 
-}
-
-.indexRequestBtn{
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    padding: 0px;
-    gap: 10px;
-    
-    position: absolute;
-    width: 580px;
-    height: 66px;
-    left: 115px;
-    top: 820px;
-
-    font-family: 'Manrope';
-    font-style: normal;
-    font-weight: 700;
-    font-size: 32px;
-    line-height: 44px;
-    color: #FFE3E2;
-
-    border:none;
-
-    background: #DA1C6F;
-    border-radius: 5px;
-
-    z-index: 2;
-}
-
-.indexRequestBtn a {
-    text-decoration: none; 
-    color: inherit; 
-}
-
 
 .indexHeader {
     position: absolute;
-    top: 20px;
-    left: 120px;
-    width: 100%;
-    height: 60px; 
+    top: 2%;
+    left: 5%;
+    width: 90%;
+    height: 10%;
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: space-between;
 }
 
 .indexLogoContainer {
     display: flex;
     align-items: center;
-    gap: 10px; 
+    gap: 1em;
 }
 
 .indexLogo {
-    height: 40px; 
+    height: 5vh;
     width: auto;
 }
 
 .indexNav {
-    position: absolute;
-    left: 45%;
-    transform: translateX(-50%); 
     display: flex;
     align-items: center;
-    gap: 40px; 
+    gap: 2em;
 }
 
 .indexNav a {
     font-family: 'Manrope';
-    font-style: normal;
     font-weight: 400;
-    font-size: 24px;
-    line-height: 33px;
+    font-size: clamp(1rem, 1.5vw, 1.5rem);
     text-decoration: none;
-    position: relative;
     color: #000;
 }
 
 .indexNav a:hover {
-    color:#DA1C6F;
+    color: #DA1C6F;
 }
 
-.loginBtn{
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    padding: 0px;
-    gap: 10px;
-
-    position: absolute;
-    width: 137px;
-    height: 43px;
-    left: 1538px;
-    top: 5px;
-
+.loginBtn {
+    padding: 0.5em 1em;
     background: #DA1C6F;
-    border:none;
+    border: none;
     border-radius: 5px;
-    
     font-family: 'Manrope';
-    font-style: normal;
     font-weight: 700;
-    font-size: 26px;
-    line-height: 36px;
-
+    font-size: clamp(1rem, 1.5vw, 1.5rem);
     color: #FFE3E2;
-    
-    flex: none;
-    order: 0;
-    flex-grow: 0;
+    cursor: pointer;
+}
+
+.indexImage {
+    position: absolute;
+    left: 0%;
+    top: 57%;
+    transform: translateY(-50%);
+    width: 20%;
+    max-width: 900px;
+    height: 90%;
+    max-height: 90vh;
+    z-index: -1; 
+
+    overflow: hidden;
+}
+
+.indexText {
+    position: absolute;
+    top: 20%;
+    left: 7%;
+    width: 50%;
+    max-width: 90%;
+    text-align: left;
+    z-index: 3; 
+
+    overflow: hidden;
+}
+
+
+.indexTitle1 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: clamp(4rem, 7vw, 5rem);
+    line-height: 1.2;
+    letter-spacing: 0.09em;
+    color: #DA1C6F;
+    margin-bottom: 1rem;
+    z-index: 3; 
 }
 
 
 
+.indexSubtext1 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: clamp(1rem, 2vw, 1.8rem);
+    margin-bottom: 1rem;
+    z-index: 3; 
+}
+
+.indexSubtext2 {
+    width: 60%;
+    margin-bottom: 2rem;
+
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+    font-size: clamp(0.9rem, 1.5vw, 1.3rem);
+    line-height: 1.5;
+    text-align: justify;
+
+    z-index: 3; 
+}
+
+.indexRequestBtn {
+    padding: 1em 2em;
+    background: #DA1C6F;
+    border: none;
+    border-radius: 5px;
+    font-family: 'Manrope';
+    font-weight: 700;
+    font-size: clamp(1rem, 1.4vw, 1.4rem);
+    color: #FFE3E2;
+    cursor: pointer;
+    text-decoration: none;
+    z-index: 3; /* Higher than .indexImage */
+}
+
+.indexRequestBtn a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Media Queries for Responsiveness */
+@media (max-width: 768px) {
+    .indexHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1em;
+    }
+
+    .indexNav {
+        gap: 1em;
+    }
+
+    .indexText {
+        top: 30%;
+    }
+
+    .indexSubtext2 {
+        width: 80%;
+    }
+
+    .indexRequestBtn {
+        width: 100%;
+    }
+
+    .indexImage {
+        width: 50%; /* Adjust for smaller screens */
+        max-width: 100%; /* Allow full width on small screens */
+    }
+}
+
+@media (max-width: 480px) {
+    .indexTitle1 {
+        font-size: clamp(1.5rem, 6vw, 3rem);
+    }
+
+    .indexSubtext1 {
+        font-size: clamp(0.9rem, 2vw, 1.2rem);
+    }
+
+    .indexSubtext2 {
+        font-size: clamp(0.8rem, 1.5vw, 1rem);
+    }
+
+    .indexRequestBtn {
+        font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+    }
+
+    .indexImage {
+        width: 60%; 
+    }
+}
