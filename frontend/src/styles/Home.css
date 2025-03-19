@@ -160,7 +160,7 @@ html, body, #root, .indexBg {
     color: #FFE3E2;
     cursor: pointer;
     text-decoration: none;
-    z-index: 3; /* Higher than .indexImage */
+    z-index: 3; 
 }
 
 .indexRequestBtn a {
@@ -168,7 +168,7 @@ html, body, #root, .indexBg {
     color: inherit;
 }
 
-/* Media Queries for Responsiveness */
+
 @media (max-width: 768px) {
     .indexHeader {
         flex-direction: column;
@@ -193,8 +193,8 @@ html, body, #root, .indexBg {
     }
 
     .indexImage {
-        width: 50%; /* Adjust for smaller screens */
-        max-width: 100%; /* Allow full width on small screens */
+        width: 50%; 
+        max-width: 100%;
     }
 }
 
