@@ -96,8 +96,19 @@ function reqPage(){
                             <input type="text" id="fname" name="fname" placeholder="FIRST NAME" className="reqFormInput"/>
                             <input type="text" id="mname" name="mname" placeholder="MIDDLE NAME" className="reqFormInput"/>
 
-                            <select id="suffix" name="suffix" className="reqFormSelect">
-                            <option value="" disabled selected>SUFFIX</option>
+                            <select id="suffix" name="suffix" className="reqFormSelect" placeholder="SUFFIX">
+                            <option value="I.">I.</option>
+                            <option value="II.">II.</option>
+                            <option value="III.">III.</option>
+                            <option value="IV.">IV.</option>
+                            <option value="V.">V.</option>
+                            <option value="VI.">VI.</option>
+                            <option value="VII.">VII.</option>
+                            <option value="VIII.">VIII.</option>
+                            <option value="IX.">IX.</option>
+                            <option value="X.">X.</option>
+                            <option value="Jr.">Jr.</option>
+                            <option value="Sr.">Sr.</option>
                             </select>
 
                             <select id="sex" name="sex" className="reqFormSelect">
