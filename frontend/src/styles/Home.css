@@ -29,10 +29,7 @@ html, body, #root, .indexBg {
     justify-content: center;
     text-align: center;
     padding: 5%;
-    position: relative;
-
-    overflow:hidden;
-    z-index: -5;
+    position: absolute;
 }
 
 .indexHeader {
@@ -44,6 +41,7 @@ html, body, #root, .indexBg {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    z-index: 3;
 }
 
 .indexLogoContainer {
@@ -61,6 +59,7 @@ html, body, #root, .indexBg {
     display: flex;
     align-items: center;
     gap: 2em;
+    z-index: 3;
 }
 
 .indexNav a {
@@ -69,6 +68,7 @@ html, body, #root, .indexBg {
     font-size: clamp(1rem, 1.5vw, 1.5rem);
     text-decoration: none;
     color: #000;
+    z-index: 3;
 }
 
 .indexNav a:hover {
@@ -85,6 +85,7 @@ html, body, #root, .indexBg {
     font-size: clamp(1rem, 1.5vw, 1.5rem);
     color: #FFE3E2;
     cursor: pointer;
+    z-index: 3;
 }
 
 .indexImage {
