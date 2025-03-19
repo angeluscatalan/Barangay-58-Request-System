@@ -98,10 +98,24 @@ function reqPage(){
 
                             <select id="suffix" name="suffix" className="reqFormSelect">
                             <option value="" disabled selected>SUFFIX</option>
+                            <option value="I.">I.</option>
+                            <option value="II.">II.</option>
+                            <option value="III.">III.</option>
+                            <option value="IV.">IV.</option>
+                            <option value="V.">V.</option>
+                            <option value="VI.">VI.</option>
+                            <option value="VII.">VII.</option>
+                            <option value="VIII.">VIII.</option>
+                            <option value="IX.">IX.</option>
+                            <option value="X.">X.</option>
+                            <option value="Jr.">Jr.</option>
+                            <option value="Sr.">Sr.</option>
                             </select>
 
                             <select id="sex" name="sex" className="reqFormSelect">
                             <option value="" disabled selected>SEX</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
                             </select>
 
                             <BirthdatePicker />
@@ -117,13 +131,15 @@ function reqPage(){
 
                             <select id="certType" name="certTyoe" className="reqFormCertSelect">
                             <option value="" disabled selected>TYPE OF CERTIFICATE</option>
+                            <option value="RBIR">Records of Barangay Inhabitants by Household (Regular)</option>
+                            <option value="RBIP">Records of Barangay Inhabitants by Household (PWD)</option>
+                            <option value="IDApp">Barangay ID Application</option>
                             </select>
 
                             <input type="text" id="reqPurpose" name="reqPurpose" placeholder="PURPOSE OF REQUEST" className="reqFormInput"/>
 
-                            <select id="copyAmount" name="copyAmount" className="reqFormCopyAmount">
-                            <option value="" disabled selected>Number of Copies</option>
-                            </select>
+                            <input type="number" id="copyAmount" className="reqFormCopyAmount" name="copyAmount" min="1" placeholder="Number of Copies"></input>
+                            
                         </div>
 
                         <div className="reqFormTermsContainer">
