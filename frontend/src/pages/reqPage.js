@@ -138,7 +138,7 @@ function reqPage(){
 
                             <input type="text" id="reqPurpose" name="reqPurpose" placeholder="PURPOSE OF REQUEST" className="reqFormInput"/>
 
-                            <input type="number" id="copyAmount" className="reqFormCopyAmount" name="copyAmount" min="1">Number of Copies</input>
+                            <input type="number" id="copyAmount" className="reqFormCopyAmount" name="copyAmount" min="1" placeholder="Number of Copies"></input>
                             
                         </div>
 
