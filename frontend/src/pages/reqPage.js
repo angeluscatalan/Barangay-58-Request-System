@@ -96,7 +96,8 @@ function reqPage(){
                             <input type="text" id="fname" name="fname" placeholder="FIRST NAME" className="reqFormInput"/>
                             <input type="text" id="mname" name="mname" placeholder="MIDDLE NAME" className="reqFormInput"/>
 
-                            <select id="suffix" name="suffix" className="reqFormSelect" placeholder="SUFFIX">
+                            <select id="suffix" name="suffix" className="reqFormSelect">
+                            <option value="" disabled selected>SUFFIX</option>
                             <option value="I.">I.</option>
                             <option value="II.">II.</option>
                             <option value="III.">III.</option>
@@ -113,6 +114,8 @@ function reqPage(){
 
                             <select id="sex" name="sex" className="reqFormSelect">
                             <option value="" disabled selected>SEX</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
                             </select>
 
                             <BirthdatePicker />
@@ -128,6 +131,9 @@ function reqPage(){
 
                             <select id="certType" name="certTyoe" className="reqFormCertSelect">
                             <option value="" disabled selected>TYPE OF CERTIFICATE</option>
+                            <option value="RBIR">Records of Barangay Inhabitants by Household (Regular)</option>
+                            <option value="RBIP">Records of Barangay Inhabitants by Household (PWD)</option>
+                            <option value="IDApp">Barangay ID Application</option>
                             </select>
 
                             <input type="text" id="reqPurpose" name="reqPurpose" placeholder="PURPOSE OF REQUEST" className="reqFormInput"/>
