@@ -163,9 +163,7 @@
     transition: background-color 0.2s;
 }
 
-.login-submit-btn:hover {
-    background: #ff69b4;
-}
+
 
 .login-footer {
     margin-top: 1.5rem;

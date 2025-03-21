@@ -108,6 +108,12 @@ body{
     z-index: 1;
 }
 
+button:hover{
+    border-radius: 5px;
+    border: 1px solid #DA1C6F;
+    color:#DA1C6F;
+    background-color: transparent;
+}
 .bottomleftGradient{
     background-image: url("../assets/reqGradient1.png");
     background-repeat: no-repeat;
