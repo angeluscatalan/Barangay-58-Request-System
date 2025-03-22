@@ -5,28 +5,6 @@
 body{
     background-color: #FFE3E2;
 }
-.indexHeader {
-    position: absolute;
-    top: 20px;
-    left: 120px;
-    width: 100%;
-    height: 60px; 
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-
-    z-index: 3;
-}
-
-.indexNav a:hover {
-    color:#DA1C6F;
-}
-
-.indexLogoContainer {
-    display: flex;
-    align-items: center;
-    gap: 10px; 
-}
 
 .indexTitle{
     font-family: 'Inter', sans-serif;
@@ -36,62 +14,6 @@ body{
     line-height: 31px;
 
     color: #000000;
-}
-
-.indexLogo {
-    height: 40px; 
-    width: auto;
-}
-
-.indexNav {
-    position: absolute;
-    left: 45%;
-    transform: translateX(-50%); 
-    display: flex;
-    align-items: center;
-    gap: 40px; 
-}
-
-.indexNav a {
-    font-family: 'Manrope';
-    font-style: normal;
-    font-weight: 400;
-    font-size: 24px;
-    line-height: 33px;
-    text-decoration: none;
-    position: relative;
-    color: #000;
-}
-
-.loginBtn{
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    padding: 0px;
-    gap: 10px;
-
-    position: absolute;
-    width: 137px;
-    height: 43px;
-    left: 1538px;
-    top: 5px;
-
-    background: #DA1C6F;
-    border:none;
-    border-radius: 5px;
-    
-    font-family: 'Manrope';
-    font-style: normal;
-    font-weight: 700;
-    font-size: 26px;
-    line-height: 36px;
-
-    color: #FFE3E2;
-    
-    flex: none;
-    order: 0;
-    flex-grow: 0;
 }
 
 .topGradient{

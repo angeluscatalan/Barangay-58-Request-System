@@ -2,9 +2,6 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/Login.css";
 import brgyLoginPageLogo from "../assets/brgyLoginPageLogo.png";
-import brgyLoginPageBg from "../assets/brgyLoginPageBg.png";
-import brgyLoginPageBg2 from "../assets/brgyLoginPageBg2.png";
-import Navbar from "../components/Navbar";
 
 function Login() {
     const [username, setUsername] = useState("");
@@ -14,13 +11,11 @@ function Login() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // TODO: Implement login logic here
         console.log("Login attempt with:", username, password, rememberMe);
     };
 
     return (
         <div className="login-container">
-            <Navbar />
             <div className="login-box">
                 <div className="login-left-side">
                     <img src={brgyLoginPageLogo} alt="Barangay Logo" className="login-logo-large" />

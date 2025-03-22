@@ -21,8 +21,6 @@ function reqPage() {
                 <div className="bottomrightGradient"></div>
             </div>
 
-            <Navbar />
-
             <div className="reqText">
                 <h1 className="reqTitle">Skip the Lines—Request Online!</h1>
                 <h2 className="reqSubtext">No need to visit the barangay hall until your document is ready—save time and effort!</h2>

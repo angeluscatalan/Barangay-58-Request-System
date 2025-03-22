@@ -32,61 +32,6 @@ html, body, #root, .indexBg {
     position: absolute;
 }
 
-.indexHeader {
-    position: absolute;
-    top: 2%;
-    left: 5%;
-    width: 90%;
-    height: 10%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    z-index: 3;
-}
-
-.indexLogoContainer {
-    display: flex;
-    align-items: center;
-    gap: 1em;
-}
-
-.indexLogo {
-    height: 5vh;
-    width: auto;
-}
-
-.indexNav {
-    display: flex;
-    align-items: center;
-    gap: 2em;
-    z-index: 3;
-}
-
-.indexNav a {
-    font-family: 'Manrope';
-    font-weight: 400;
-    font-size: clamp(1rem, 1.5vw, 1.5rem);
-    text-decoration: none;
-    color: #000;
-    z-index: 3;
-}
-
-.indexNav a:hover {
-    color: #DA1C6F;
-}
-
-.loginBtn {
-    padding: 0.5em 1em;
-    background: #DA1C6F;
-    border: none;
-    border-radius: 5px;
-    font-family: 'Manrope';
-    font-weight: 700;
-    font-size: clamp(1rem, 1.5vw, 1.5rem);
-    color: #FFE3E2;
-    cursor: pointer;
-    z-index: 3;
-}
 
 .indexImage {
     position: absolute;
