@@ -1,5 +1,7 @@
 import React from "react";
 import "../styles/teamPage.css";
+import Footer from "../components/Footer";
+
 
 import kapMembers from "../assets/kapMembers.png";
 import kap from "../assets/kap.jpg";
@@ -164,10 +166,15 @@ function TeamPage() {
                     <p className="teamMemberName">Cris Loviel Munda</p>
                     <p className="teamMemberTitle">Committee on Peace & Order / IDADAIT VAWC / Senior, PWD & Single Parent</p>
                 </div>
-            </div>
-
+                
+            </div> 
+            <Footer />   
         </div>
+      
+        
+        
     );
+    
 }
 
 export default TeamPage;

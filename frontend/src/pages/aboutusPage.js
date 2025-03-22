@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import map from "../assets/map.png";
 import "../styles/aboutusPage.css";
+import Feast from "../assets/Feast.jpg";
+
 
 function AboutUs(){
     return(
@@ -32,7 +34,18 @@ function AboutUs(){
             </div>
 
             <h1 className="abtTitle2">Feast of Santa Clara De Montefalco</h1>
-
+            <div className="feastSection">
+                <div className="feastImagePlaceholder">
+                <div className="feastImage">
+                <img src={Feast} alt="Feast of Santa Clara De Montefalco" /></div>
+                </div>
+                <p className="feastDescription">
+                    Barangay 58, takes pride in its strong community spirit and rich cultural heritage. Every
+                    August 17, the barangay celebrates its Fiesta Day, honoring its patron saint, Santa Clara
+                    De Montefalco. The annual festival features religious activities, processions, street
+                    parades, and community events, fostering unity among residents.
+                </p>
+            </div>
         </div>
     );
 }

@@ -8,6 +8,7 @@
     box-sizing: border-box;
 }
 
+
 html, body, #root, .indexBg {
     height: 100%;
     width: 100%;
@@ -164,3 +165,18 @@ html, body, #root, .indexBg {
         width: 60%; 
     }
 }
+
+
+@media (min-aspect-ratio: 16/9) {
+    .footer-container {
+      padding: 50px 0;
+    }
+  }
+  
+
+  @media (max-aspect-ratio: 4/3) {
+    .footer-container {
+      padding: 120px 0; 
+    }
+  }
+  

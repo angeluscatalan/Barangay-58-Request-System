@@ -1,0 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap');
+
+.footer-container {
+    background-color: #da1c6f;
+    color: white;
+    padding: 25px 0;
+    text-align: center;
+    width: 100%;
+    position: relative; 
+    left: 0;
+    margin-top: 50px; 
+    bottom: 0;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 50px;
+}
+
+
+.footer-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+.footer-section h3 {
+    font-family: 'Manrope';
+    margin-bottom: 10px;
+    height: 40px; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.footer-title { 
+    font-family: 'Manrope';
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between logo and text */
+    font-weight: 900; /* Extra bold */
+    font-size: 22px; /* Adjust font size if needed */
+    justify-content: center; /* Ensure alignment */
+}
+.footer-image {
+    height: 110px; 
+    width: auto; 
+    display: block;
+    
+}
+
+.footer-image.brgy58 {
+    height: 150px; 
+    width: auto; 
+    
+}
+
+.footer-divider {
+    margin: 10px auto;
+    width: 80%;
+    border: 1px solid white;
+    opacity: 0.5;
+}
+
+.footer-note {
+    font-family: 'Manrope';
+    font-size: 12px;
+}
+
+.teamPage {
+    min-height: 100vh; 
+    display: flex;
+    flex-direction: column;
+}
+
+.brgy58-icon {
+    height: 25px;
+    width: auto;
+}
+
