@@ -4,6 +4,7 @@ import Home from './pages/Home.js';
 import ReqPage from "./pages/reqPage.js";
 import TeamPage from "./pages/teamPage.js";
 import Login from "./pages/Login.js";
+import AboutUs from "./pages/aboutusPage.js";
 import Navbar from "./components/Navbar.js";
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
                 <Route path="/Request" element={<ReqPage />} />
                 <Route path="/Team" element={<TeamPage />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/AboutUs" element={<AboutUs />} />
             </Routes>
         </Router>
     );

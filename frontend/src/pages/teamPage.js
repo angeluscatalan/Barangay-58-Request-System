@@ -1,6 +1,5 @@
 import React from "react";
 import "../styles/teamPage.css";
-import Navbar from "../components/Navbar";
 
 import kapMembers from "../assets/kapMembers.png";
 import kap from "../assets/kap.jpg";
@@ -27,9 +26,7 @@ import skTeam from "../assets/sk-team.jpg";
 function TeamPage() {
     return (
         <div className="teamPage">
-            <Navbar />
             
-            {/* Header Section */}
             <div className="teamHeader">
                 <h1 className="teamTitle">Sangguniang Barangay</h1>
                 <h2 className="teamSubtext">Leaders Committed to Community Service</h2>
@@ -39,12 +36,11 @@ function TeamPage() {
                 </p>
             </div>
 
-            {/* Main Group Image */}
             <div className="kapMembersContainer">
                 <img src={kapMembers} alt="Kapitan and Kagawads" className="kapMembers" />
             </div>
 
-            {/* Barangay Chairman Section */}
+    
             <div className="barangayChairman">
                 <img src={kap} alt="Barangay Chairman" className="chairmanImage" />
                 <p className="chairmanName">Hon. Andrea Amor "AA" D. Mercado</p>
@@ -120,7 +116,6 @@ function TeamPage() {
                 <img src={skTeam} alt="Sk Members" className="kapMembers" />
             </div>
     
-            {/* SK Chairman Section */}
             <div className="barangayChairman">
                 <img src={ivan} alt="Ivan Roven B. Villaluna" className="chairmanImage" />
                 <p className="chairmanName">Ivan Roven B. Villaluna</p>

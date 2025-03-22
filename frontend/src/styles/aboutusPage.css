@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap');
+
+body{
+    background-color: #FFE3E2;
+}
+
+.abtUsContainer {
+    display: flex;
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    height: 100vh;
+    width: 100vw;
+    gap: 10px; 
+}
+
+.abtTitle1 {
+    position: absolute;
+    top:30%;
+    font-family: "Montserrat", sans-serif;
+    font-size: 3rem;
+    color: #DA1C6F;
+    text-align: center; 
+    margin-top: -10%;
+}
+.abtUsContent {
+    display: flex;
+    align-items: center; 
+    justify-content: center; 
+    gap: 30px; 
+    width: 80vw;
+    max-width: 1200px;
+    margin-top: 30px;
+}
+
+.abtUsMap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 40%;
+}
+
+.abtUsMap img {
+    width: 30vw;
+    max-width: 550px;
+    height: auto;
+    margin-left: -55%; 
+}
+
+.abtUsMap p {
+    font-family: "Manrope", sans-serif;
+    font-size: 1rem;
+    color: #333;
+    margin-top: -10px; 
+    margin-left: -15vw;
+}
+
+.abtUsHistory {
+    width: 100%;
+}
+
+.abtUsHistory h1 {
+    font-size: 2rem;
+    font-family: "Montserrat", sans-serif;
+}
+
+.abtUsHistory p {
+    font-family: "Manrope", sans-serif;
+    font-size: 1.2rem;
+    color: #333;
+    line-height: 1.5;
+}
+
+.abtTitle2{
+    position: absolute;
+    top:110%;
+    font-family: "Montserrat", sans-serif;
+    font-size: 3rem;
+    color: #DA1C6F;
+    text-align: center;
+    margin-bottom: -10px; 
+    margin-top: -10%;
+}

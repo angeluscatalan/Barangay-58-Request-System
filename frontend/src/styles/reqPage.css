@@ -2,158 +2,95 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap');
 
-body{
-    background-color: #FFE3E2;
-}
-
-.indexTitle{
-    font-family: 'Inter', sans-serif;
-    font-style: normal;
-    font-weight: 700;
-    font-size: 26px;
-    line-height: 31px;
-
-    color: #000000;
-}
-
-.topGradient{
-    background-image: url("../assets/reqGradient2.png");
+.req {
+    background-image: url("../assets/reqPage_BG.png");
+    background-size: cover;
     background-repeat: no-repeat;
-
-    position: absolute;
-    width: 1199px;
-    height: 1199px;
-    left: calc(50% - 1199px/2);
-    top:5%;
-    transform: translate(-30%,-5%);
-
-    z-index: 1;
+    background-position: center;
+    min-height: 100vh;
+    position: fixed;
+    width: 100%;
+    z-index: 0; 
 }
 
-button:hover{
-    border-radius: 5px;
-    border: 1px solid #DA1C6F;
-    color:#DA1C6F;
-    background-color: transparent;
-}
-.bottomleftGradient{
-    background-image: url("../assets/reqGradient1.png");
-    background-repeat: no-repeat;
-
+.reqTitle {
     position: absolute;
-    width: 1726px;
-    height: 1726px;
-    left: calc(50% - 1199px/2);
-    top:5%;
-    transform: translate(-20%,5%);
-
-    opacity: 0.6;
-
-    z-index: 1;
-}
-
-.bottomrightGradient{
-    background-image: url("../assets/reqGradient3.png");
-    background-repeat: no-repeat;
-
-    position: absolute;
-    width: 1726px;
-    height: 1726px;
-    left: 50%; 
-    top: 5%; 
-    transform: translate(5%, -5%);
-    
-    opacity: 0.6;
-
-    z-index: 1;
-}
-
-.reqTitle{
-    position: absolute;
-    width: 810px;
-    height: 195px;
-    left: calc(50% - 810px/2 - 410px);
-    top: 15%;
-
+    width: 35vw; 
+    height:16vh;
+    min-height: 10vh;
+    max-height: 200px;
+    max-width: 50vw;
+    left: 6%; 
+    top: 14vh; 
     font-family: 'Montserrat';
     font-style: normal;
     font-weight: 800;
-    font-size: 64px;
-    line-height: 78px;
+    font-size: clamp(1.2rem, 5vw, 4rem); 
     letter-spacing: 0.09em;
-
     color: #DA1C6F;
-
-    z-index: 2;
 }
 
-.reqSubtext{
+.reqSubtext {
     position: absolute;
-    width: 788px;
-    height: 31px;
-    left: calc(50% - 788px/2 - 420px);
-    top: 35%;
-
+    width: 40vw; 
+    max-width: 40%; 
+    left: 6%; 
+    top: calc(14vh + 20vh);
     font-family: 'Montserrat';
     font-style: normal;
     font-weight: 700;
-    font-size: 24px;
-    line-height: 29px;
-
+    font-size: clamp(1rem, 1.8vw, 1.5rem); 
     color: #000000;
-
-    z-index: 2;
 }
 
-.reqContainer{
-    position: absolute;
-    width: 650px;
-    height: 500px;
-    left: 25%;
-    top: 70%;
-    transform: translate(-54%, -50%);
 
-    background: #FFC5C5;
-    opacity: 0.27;
-    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25), inset 0px 4px 4px rgba(0, 0, 0, 0.25);
+.reqContainer {
+    position: fixed;
+    top: calc(10% + 312.5px);
+    left: 5%;
+    width: 50vw;
+    max-width: 650px;
+    height: auto;
+    padding: 2rem;
+    background-color: rgba(255, 197, 197, 0.27); 
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
     backdrop-filter: blur(2px);
-
     border-radius: 40px;
-
-    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight:400;
+    font-family: "Manrope";
 }
 
-.reqSteps{
-    z-index: 3;
-
-    position: absolute;
-    width: 600px;
-    height: 660px;
-    left: 142px;
-    top: 458px;
-
-    
+.reqSteps {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    max-width: 600px;
+    gap: 20px;
 }
 
 .reqStep1, .reqStep2, .reqStep3, .reqStep4 {
     display: flex;
-    align-items: center; 
-    gap: 10px; 
-    margin-bottom: 30px;
+    align-items: center;
+    gap: 10px;
+    width: 100%; 
 }
 
 .stepsInfo, .reqNote {
-    font-size: 14px; 
-    flex: 1;
-
-    font-family: 'Manrope';
-    font-style: normal;
-    font-weight: 400;
-    font-size: 20px;
-    line-height: 27px;
-    letter-spacing: 0.09em;
-
+    font-size: clamp(14px, 2vw, 20px); 
+    line-height: 1.5;
+    letter-spacing: 0.05em;
     color: #000000;
+    flex: 1;
+}
+
+.reqNote {
+    margin-top: 1rem;
+    text-align: justify;
 }
 
 .reqContainer2{
@@ -300,39 +237,6 @@ button:hover{
     
 }
 
-.reqContact {
-    position: absolute;
-    width: 418px;
-    left: 1164px;
-    top: 82%;
-    z-index: 2;
-}
-
-.reqContact h1, .reqContact h2 {
-    font-family: 'Manrope';
-    font-style: normal;
-    font-weight: 400;
-    font-size: 18px;
-    line-height: 27px;
-    letter-spacing: 0.09em;
-    color: #000000;
-    margin-bottom: 5px; 
-}
-
-.reqContactNumber,
-.reqContactFacebook,
-.reqContactEmail {
-    display: flex;
-    align-items: center; 
-    gap: 10px; 
-    margin-bottom: 8px; 
-}
-
-.reqContact img {
-    width: 32px; 
-    height: 32px;
-}
-
 .reqFormCertTitle{
 margin-top: 20px;
 }
@@ -393,8 +297,6 @@ margin-top: 20px;
     max-width: 620px;
 }
 
-/*charlize*/
-
 .reqFormSubmitContainer {
     display: flex;
     justify-content: center;
@@ -417,6 +319,39 @@ margin-top: 20px;
     line-height: 36px;
 
     color: #FFE3E2;
+}
+
+.reqContact {
+    position: absolute;
+    width: 418px;
+    left: 1164px;
+    top: 82%;
+    z-index: 2;
+}
+
+.reqContact h1, .reqContact h2 {
+    font-family: 'Manrope';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 18px;
+    line-height: 27px;
+    letter-spacing: 0.09em;
+    color: #000000;
+    margin-bottom: 5px; 
+}
+
+.reqContactNumber,
+.reqContactFacebook,
+.reqContactEmail {
+    display: flex;
+    align-items: center; 
+    gap: 10px; 
+    margin-bottom: 8px; 
+}
+
+.reqContact img {
+    width: 32px; 
+    height: 32px;
 }
 
 

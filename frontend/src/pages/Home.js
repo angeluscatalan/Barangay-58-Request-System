@@ -2,13 +2,11 @@ import React from "react";
 import pinkGradient from '../assets/pinkGradient_1.png';
 import { Link } from "react-router-dom";
 import "../styles/Home.css";
-import Navbar from "../components/Navbar";
 
 function Home() {
     return (
         <div className="App">
             <div className="indexBg">
-                <Navbar />
                 <img src={pinkGradient} alt="Pink Gradient" className="indexImage" />
 
                 <div className="indexText">
