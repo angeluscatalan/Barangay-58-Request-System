@@ -55,5 +55,8 @@
 }
 
 .loginBtn:hover {
-    background: #ff69b4;
+    border-radius: 5px;
+    border: 1px solid #DA1C6F;
+    color:#DA1C6F;
+    background-color: transparent;
 }
