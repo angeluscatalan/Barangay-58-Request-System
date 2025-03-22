@@ -60,3 +60,9 @@
     color:#DA1C6F;
     background-color: transparent;
 }
+
+.indexNav a.active {
+    color: #ff1493;
+    font-weight: bold;
+    border-bottom: 2px solid #ff1493;
+}

@@ -1,9 +1,11 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import brgyLogo from "../assets/brgyMenuLogo.png";
 import "../styles/Navbar.css";
 
 function Navbar() {
+    const location = useLocation();
+
     return (
         <div className="indexHeader">
             <div className="indexLogoContainer">
@@ -12,11 +14,11 @@ function Navbar() {
             </div>
 
             <nav className="indexNav">
-                <Link to="/">HOME</Link>
-                <Link to="/Team">TEAM</Link>
-                <Link to="/Request">SERVICES</Link>
-                <Link to="#">EVENTS</Link>
-                <Link to="#">ABOUT US</Link>
+                <Link to="/" className={location.pathname === "/" ? "active" : ""}>HOME</Link>
+                <Link to="/Team" className={location.pathname === "/Team" ? "active" : ""}>TEAM</Link>
+                <Link to="/Request" className={location.pathname === "/Request" ? "active" : ""}>SERVICES</Link>
+                <Link to="#" className={location.pathname === "/Events" ? "active" : ""}>EVENTS</Link>
+                <Link to="#" className={location.pathname === "/About" ? "active" : ""}>ABOUT US</Link>
             </nav>
 
             <Link to="/login" className="loginBtn">Login</Link>
@@ -24,4 +26,4 @@ function Navbar() {
     );
 }
 
-export default Navbar; 
+export default Navbar;
