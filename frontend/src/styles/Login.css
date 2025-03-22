@@ -1,8 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap');
 
 .login-container {
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     background-image: url('../assets/brgyLoginPageBg.png');
@@ -10,11 +11,12 @@
     background-position: center;
     background-repeat: no-repeat;
     font-family: 'Manrope', sans-serif;
+    padding: 2rem 0;
 }
 
 .login-box {
     display: flex;
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
     border-radius: 20px;
@@ -25,6 +27,7 @@
     width: 100%;
     max-width: 900px;
     height: 500px;
+    margin-top: 2rem;
 }
 
 .login-left-side {

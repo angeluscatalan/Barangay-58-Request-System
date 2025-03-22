@@ -4,6 +4,7 @@ import "../styles/Login.css";
 import brgyLoginPageLogo from "../assets/brgyLoginPageLogo.png";
 import brgyLoginPageBg from "../assets/brgyLoginPageBg.png";
 import brgyLoginPageBg2 from "../assets/brgyLoginPageBg2.png";
+import Navbar from "../components/Navbar";
 
 function Login() {
     const [username, setUsername] = useState("");
@@ -19,6 +20,7 @@ function Login() {
 
     return (
         <div className="login-container">
+            <Navbar />
             <div className="login-box">
                 <div className="login-left-side">
                     <img src={brgyLoginPageLogo} alt="Barangay Logo" className="login-logo-large" />
@@ -33,7 +35,7 @@ function Login() {
                         <div className="form-group">
                             <label htmlFor="username">Username</label>
                             <input
-                                type="username"
+                                type="text"
                                 id="username"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
