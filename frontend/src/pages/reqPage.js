@@ -12,12 +12,11 @@ import "../styles/reqPage.css";
 function reqPage() {
     return (
         <div className="req">
-
+            <div className="allofelements">
             <div className="reqText">
-                <h1 className="reqTitle">Skip the Lines—Request Online!</h1>
-                <h2 className="reqSubtext">No need to visit the barangay hall until your document is ready—save time and effort!</h2>
-
-                <div className="reqContainer">
+                    <h1 className="reqTitle">Skip the Lines—Request Online!</h1>
+                    <h2 className="reqSubtext">No need to visit the barangay hall until your document is ready—save time and effort!</h2>
+                    <div className="reqContainer">
                     <div className="reqSteps">
                         <div className="reqStep1">
                             <img src={step1} alt="step1" className="step1" />
@@ -42,15 +41,12 @@ function reqPage() {
                         <p className="reqNote"><strong>Note:</strong> Avoid submitting multiple requests for the same certificate to prevent delays.
                             If you need to check your request status, please wait for the notification or contact the barangay office.</p>
                     </div>
-                </div>
-
-    
             </div>
-
+            
+            
+            </div>
+            <div className="requirements">
             <div className="reqContainer2">
-
-            </div>
-
             <div className="reqFillUp">
                 <h1 className="fillUpTitle">Complete the Form to Request your Certificate.</h1>
 
@@ -84,7 +80,6 @@ function reqPage() {
                             <option value="Male">Male</option>
                             <option value="Female">Female</option>
                         </select>
-
                         <BirthdatePicker />
 
                         <input type="number" id="contactNum" name="contactNum" placeholder="CONTACT NO." className="reqFormNum" />
@@ -121,9 +116,8 @@ function reqPage() {
                     </div>
 
                 </div>
-
             </div>
-
+            </div>
             <div className="reqContact">
                 <h1 className="reqContactTitle">For inquiries or follow-ups, reach us at</h1>
 
@@ -143,7 +137,8 @@ function reqPage() {
                 </div>
 
             </div>
-
+            </div>
+            </div>
         </div>
     );
 

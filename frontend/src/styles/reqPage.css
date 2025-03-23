@@ -2,58 +2,71 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap');
 
+
 .req {
-    background-image: url("../assets/reqPage_BG.png");
+    background-image: url("../assets/reqPage_BG.png") ;
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
     min-height: 100vh;
-    position: fixed;
+    position: absolute;
     width: 100%;
-    z-index: 0; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.allofelements{
+    margin-left: 50px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+    padding-top: 100px;
+    max-height: 150vh;
+    padding-bottom: 0;
+}
+.reqText{
+    width: 35vw;
+    text-wrap: wrap;
+    max-width: 800px;
+    align-self: flex-start;
+}
+
+.requirements{
+    display: flex;
+    flex-direction: column;
+    align-self: flex-end;
 }
 
 .reqTitle {
-    position: absolute;
-    width: 35vw; 
-    height:16vh;
-    min-height: 10vh;
-    max-height: 200px;
-    max-width: 50vw;
-    left: 6%; 
-    top: 14vh; 
+    font-size: 42px;
     font-family: 'Montserrat';
     font-style: normal;
     font-weight: 800;
-    font-size: clamp(1.2rem, 5vw, 4rem); 
     letter-spacing: 0.09em;
     color: #DA1C6F;
 }
 
 .reqSubtext {
-    position: absolute;
-    width: 40vw; 
-    max-width: 40%; 
-    left: 6%; 
-    top: calc(14vh + 20vh);
+    margin-top: 10px;
+    font-size: 1rem;
     font-family: 'Montserrat';
     font-style: normal;
     font-weight: 700;
-    font-size: clamp(1rem, 1.8vw, 1.5rem); 
+    letter-spacing: 1px;
     color: #000000;
 }
 
 
-.reqContainer {
-    position: fixed;
-    top: calc(10% + 312.5px);
-    left: 5%;
-    width: 50vw;
-    max-width: 650px;
-    height: auto;
+.reqContainer {   
+    margin-top: 20px;
+    width: 40vw;
+    max-width: 530px;
+    height:auto;
     padding: 2rem;
-    background-color: rgba(255, 197, 197, 0.27); 
-    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    background-color: rgba(255, 197, 197, 0.10); 
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.15), inset 0px 4px 4px rgba(0, 0, 0, 0.15);
     backdrop-filter: blur(2px);
     border-radius: 40px;
     display: flex;
@@ -81,7 +94,7 @@
 }
 
 .stepsInfo, .reqNote {
-    font-size: clamp(14px, 2vw, 20px); 
+    font-size: 1rem; 
     line-height: 1.5;
     letter-spacing: 0.05em;
     color: #000000;
@@ -94,28 +107,29 @@
 }
 
 .reqContainer2{
-    position: absolute;
     width: 855px;
-    height: 625px;
-    left: 50%;
-    top: 15%;
-    
+    height: 600px;
+    align-self:flex-end;
     background: #FFC5C5;
-    opacity: 0.27;
+    background-color: rgba(255, 197, 197, 0.27); 
     box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25), inset 0px 4px 4px rgba(0, 0, 0, 0.25);
     backdrop-filter: blur(2px);
-
+    padding: 3.75rem;
+    padding-top: 2rem;
+    align-items: center;
+    justify-content: center;
+    font-weight:400;
+    font-family: "Manrope";
     border-radius: 35px;
-
-    z-index: 1;
 }
 
+
 .fillUpTitle{
-    position: absolute;
+    margin-left: 2rem;
+    margin-bottom: 2rem;
     width: 651px;
     height: 39px;
-    left: 55%;
-    top: 19%;
+
 
     font-family: 'Manrope';
     font-style: normal;
@@ -137,8 +151,6 @@
     position: absolute;
     width: 760px;
     height: 500px;
-    left: 979px;
-    top: 25%;
 
     z-index: 3;
 }
@@ -322,11 +334,10 @@ margin-top: 20px;
 }
 
 .reqContact {
-    position: absolute;
     width: 418px;
-    left: 1164px;
-    top: 82%;
     z-index: 2;
+    margin-top: 10px;
+    align-self: center;
 }
 
 .reqContact h1, .reqContact h2 {
