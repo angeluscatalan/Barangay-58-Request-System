@@ -1,38 +1,52 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const pool = require("../database");
+const pool = require('../config/db');
+const { check, validationResult } = require('express-validator');
 
-router.get("/", async (req, res) => {
-    try {
-        const [rows] = await pool.query("SELECT * FROM requests");
-        res.json(rows);
-    } catch (error) {
-        console.error("❌ Error fetching requests:", error);
-        res.status(500).json({ error: error.message });
+// Validation middleware
+const validateRequest = [
+    check('last_name').notEmpty().trim().escape(),
+    check('first_name').notEmpty().trim().escape(),
+    check('sex').isIn(['Male', 'Female']),
+    check('birthday').isISO8601(),
+    check('contact_no').isMobilePhone(),
+    check('email').isEmail().normalizeEmail(),
+    check('address').notEmpty().trim().escape(),
+    check('type_of_certificate').notEmpty().trim().escape(),
+    check('purpose_of_request').notEmpty().trim().escape(),
+    check('number_of_copies').isInt({ min: 1 })
+];
+
+router.post('/', validateRequest, async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
     }
-});
 
-router.post("/", async (req, res) => {
     try {
-        const {
-            last_name, middle_name, first_name, suffix,
-            sex, birthday, contact_no, email, address,
-            type_of_certificate, purpose_of_request, number_of_copies
-        } = req.body;
+        const { last_name, first_name, middle_name, suffix, sex, birthday, 
+                contact_no, email, address, type_of_certificate, 
+                purpose_of_request, number_of_copies } = req.body;
 
-        const query = `
-            INSERT INTO requests (last_name, middle_name, first_name, suffix, sex, birthday, contact_no, email, address, type_of_certificate, purpose_of_request, number_of_copies)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        const [result] = await pool.query(
+            `INSERT INTO requests SET ?`, 
+            {
+                last_name, first_name, middle_name, suffix, sex, birthday,
+                contact_no, email, address, type_of_certificate,
+                purpose_of_request, number_of_copies,
+            }
+        );
 
-        const [result] = await pool.query(query, [
-            last_name, middle_name, first_name, suffix, sex, birthday, contact_no,
-            email, address, type_of_certificate, purpose_of_request, number_of_copies
-        ]);
-
-        res.status(201).json({ message: "✅ Request submitted successfully!", id: result.insertId });
+        res.status(201).json({ 
+            success: true,
+            requestId: result.insertId
+        });
     } catch (error) {
-        console.error("❌ Error submitting request:", error);
-        res.status(500).json({ error: error.message });
+        console.error('Database error:', error);
+        res.status(500).json({ 
+            error: 'Database operation failed',
+            details: error.message
+        });
     }
 });
 
