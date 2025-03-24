@@ -1,0 +1,243 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&display=swap');
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.events-header-section {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: url("../assets/EventsBG.gif") no-repeat center center/cover;
+    text-align: center;
+}
+
+.events-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center;
+    text-align: center; 
+    width: 100%;
+    height: 100vh; 
+}
+
+
+.events-header h1 {
+    font-size: 4.5rem;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800; 
+    color: #DA1C6F;
+    text-align: center;
+    white-space: nowrap; 
+    letter-spacing: 5px;
+}
+
+.events-header p {
+    font-size: 1.6rem;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700; 
+    color: black;
+    margin-top: 1.6rem;
+}
+
+.scroll-container {
+    display: flex;
+    flex-direction: column; 
+    align-items: center; 
+    margin-top: -10px; 
+  }
+
+
+.scroll-down {
+    margin-bottom: 5px; 
+    margin-top: -5rem;
+    font-size: 1.3rem;
+    text-transform: uppercase;
+    font-weight: bold;
+    color: black;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: 'Manrope';
+    font-weight: 300; 
+    letter-spacing: 5px;
+    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+}
+
+@keyframes bounce {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(10px);
+    }
+  }
+  
+  .scroll-down-icon {
+    width: 100px;
+    height: auto;
+    animation: bounce 1.5s infinite ease-in-out;
+    cursor: pointer;
+  }
+
+.scroll-down-icon {
+    width: 30px; 
+    height: auto;
+  }
+
+  .scroll-down-icon:hover {
+    transform: scale(1.1);
+  }
+  
+
+
+.events-content-section {
+    padding: 50px 0;
+    background-color: #FFD2DD;
+    text-align: center;
+}
+
+.events-content-section h2 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #d90452;
+    margin-bottom: 20px;
+}
+
+.embed-container {
+    background: #FFC0CB; 
+    border-radius: 20px;
+    padding: 20px;
+    width: 80%;
+    max-width: 900px;
+    margin: 20px auto; 
+    text-align: center; 
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center;
+}
+
+.embed-container h2 {
+    text-align: center; 
+    width: 100%;
+}
+
+.fb-embed {
+    width: 100%;
+    max-width: 100%;
+    height: 500px; 
+    border: none;
+}
+  .embed-frame {
+    width: 100%; 
+    border-radius: 10px; 
+    overflow: hidden;
+  }
+
+  .events-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%; 
+    max-width: 900px; 
+    margin: auto;
+}
+
+.events-content iframe {
+    width: 100% !important; 
+    max-width: 800px; 
+    min-width: 300px; 
+    height: 500px !important; 
+    border-radius: 10px;
+    border: none;
+}
+
+
+.fb-embed {
+    width: 200%;
+    max-width: 200%;
+  }
+
+.events-content iframe {
+    width: 120% !important;
+    max-width: 200% !important;
+    height: 400px;
+    border-radius: 10px;
+}
+
+.events-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 40px;
+  }
+  
+  .event-cards-container {
+    display: flex;
+    gap: 20px; 
+    flex-wrap: wrap; 
+    justify-content: center;
+  }
+  .event-card {
+    width: 300px; 
+    border-radius: 10px; 
+    overflow: hidden; 
+    display: flex;
+    flex-direction: column;
+    background-color: #FFD2DD;
+    box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  
+
+  .event-image {
+    width: 100%; 
+    object-fit: cover; 
+    background-color: white; 
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+  }
+  
+  .event-info {
+    padding: 15px;
+    background-color: #FFD2DD; 
+    border-radius: 0 0 10px 10px; 
+    width: 100%; 
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .event-time {
+    color: red;
+    font-weight: bold;
+  }
+
+  .event-card {
+    font-family: 'Inter', sans-serif; 
+  }
+  
+  .event-date {
+    color: gray; 
+    font-size: 13px;
+  }
+  
+  .event-venue {
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+  .event-description {
+    display: inline; 
+  }
+  
