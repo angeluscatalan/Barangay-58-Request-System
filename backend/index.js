@@ -1,15 +1,20 @@
-const express = require("express");
-const cors = require("cors");
-require("dotenv").config();
+const express = require('express');
+const pool = require('./database');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+app.use(express.json()); 
 
-app.use(cors());
-app.use(express.json());
 
-app.use("/requests", require("./routes/requestRoutes"));
+app.get('/requests', async (req, res) => {
+    try {
+        const [rows] = await pool.query("SELECT * FROM requests");
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });

@@ -1,23 +1,39 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../config/db");
+const pool = require("../database");
 
-router.post("/", (req, res) => {
-  const { lastName, middleName, firstName, suffix, sex, birthday, contactNo, email, address, certificateType, purpose, copies } = req.body;
-
-  const sql = `INSERT INTO requests (last_name, middle_name, first_name, suffix, sex, birthday, contact_no, email, address, type_of_certificate, purpose_of_request, number_of_copies) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-
-  db.query(sql, [lastName, middleName, firstName, suffix, sex, birthday, contactNo, email, address, certificateType, purpose, copies], (err, result) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.status(201).json({ message: "Request submitted successfully" });
-  });
+router.get("/", async (req, res) => {
+    try {
+        const [rows] = await pool.query("SELECT * FROM requests");
+        res.json(rows);
+    } catch (error) {
+        console.error("❌ Error fetching requests:", error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
-router.get("/", (req, res) => {
-  db.query("SELECT * FROM requests", (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(results);
-  });
+router.post("/", async (req, res) => {
+    try {
+        const {
+            last_name, middle_name, first_name, suffix,
+            sex, birthday, contact_no, email, address,
+            type_of_certificate, purpose_of_request, number_of_copies
+        } = req.body;
+
+        const query = `
+            INSERT INTO requests (last_name, middle_name, first_name, suffix, sex, birthday, contact_no, email, address, type_of_certificate, purpose_of_request, number_of_copies)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+        const [result] = await pool.query(query, [
+            last_name, middle_name, first_name, suffix, sex, birthday, contact_no,
+            email, address, type_of_certificate, purpose_of_request, number_of_copies
+        ]);
+
+        res.status(201).json({ message: "✅ Request submitted successfully!", id: result.insertId });
+    } catch (error) {
+        console.error("❌ Error submitting request:", error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
 module.exports = router;
