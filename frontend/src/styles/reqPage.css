@@ -202,6 +202,25 @@
     
 }
 
+.validators{
+    display:flex;
+    flex-direction: row;
+    justify-content: flex-end;
+}
+.validators p{
+    color: red;
+    font-size: 0.8rem;
+}
+.phoneNumP{
+    margin-right: 2.7vw;
+    visibility: hidden;
+}
+
+.emailP{
+    margin-right: 12vw;
+    visibility: hidden;
+
+}
 .reqFormSelect {
     width: 110px;
     height: 48px;
@@ -366,3 +385,6 @@ margin-top: 20px;
 }
 
 
+@media screen and (max-width: 1439px) {
+    
+}

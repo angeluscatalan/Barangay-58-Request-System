@@ -1,20 +1,19 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, forwardRef } from "react";
 import Flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
-import "flatpickr/dist/flatpickr.min.css"; 
-import "../styles/flatpickr.css"; 
+import "../styles/flatpickr.css";
 
-const BirthdatePicker = () => {
-    const dateRef = useRef(null);
-
+const BirthdatePicker = forwardRef((props, ref) => {
     useEffect(() => {
-        Flatpickr(dateRef.current, {
-            dateFormat: "Y-m-d",
-            allowInput: true
-        });
-    }, []);
+        if (ref?.current) {
+            new Flatpickr(ref.current, {
+                dateFormat: "Y-m-d",
+                allowInput: true
+            });
+        }
+    }, [ref]);
 
-    return <input type="text" ref={dateRef} placeholder="Birthday" className="reqFormDate" />;
-};
+    return <input type="text" ref={ref} placeholder="Birthday" className="reqFormDate" />;
+});
 
 export default BirthdatePicker;

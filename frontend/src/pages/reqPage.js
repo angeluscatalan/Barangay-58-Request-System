@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useRef} from "react";
 import step1 from "../assets/step1.png";
 import step2 from "../assets/step2.png";
 import step3 from "../assets/step3.png";
@@ -10,6 +10,41 @@ import BirthdatePicker from "../components/BirthdatePicker";
 import "../styles/reqPage.css";
 
 function reqPage() {
+    var birthdateRef = useRef(null);
+    var email = "";
+    var phone = "";
+    function getReq(){
+    var lastName, firstName, middlename, suffix, sex, birthday, contactNo, emailAd, address, certificateType, purpose, NumberofCopies, DateRequested;
+    if(
+        document.getElementById("lname").value == "" || birthdateRef.current?.value =="" || document.getElementById("fname").value == "" 
+        || document.getElementById("mname").value == ""  || document.getElementById("suffix").value == "" || document.getElementById("sex").value == ""
+        || document.getElementById("certType").value == "" || document.getElementById("reqPurpose").value == "" || document.getElementById("copyAmount").value == ""
+        || document.getElementById("address").value == "" || document.getElementById("contactNum").value==""||document.getElementById("email").value == "")
+    {
+        alert("Please fill in all the boxes in the request form.");
+    }
+    else if(document.getElementById("terms").checked == false){
+        alert("Please verify with our terms by clicking the checkbox.");
+    }
+    else if(document.getElementById("phoneNumP").style.visibility == "visible" || document.getElementById("emailP").style.visibility == "visible"){
+        alert("Please put in a valid phone number or email.");
+    }
+    else{
+        lastName = document.getElementById("lname").value;
+        firstName =document.getElementById("fname").value;
+        middlename = document.getElementById("mname").value;
+        suffix = document.getElementById("suffix").value;
+        sex = document.getElementById("sex").value;
+        birthday = birthdateRef.current?.value;
+        contactNo = document.getElementById("contactNum").value;
+        emailAd = document.getElementById("email").value;
+        address = document.getElementById("address").value;
+        certificateType = document.getElementById("certType").value;
+        purpose = document.getElementById("reqPurpose").value;
+        NumberofCopies = document.getElementById("copyAmount").value;
+        DateRequested = new Date().toLocaleDateString("en-CA");
+    }
+}
     return (
         <div className="req">
             <div className="allofelements">
@@ -61,6 +96,7 @@ function reqPage() {
 
                         <select id="suffix" name="suffix" className="reqFormSelect">
                             <option value="" disabled selected>SUFFIX</option>
+                            <option value="none">NONE</option>
                             <option value="I.">I.</option>
                             <option value="II.">II.</option>
                             <option value="III.">III.</option>
@@ -80,18 +116,17 @@ function reqPage() {
                             <option value="Male">Male</option>
                             <option value="Female">Female</option>
                         </select>
-                        <BirthdatePicker />
-
-                        <input type="number" id="contactNum" name="contactNum" placeholder="CONTACT NO." className="reqFormNum" />
-                        <input type="email" id="email" name="email" placeholder="EMAIL ADDRESS" className="reqFormEmail" />
-
+                        <BirthdatePicker ref={birthdateRef}/>
+                        <input type="number" id="contactNum" name="contactNum" placeholder="CONTACT NO." className="reqFormNum" onKeyUp={validatorNum} />
+                        <input type="email" id="email" name="email" placeholder="EMAIL ADDRESS" className="reqFormEmail" onKeyUp={validatorEmail}/>
+                        <div className="validators"><p  id="phoneNumP"className="phoneNumP">*Invalid PhoneNo.</p><p  id="emailP"className="emailP">*Invalid Email</p></div>
                         <input type="text" id="address" name="address" placeholder="ADDRESS" className="reqFormAddress" />
                     </div>
 
                     <div className="reqFormCert">
                         <h1 className="reqFormCertTitle">CERTIFICATE DETAILS</h1>
 
-                        <select id="certType" name="certTyoe" className="reqFormCertSelect">
+                        <select id="certType" name="certType" className="reqFormCertSelect">
                             <option value="" disabled selected>TYPE OF CERTIFICATE</option>
                             <option value="IDApp">Barangay ID Application</option>
                         </select>
@@ -110,7 +145,7 @@ function reqPage() {
                     </div>
 
                     <div className="reqFormSubmitContainer">
-                        <button className="reqFormSubmit">SUBMIT</button>
+                        <button className="reqFormSubmit" onClick={getReq}>SUBMIT</button>
                     </div>
 
                 </div>
@@ -143,3 +178,34 @@ function reqPage() {
 }
 
 export default reqPage;
+
+
+
+function validatorNum(){
+    const phoneRegex =/^[0-9]{10}$/;
+    if(document.getElementById("contactNum").value =="")
+    {
+        document.getElementById("phoneNumP").style.visibility = "hidden";
+    }
+    else if(!phoneRegex.test(document.getElementById("contactNum").value))
+    {
+        document.getElementById("phoneNumP").style.visibility = "visible";
+    }
+    else{
+        document.getElementById("phoneNumP").style.visibility = "hidden";
+    }
+}
+function validatorEmail(){
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if(document.getElementById("email").value =="")
+        {
+            document.getElementById("emailP").style.visibility = "hidden";
+        }
+        else if(!emailRegex.test(document.getElementById("email").value))
+        {
+            document.getElementById("emailP").style.visibility = "visible";
+        }
+        else{
+            document.getElementById("emailP").style.visibility = "hidden";
+        }
+}
