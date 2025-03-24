@@ -67,9 +67,6 @@ function Login() {
                             Login
                         </button>
                     </form>
-                    <p className="login-footer">
-                        Don't have an account? <Link to="/register">Register here</Link>
-                    </p>
                 </div>
             </div>
         </div>
