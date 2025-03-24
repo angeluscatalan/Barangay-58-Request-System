@@ -93,8 +93,6 @@ function reqPage() {
 
                         <select id="certType" name="certTyoe" className="reqFormCertSelect">
                             <option value="" disabled selected>TYPE OF CERTIFICATE</option>
-                            <option value="RBIR">Records of Barangay Inhabitants by Household (Regular)</option>
-                            <option value="RBIP">Records of Barangay Inhabitants by Household (PWD)</option>
                             <option value="IDApp">Barangay ID Application</option>
                         </select>
 
