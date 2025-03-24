@@ -6,6 +6,7 @@ import TeamPage from "./pages/teamPage.js";
 import Login from "./pages/Login.js";
 import AboutUs from "./pages/aboutusPage.js";
 import Navbar from "./components/Navbar.js";
+import Events from "./pages/Events.js";
 
 function App() {
     return (
@@ -17,6 +18,7 @@ function App() {
                 <Route path="/Team" element={<TeamPage />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/AboutUs" element={<AboutUs />} />
+                <Route path="/Events" element={<Events />} />
             </Routes>
         </Router>
     );

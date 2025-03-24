@@ -17,8 +17,9 @@ function Navbar() {
                 <Link to="/" className={location.pathname === "/" ? "active" : ""}>HOME</Link>
                 <Link to="/Team" className={location.pathname === "/Team" ? "active" : ""}>TEAM</Link>
                 <Link to="/Request" className={location.pathname === "/Request" ? "active" : ""}>SERVICES</Link>
-                <Link to="#" className={location.pathname === "/Events" ? "active" : ""}>EVENTS</Link>
+                <Link to="/Events" className={location.pathname === "/Events" ? "active" : ""}>EVENTS</Link>
                 <Link to="/AboutUs" className={location.pathname === "/About" ? "active" : ""}>ABOUT US</Link>
+                
             </nav>
 
             <Link to="/login" className="loginBtn">Login</Link>
