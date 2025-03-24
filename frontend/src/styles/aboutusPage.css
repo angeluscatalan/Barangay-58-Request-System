@@ -9,6 +9,9 @@ body {
 }
 
 .abtUsContainer {
+    background: url("../assets/teamPage_BG.png");
+    background-size: cover;
+    background-repeat: no-repeat;
     display: flex;
     flex-direction: column;
     align-items: center;
