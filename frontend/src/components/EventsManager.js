@@ -5,25 +5,54 @@ import AddEvent from './AddEvent';
 function EventsManager() {
     const [showAddEvent, setShowAddEvent] = useState(false);
     const [editingEvent, setEditingEvent] = useState(null);
-    const [events, setEvents] = useState(() => {
-        const savedEvents = localStorage.getItem('events');
-        return savedEvents ? JSON.parse(savedEvents) : [];
-    });
-
-    useEffect(() => {
-        localStorage.setItem('events', JSON.stringify(events));
-    }, [events]);
+    const [events, setEvents] = useState([]);
     const [sortBy, setSortBy] = useState('All');
 
-    const handleDelete = (id) => {
-        if (window.confirm('Are you sure you want to delete this event?')) {
-            setEvents(events.filter(event => event.id !== id));
+useEffect(() => {
+    const fetchEvents = async () => {
+        try {
+            const response = await fetch('http://localhost:5000/events/archive');
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            setEvents(data);
+            
+        } catch (error) {
+            console.error('Fetch error:', error);
+            setEvents([]); 
         }
     };
+    fetchEvents();
+}, []);
 
     const handleEdit = (event) => {
         setEditingEvent(event);
         setShowAddEvent(true);
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this event?')) return;
+    
+        try {
+            const response = await fetch(`http://localhost:5000/archive/${id}`, {
+                method: 'DELETE'
+            });
+    
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Delete failed');
+            }
+    
+            setEvents(prevEvents => prevEvents.filter(event => event.id !== id));
+            
+        } catch (error) {
+            console.error('Delete error:', error);
+            alert(`Delete failed: ${error.message}`);
+        }
     };
 
     const handleEditSubmit = (updatedEvent) => {
@@ -41,6 +70,12 @@ function EventsManager() {
         );
         setEvents(updatedEvents);
         localStorage.setItem('events', JSON.stringify(updatedEvents));
+    };
+
+    const formatDate = (dateString) => {
+        if (!dateString) return '';
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString(undefined, options);
     };
 
     return (
@@ -69,22 +104,39 @@ function EventsManager() {
                     <thead>
                         <tr>
                             <th style={{ width: '5%' }}>NO.</th>
+                            <th style={{ width: '20%' }}>IMAGE</th>
                             <th style={{ width: '20%' }}>EVENT NAME</th>
                             <th style={{ width: '15%' }}>DATE</th>
                             <th style={{ width: '20%' }}>TIME</th>
                             <th style={{ width: '20%' }}>VENUE</th>
-                            <th style={{ width: '20%' }}>ACTIONS</th>
+                            <th style={{ width: '10%' }}>ACTIONS</th>
                         </tr>
                     </thead>
                     <tbody>
                         {events.map((event, index) => (
-                            <tr key={event.id}>
-                                <td>{index + 1}</td>
-                                <td>{event.name}</td>
-                                <td>{event.date}</td>
-                                <td>{event.timeStart} - {event.timeEnd}</td>
-                                <td>{event.venue}</td>
-                                <td>
+                                <tr key={event.id}>
+                                    <td>{index + 1}</td>
+                                    <td>
+                                        {event.image_url && (
+                                            <img 
+                                                src={event.image_url} 
+                                                alt="Event" 
+                                                style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                                                onError={(e) => {
+                                                    e.target.onerror = null; 
+                                                    e.target.src = '/placeholder.jpg';
+                                                }}
+                                            />
+                                        )}
+                                    </td>
+                                        <td>{event.event_name || 'No name'}</td>
+                                        <td>{formatDate(event.event_date)}</td>
+                                        <td>
+                                            {event.time_start} - {event.time_end}
+                                        </td>
+                                        <td>{event.venue}</td>
+
+                                    <td>
                                     <div className="action-buttons">
                                         <button 
                                             className="action-btn edit"
@@ -125,8 +177,12 @@ function EventsManager() {
                     onAddEvent={(eventData) => {
                         const newEvent = {
                             ...eventData,
-                            id: events.length + 1,
-                            isPublished: false
+                            id: Date.now(), 
+                            isPublished: false,
+                            event_name: eventData.name || eventData.event_name,
+                            event_date: eventData.date || eventData.event_date,
+                            time_start: eventData.timeStart || eventData.time_start,
+                            time_end: eventData.timeEnd || eventData.time_end
                         };
                         setEvents([...events, newEvent]);
                         setShowAddEvent(false);

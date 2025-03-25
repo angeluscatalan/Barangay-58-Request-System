@@ -1,11 +1,10 @@
-const mysql = require('mysql2/promise'); // Using promise version
+const mysql = require('mysql2/promise'); 
 const fs = require('fs');
 const path = require('path');
 
-// Get absolute path to certificate
+
 const certPath = path.resolve(__dirname, '../certs/global-bundle.pem');
 
-// Verify certificate exists
 if (!fs.existsSync(certPath)) {
     console.error('SSL certificate not found at:', certPath);
     process.exit(1);
@@ -21,12 +20,11 @@ const pool = mysql.createPool({
     connectionLimit: 10,
     queueLimit: 0,
     ssl: {
-        rejectUnauthorized: process.env.NODE_ENV === 'production', // Strict in production
+        rejectUnauthorized: process.env.NODE_ENV === 'production',
         ca: fs.readFileSync(certPath)
     }
 });
 
-// Test connection immediately
 pool.getConnection()
     .then(conn => {
         console.log('Successfully connected to MySQL database');
@@ -34,7 +32,6 @@ pool.getConnection()
     })
     .catch(err => {
         console.error('Database connection failed:', err);
-        process.exit(1);
     });
 
 module.exports = pool;

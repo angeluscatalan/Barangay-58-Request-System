@@ -29,50 +29,63 @@ function AddEvent({ onClose, onAddEvent, editData = null, onEditEvent }) {
                 alert('Image must not be larger than 2MB');
                 return;
             }
-
+    
+            setEventData(prev => ({
+                ...prev,
+                image: file 
+            }));
+    
             const reader = new FileReader();
             reader.onloadend = () => {
-                const imageUrl = reader.result;
-                setEventData(prev => ({
-                    ...prev,
-                    imageUrl: imageUrl
-                }));
-                setImagePreview(imageUrl);
+                setImagePreview(reader.result);
             };
             reader.readAsDataURL(file);
         }
     };
+    
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-
-        const formattedDate = new Date(eventData.date).toLocaleDateString('en-US', {
-            month: '2-digit',
-            day: '2-digit',
-            year: 'numeric'
-        });
-
-        const formatTime = (time) => {
-            const [hours, minutes] = time.split(':');
-            const ampm = hours >= 12 ? 'pm' : 'am';
-            const formattedHours = hours % 12 || 12;
-            return `${formattedHours}:${minutes} ${ampm}`;
-        };
-
-        const formattedEventData = {
-            ...eventData,
-            date: formattedDate,
-            timeStart: formatTime(eventData.timeStart),
-            timeEnd: formatTime(eventData.timeEnd)
-        };
-
-        if (editData) {
-            onEditEvent(formattedEventData);
-        } else {
-            onAddEvent(formattedEventData);
+    
+        const formData = new FormData();
+        formData.append('event_name', eventData.name);  
+        formData.append('event_date', eventData.date); 
+        formData.append('time_start', eventData.timeStart);
+        formData.append('time_end', eventData.timeEnd);
+        formData.append('venue', eventData.venue);
+        formData.append('description', eventData.description);
+        if (eventData.image) {
+            formData.append('image', eventData.image);
+        }
+    
+        try {
+            const response = await fetch('http://localhost:5000/events/upload', {
+                method: 'POST',
+                body: formData
+            });
+    
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Upload failed');
+            }
+    
+            const result = await response.json();
+            onAddEvent({
+                ...eventData,
+                id: result.id || Date.now(),  
+                image_url: result.imageUrl,
+                event_name: eventData.name,
+                event_date: eventData.date,
+                time_start: eventData.timeStart,
+                time_end: eventData.timeEnd
+            });
+            onClose();
+        } catch (error) {
+            console.error('Error uploading event:', error);
+            alert(error.message);
         }
     };
-
+    
     return (
         <div className="add-event-container">
             <div className="add-event-header">
