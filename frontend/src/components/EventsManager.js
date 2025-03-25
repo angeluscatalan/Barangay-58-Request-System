@@ -1,21 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/EventsManager.css';
+import AddEvent from './AddEvent';
 
 function EventsManager() {
-    const [events, setEvents] = useState([
-        {
-            id: 1,
-            name: "Liga Kontra Droga",
-            date: "01/04/2026",
-            isPublished: false
-        },
-        {
-            id: 2,
-            name: "Christmas Party",
-            date: "12/25/25",
-            isPublished: true
-        }
-    ]);
+    const [showAddEvent, setShowAddEvent] = useState(false);
+    const [events, setEvents] = useState(() => {
+        const savedEvents = localStorage.getItem('events');
+        return savedEvents ? JSON.parse(savedEvents) : [];
+    });
+
+    useEffect(() => {
+        localStorage.setItem('events', JSON.stringify(events));
+    }, [events]);
     const [sortBy, setSortBy] = useState('All');
 
     const handleDelete = (id) => {
@@ -25,41 +21,44 @@ function EventsManager() {
     };
 
     const handlePublish = (id) => {
-        setEvents(events.map(event =>
+        const updatedEvents = events.map(event =>
             event.id === id ? { ...event, isPublished: !event.isPublished } : event
-        ));
+        );
+        setEvents(updatedEvents);
+        localStorage.setItem('events', JSON.stringify(updatedEvents));
     };
 
     return (
         <div className="events-section">
-            <div className="events-actions">
-                <button className="add-request-btn">+ Add Event</button>
-                <button className="manage-events-btn">Manage Events</button>
-            </div>
-
-            <div className="events-title">
-                <h1>Events <span className="event-count">({events.length})</span></h1>
-            </div>
-
-            <div className="events-filter">
-                <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                >
-                    <option value="All">Sort by: All</option>
-                    <option value="Date">Sort by: Date</option>
-                    <option value="Name">Sort by: Name</option>
-                    <option value="Published">Sort by: Published</option>
-                </select>
+            <div className="table-header">
+                <div className="events-count">
+                    Events <span className="event-count">({events.length})</span>
+                </div>
+                <div className="table-controls">
+                    <div className="events-filter">
+                        <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value)}
+                        >
+                            <option value="All">Sort by: All</option>
+                            <option value="Date">Sort by: Date</option>
+                            <option value="Name">Sort by: Name</option>
+                            <option value="Published">Sort by: Published</option>
+                        </select>
+                    </div>
+                    <button className="add-request-btn" onClick={() => setShowAddEvent(true)}>+ Add Event</button>
+                </div>
             </div>
             <div className="table-container">
                 <table>
                     <thead>
                         <tr>
-                            <th style={{ width: '10%' }}>NO.</th>
-                            <th style={{ width: '40%' }}>EVENT NAME</th>
-                            <th style={{ width: '25%' }}>DATE</th>
-                            <th style={{ width: '25%' }}>ACTIONS</th>
+                            <th style={{ width: '5%' }}>NO.</th>
+                            <th style={{ width: '20%' }}>EVENT NAME</th>
+                            <th style={{ width: '15%' }}>DATE</th>
+                            <th style={{ width: '20%' }}>TIME</th>
+                            <th style={{ width: '20%' }}>VENUE</th>
+                            <th style={{ width: '20%' }}>ACTIONS</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -68,6 +67,8 @@ function EventsManager() {
                                 <td>{index + 1}</td>
                                 <td>{event.name}</td>
                                 <td>{event.date}</td>
+                                <td>{event.timeStart} - {event.timeEnd}</td>
+                                <td>{event.venue}</td>
                                 <td>
                                     <div className="action-buttons">
                                         <button className="action-btn edit">
@@ -95,6 +96,20 @@ function EventsManager() {
                     </tbody>
                 </table>
             </div>
+            {showAddEvent && (
+                <AddEvent
+                    onClose={() => setShowAddEvent(false)}
+                    onAddEvent={(eventData) => {
+                        const newEvent = {
+                            ...eventData,
+                            id: events.length + 1,
+                            isPublished: false
+                        };
+                        setEvents([...events, newEvent]);
+                        setShowAddEvent(false);
+                    }}
+                />
+            )}
         </div>
     );
 }

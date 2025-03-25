@@ -3,9 +3,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap');
 
 .indexHeader {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
+    gap: 2rem;
     padding: 1rem 2rem;
     position: fixed;
     top: 0;
@@ -35,6 +36,7 @@
 .indexNav {
     display: flex;
     gap: 4rem;
+    justify-content: center;
 }
 
 .indexNav a {
@@ -71,6 +73,7 @@
     cursor: pointer;
     text-decoration: none;
     transition: background-color 0.2s;
+    justify-self: end;
 }
 
 .loginBtn:hover {

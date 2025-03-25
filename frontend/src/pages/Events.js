@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "../styles/Events.css";
 import ScrollIcon from '../assets/SDA.png';
@@ -13,6 +13,23 @@ const scrollToSection = () => {
 
 
 const Events = () => {
+  const [publishedEvents, setPublishedEvents] = useState(() => {
+    const savedEvents = localStorage.getItem('events');
+    return savedEvents ? JSON.parse(savedEvents).filter(event => event.isPublished) : [];
+  });
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const savedEvents = localStorage.getItem('events');
+      if (savedEvents) {
+        setPublishedEvents(JSON.parse(savedEvents).filter(event => event.isPublished));
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   return (
     <>
       <section className="events-header-section">
@@ -49,36 +66,21 @@ const Events = () => {
         </div>
         <section className="events-section">
   <div className="event-cards-container">
-    {/* Event Card 1 */}
-    <div className="event-card">
-      <img src={Announcement} alt="Event 1" className="event-image" />
-      <div className="event-info">
-        <h3>Barangay 58 Community Day: Unite & Celebrate!</h3>
-        <p className="event-date">📅 Fri, Sep 13 2023 &nbsp; 🕘 <span className="event-time">9:00am-12:00am</span></p>
-        <p className="event-venue"><strong>Venue:</strong> Barangay 58, Multi-purpose Covered Court</p>
-        <p className="event-description">Come together for a day of fun, connection, and community spirit!</p>
+    {publishedEvents.map((event) => (
+      <div key={event.id} className="event-card">
+        <img 
+          src={event.imageUrl || Announcement} 
+          alt={event.name} 
+          className="event-image" 
+        />
+        <div className="event-info">
+          <h3>{event.name}</h3>
+          <p className="event-date">📅 {event.date} &nbsp; 🕘 <span className="event-time">{event.timeStart} - {event.timeEnd}</span></p>
+          <p className="event-venue"><strong>Venue:</strong> {event.venue}</p>
+          <p className="event-description">{event.description}</p>
+        </div>
       </div>
-    </div>
-
-    <div className="event-card">
-      <img src={Announcement} alt="Event 2" className="event-image" />
-      <div className="event-info">
-        <h3>Barangay 58 Clean-Up Drive</h3>
-        <p className="event-date">📅 Sat, Sep 20 2023 &nbsp; 🕘 <span className="event-time">8:00am-11:00am</span></p>
-        <p className="event-venue"><strong>Venue:</strong> Barangay 58, Main Street</p>
-        <p className="event-description">Join us as we make our community cleaner and greener!</p>
-      </div>
-    </div>
-
-    <div className="event-card">
-      <img src={Announcement} alt="Event 3" className="event-image" />
-      <div className="event-info">
-        <h3>Barangay 58 Christmas Party</h3>
-        <p className="event-date">📅 Dec 24 2023 &nbsp; 🕘 <span className="event-time">5:00pm-10:00pm</span></p>
-          <p className="event-venue"><strong>Venue:</strong> Barangay 58, Covered Court</p>
-          <p className="event-description">Celebrate the holiday season with performances, games, and prizes!</p>
-      </div>
-    </div>
+    ))}
   </div>
 </section>
       </section>

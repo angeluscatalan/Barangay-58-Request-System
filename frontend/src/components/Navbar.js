@@ -22,7 +22,9 @@ function Navbar() {
                 
             </nav>
 
-            <Link to="/login" className="loginBtn">Login</Link>
+            {location.pathname !== "/login" && (
+                <Link to="/login" className="loginBtn">Login</Link>
+            )}
         </div>
     );
 }

@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import '../styles/Admin.css';
 import brgyLoginPageLogo from '../assets/brgyLoginPageLogo.png';
 import EventsManager from '../components/EventsManager';
 
 function Admin() {
+    const navigate = useNavigate();
+    const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [activeSection, setActiveSection] = useState('requests');
     const [requests, setRequests] = useState([]);
     const [typeFilter, setTypeFilter] = useState('All');
@@ -69,12 +72,30 @@ function Admin() {
                 <div className="main-content">
                     <header>
                         <div className="profile-section">
-                            <div className="avatar">
-                                <img src={brgyLoginPageLogo} alt="Barangay Logo" />
-                            </div>
                             <div className="notifications">
                                 <i className="fas fa-bell"></i>
                             </div>
+                            <div 
+                                className="avatar" 
+                                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                <img src={brgyLoginPageLogo} alt="Barangay Logo" />
+                            </div>
+                            {showProfileMenu && (
+                                <div className="profile-menu">
+                                    <button 
+                                        onClick={() => {
+                                            localStorage.removeItem('isAuthenticated');
+                                            navigate('/');
+                                        }}
+                                        className="logout-button"
+                                    >
+                                        <i className="fas fa-sign-out-alt"></i>
+                                        Logout
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </header>
                     {activeSection === 'requests' ? (

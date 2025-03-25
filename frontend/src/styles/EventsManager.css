@@ -8,10 +8,29 @@
     background: transparent;
 }
 
-.events-actions {
+.table-header {
     display: flex;
-    gap: 15px;
-    padding: 15px 0 0 0;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 0;
+    position: relative;
+    width: 100%;
+}
+
+.table-controls {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    position: absolute;
+    right: 0;
+}
+
+.events-count {
+    font-size: 24px;
+    font-weight: 600;
+    position: absolute;
+    left: 0;
 }
 
 .add-request-btn {
@@ -42,28 +61,17 @@
     background-color: rgba(218, 28, 111, 0.1);
 }
 
-.events-title {
-    margin-left: 0;
-}
 
-
-.events-title h1 {
-    font-size: 24px;
-    font-weight: 600;
-    color: black;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
 
 .event-count {
-    color: black;
+    color: #666;
     font-weight: 500;
+    font-size: 20px;
 }
 
 .events-filter {
-    margin-left: 0;
+    display: flex;
+    align-items: center;
 }
 
 .events-filter select {
@@ -71,15 +79,17 @@
     border: 1px solid #ddd;
     border-radius: 5px;
     background-color: transparent;
-    min-width: 150px;
+    min-width: 180px;
     font-size: 14px;
     color: #333;
+    margin-right: 10px;
 }
 
 .table-container {
     margin: 10px 0 0 0;
     width: 100%;
     background: transparent;
+    overflow-x: auto;
 }
 
 .table-container table {
@@ -95,14 +105,20 @@
 
 .table-container th {
     text-align: left;
-    padding: 15px 0;
+    padding: 15px 12px;
     border-bottom: 2px solid #000;
+    white-space: nowrap;
+    min-width: 120px;
 }
 
 .table-container td {
     text-align: left;
-    padding: 12px 0;
+    padding: 12px;
     border-bottom: 1px solid #000;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 250px;
 }
 
 .action-buttons {
