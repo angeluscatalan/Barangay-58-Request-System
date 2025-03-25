@@ -26,27 +26,29 @@ function reqPage() {
         number_of_copies: "",
     });
 
+    const [errors, setErrors] = useState({ contact_no: false, email: false });
+
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
     var birthdateRef = useRef(null);
-    var email = "";
-    var phone = "";
 
-    function getReq() {
-        if (Object.values(formData).some(value => value === "")) {
+    const getReq = () => {
+        if (Object.values(formData).some(value => value.trim() === "")) {
             alert("Please fill in all the required fields in the request form.");
             return;
         }
-        
+    
         if (!document.getElementById("terms").checked) {
             alert("Please verify with our terms by clicking the checkbox.");
             return;
         }
-        
-        if (document.getElementById("phoneNumP").style.visibility === "visible" || 
-            document.getElementById("emailP").style.visibility === "visible") {
+    
+        const isPhoneValid = /^[0-9]{10}$/.test(formData.contact_no);
+        const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
+    
+        if (!isPhoneValid || !isEmailValid) {
             alert("Please provide a valid phone number and email.");
             return;
         }
@@ -56,14 +58,12 @@ function reqPage() {
             number_of_copies: Number(formData.number_of_copies)
         };
     
-        console.log("📤 Sending Request Data:", requestData);
-        
         axios.post("http://localhost:5000/requests", requestData, {
             headers: { "Content-Type": "application/json" },
             timeout: 5000
         })
         .then(response => {
-            alert("Request successfully submitted!");
+            alert("✅ Request successfully submitted!");
         })
         .catch(error => {
             console.error("❌ Error details:", {
@@ -71,7 +71,7 @@ function reqPage() {
                 code: error.code,
                 config: error.config
             });
-            
+    
             if (error.code === "ECONNREFUSED") {
                 alert("Could not connect to server. Please ensure the backend is running.");
             } else if (error.code === "ERR_NETWORK") {
@@ -80,34 +80,18 @@ function reqPage() {
                 alert(`Error: ${error.message}`);
             }
         });
-    }
-
-    function validatorNum() {
-        const phoneRegex = /^[0-9]{10}$/;
-        if (document.getElementById("contactNum").value === "") {
-            document.getElementById("phoneNumP").style.visibility = "hidden";
-        }
-        else if (!phoneRegex.test(document.getElementById("contactNum").value)) {
-            document.getElementById("phoneNumP").style.visibility = "visible";
-        }
-        else {
-            document.getElementById("phoneNumP").style.visibility = "hidden";
-        }
-    }
-
-    function validatorEmail() {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (document.getElementById("email").value === "") {
-            document.getElementById("emailP").style.visibility = "hidden";
-        }
-        else if (!emailRegex.test(document.getElementById("email").value)) {
-            document.getElementById("emailP").style.visibility = "visible";
-        }
-        else {
-            document.getElementById("emailP").style.visibility = "hidden";
-        }
-    }
-
+    };
+    const validatorNum = () => {
+        const isValid = /^[0-9]{10}$/.test(formData.contact_no);
+        console.log('Phone validation:', isValid);
+        setErrors(prev => ({ ...prev, contact_no: !isValid }));
+    };
+    
+    const validatorEmail = () => {
+        const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
+        console.log('Email validation:', isValid); 
+        setErrors(prev => ({ ...prev, email: !isValid }));
+    };
     return (
         <div className="req">
             <div className="allofelements">
@@ -209,12 +193,39 @@ function reqPage() {
                                         onChange={(date) => setFormData({ ...formData, birthday: date })}
                                     />
 
-                                    <input type="number" id="contactNum" name="contact_no" placeholder="CONTACT NO." className="reqFormNum" value={formData.contact_no} onChange={handleChange} onKeyUp={validatorNum} />
-                                    <input type="email" id="email" name="email" placeholder="EMAIL ADDRESS" className="reqFormEmail" value={formData.email} onChange={handleChange} onKeyUp={validatorEmail}/>
+                                    <input 
+                                        type="number" 
+                                        id="contactNum" 
+                                        name="contact_no" 
+                                        placeholder="CONTACT NO." 
+                                        className={`reqFormNum ${errors.contact_no ? 'input-error' : ''}`}
+                                        value={formData.contact_no} 
+                                        onChange={(e) => {
+                                            handleChange(e);
+                                            validatorNum(); 
+                                        }}
+                                        onBlur={validatorNum} 
+                                    />
+
+                                    <input 
+                                        type="email" 
+                                        id="email" 
+                                        name="email" 
+                                        placeholder="EMAIL ADDRESS" 
+                                        className={`reqFormEmail ${errors.email ? 'input-error' : ''}`}
+                                        value={formData.email} 
+                                        onChange={(e) => {
+                                            handleChange(e);
+                                            validatorEmail();
+                                        }}
+                                        onBlur={validatorEmail}
+                                    />
+
                                     <div className="validators">
-                                        <p id="phoneNumP" className="phoneNumP">*Invalid PhoneNo.</p>
-                                        <p id="emailP" className="emailP">*Invalid Email</p>
+                                        {errors.contact_no && <p className="phoneNumP">*Invalid Phone Number (must be 10 digits)</p>}
+                                        {errors.email && <p className="emailP">*Invalid Email (e.g., user@example.com)</p>}
                                     </div>
+
                                     <input type="text" id="address" name="address" placeholder="ADDRESS" className="reqFormAddress" value={formData.address} onChange={handleChange} />
                                 </div>
 

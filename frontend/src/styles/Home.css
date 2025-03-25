@@ -15,7 +15,7 @@ html, body, #root, .indexBg {
     overflow: hidden;
 }
 
-.indexBg {
+.App {
     background-image: url("../assets/indexBG.png");
     background-size: cover;
     background-position: center center;
@@ -50,7 +50,7 @@ html, body, #root, .indexBg {
     
 .indexText {
     position: absolute;
-    top: 20%;
+    top: 15%;
     left: 7%;
     width: 50%;
     max-width: 90%;

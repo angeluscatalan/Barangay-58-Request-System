@@ -6,7 +6,6 @@ import "../styles/Home.css";
 function Home() {
     return (
         <div className="App">
-            <div className="indexBg">
                 <img src={pinkGradient} alt="Pink Gradient" className="indexImage" />
 
                 <div className="indexText">
@@ -23,7 +22,6 @@ function Home() {
                         <Link to="/Request">Click here to Request a Certificate</Link>
                     </button>
                 </div>
-            </div>
         </div>
     );
 }

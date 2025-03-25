@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import '../styles/Admin.css';
 import brgyLoginPageLogo from '../assets/brgyLoginPageLogo.png';
 import EventsManager from '../components/EventsManager';
@@ -9,29 +10,21 @@ function Admin() {
     const [typeFilter, setTypeFilter] = useState('All');
     const [statusFilter, setStatusFilter] = useState('All');
 
-    // Mock data - replace with actual API calls
-    const mockRequests = [
-        {
-            name: "John Doe",
-            sex: "Male",
-            birthday: "1990-01-01",
-            address: "123 Main St, Barangay 58",
-            contactNo: "09123456789",
-            email: "john@example.com",
-            typeOfRequest: "Barangay Clearance",
-            purpose: "Employment",
-            copies: 2,
-            status: "Pending"
-        }
-        // Add more mock data as needed
-    ];
-
     useEffect(() => {
-        // Replace with actual API call
-        setRequests(mockRequests);
+        const fetchRequests = async () => {
+            try {
+                const response = await axios.get('http://localhost:5000/requests'); 
+                setRequests(response.data);
+            } catch (error) {
+                console.error('Error fetching requests:', error);
+            }
+        };
+
+        fetchRequests();
     }, []);
 
     const getStatusColor = (status) => {
+        if (!status) return 'black'; 
         switch (status.toLowerCase()) {
             case 'approved': return 'green';
             case 'rejected': return 'red';
@@ -42,7 +35,7 @@ function Admin() {
     };
 
     const filteredRequests = requests.filter(request => {
-        const matchesType = typeFilter === 'All' || request.typeOfRequest === typeFilter;
+        const matchesType = typeFilter === 'All' || request.certificate_type === typeFilter;
         const matchesStatus = statusFilter === 'All' || request.status === statusFilter;
         return matchesType && matchesStatus;
     });
@@ -88,8 +81,7 @@ function Admin() {
                         <div className="dashboard">
                             <div className="dashboard-header">
                                 <div className="header-top">
-                                    <h1>Request ({filteredRequests.length})</h1>
-                                    <button className="add-request-btn">+ Add Request</button>
+                                    <h1>Requests ({filteredRequests.length})</h1>
                                 </div>
                                 <div className="filters">
                                     <select
@@ -99,7 +91,6 @@ function Admin() {
                                         <option value="All">All Types</option>
                                         <option value="Barangay Clearance">Barangay Clearance</option>
                                         <option value="Certificate of Residency">Certificate of Residency</option>
-                                        {/* Add more options as needed */}
                                     </select>
                                     <select
                                         value={statusFilter}
@@ -132,18 +123,18 @@ function Admin() {
                                     <tbody>
                                         {filteredRequests.map((request, index) => (
                                             <tr key={index}>
-                                                <td>{request.name}</td>
+                                                <td>{`${request.last_name}, ${request.first_name} ${request.middle_name || ''}`}</td>
                                                 <td>{request.sex}</td>
-                                                <td>{request.birthday}</td>
+                                                <td>{request.birthday ? request.birthday.split('T')[0] : ''}</td>
                                                 <td>{request.address}</td>
-                                                <td>{request.contactNo}</td>
+                                                <td>{request.contact_no}</td>
                                                 <td>{request.email}</td>
-                                                <td>{request.typeOfRequest}</td>
-                                                <td>{request.purpose}</td>
-                                                <td>{request.copies}</td>
+                                                <td>{request.type_of_certificate}</td>
+                                                <td>{request.purpose_of_request}</td>
+                                                <td>{request.number_of_copies}</td>
                                                 <td>
-                                                    <span style={{ color: getStatusColor(request.status) }}>
-                                                        {request.status}
+                                                    <span style={{ color: getStatusColor(request.status || '') }}>
+                                                        {request.status || 'Unknown'}
                                                     </span>
                                                 </td>
                                             </tr>

@@ -3,7 +3,6 @@ const router = express.Router();
 const pool = require('../config/db');
 const { check, validationResult } = require('express-validator');
 
-// Validation middleware
 const validateRequest = [
     check('last_name').notEmpty().trim().escape(),
     check('first_name').notEmpty().trim().escape(),
@@ -41,6 +40,19 @@ router.post('/', validateRequest, async (req, res) => {
             success: true,
             requestId: result.insertId
         });
+    } catch (error) {
+        console.error('Database error:', error);
+        res.status(500).json({ 
+            error: 'Database operation failed',
+            details: error.message
+        });
+    }
+});
+
+router.get('/', async (req, res) => {
+    try {
+        const [results] = await pool.query("SELECT * FROM requests");
+        res.json(results);
     } catch (error) {
         console.error('Database error:', error);
         res.status(500).json({ 

@@ -17,12 +17,12 @@
 }
 
 .flatpickr-calendar {
-    width: 250px !important;
+    width: 350px !important;
     font-family: 'Manrope', sans-serif;
 }
 
 .flatpickr-months {
-    background-color: #DA1C6F; 
+    background-color: #FFC5C5; 
     color: white;
     border-radius: 5px 5px 0 0;
 }
@@ -33,10 +33,10 @@
 }
 
 .flatpickr-day.selected {
-    background: #DA1C6F !important;
+    background: #FFC5C5 !important;
     color: white !important;
 }
 
 .flatpickr-day.today {
-    border: 1px solid #DA1C6F;
+    border: 1px solid #FFC5C5;
 }
