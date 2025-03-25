@@ -1,0 +1,221 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap');
+
+.admin-container {
+    display: flex;
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    position: relative;
+}
+
+.top-line {
+    width: 100%;
+    height: 3px;
+    background-color: black;
+    position: absolute;
+    top: 90px;
+    left: 0;
+    z-index: 1;
+}
+
+.sidebar {
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar nav li {
+    padding: 15px;
+    margin-bottom: 5px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+    color: white;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 500;
+}
+
+.sidebar nav {
+    background-color: #DA1C6F;
+    padding: 20px;
+    flex: 1;
+}
+
+.sidebar nav ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar nav li {
+    padding: 15px;
+    margin-bottom: 5px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.sidebar nav li:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar nav li.active {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.main-content {
+    flex: 1;
+    background-color: #FFE3E2;
+    padding: 20px;
+}
+
+header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 20px;
+    height: 90px;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    height: 90px;
+    box-sizing: border-box;
+}
+
+.sidebar-header img.admin-logo {
+    width: 50px;
+    height: 50px;
+}
+
+.sidebar-header h1 {
+    color: black;
+    font-size: 22px;
+    margin: 0;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.profile-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    position: absolute;
+    top: 15px;
+}
+
+.notifications {
+    font-size: 20px;
+    color: #666;
+    cursor: pointer;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.dashboard {
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-header {
+    margin-bottom: 20px;
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.dashboard-header h1 {
+    font-size: 24px;
+    margin: 0;
+}
+
+.filters {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.filters select {
+    padding: 8px 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: white;
+    min-width: 150px;
+}
+
+.add-request-btn {
+    background-color: #DA1C6F;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.add-request-btn:hover {
+    background-color: #b81860;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th,
+td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Status colors */
+.status-approved {
+    color: green;
+}
+
+.status-rejected {
+    color: red;
+}
+
+.status-pickup {
+    color: blue;
+}
+
+.status-pending {
+    color: orange;
+}

@@ -1,0 +1,144 @@
+.events-section {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    margin-left: 0;
+    width: 100%;
+    background: transparent;
+}
+
+.events-actions {
+    display: flex;
+    gap: 15px;
+    padding: 15px 0 0 0;
+}
+
+.add-request-btn {
+    background-color: #DA1C6F;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.add-request-btn:hover {
+    background-color: #b81860;
+}
+
+.manage-events-btn {
+    background-color: transparent;
+    color: #DA1C6F;
+    border: 2px solid #DA1C6F;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.manage-events-btn:hover {
+    background-color: rgba(218, 28, 111, 0.1);
+}
+
+.events-title {
+    margin-left: 0;
+}
+
+
+.events-title h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: black;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.event-count {
+    color: black;
+    font-weight: 500;
+}
+
+.events-filter {
+    margin-left: 0;
+}
+
+.events-filter select {
+    padding: 8px 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: transparent;
+    min-width: 150px;
+    font-size: 14px;
+    color: #333;
+}
+
+.table-container {
+    margin: 10px 0 0 0;
+    width: 100%;
+    background: transparent;
+}
+
+.table-container table {
+    width: 100%;
+    text-align: left;
+    border-collapse: collapse;
+    background: transparent;
+}
+
+.table-container tr {
+    background: transparent;
+}
+
+.table-container th {
+    text-align: left;
+    padding: 15px 0;
+    border-bottom: 2px solid #000;
+}
+
+.table-container td {
+    text-align: left;
+    padding: 12px 0;
+    border-bottom: 1px solid #000;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-start;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+}
+
+.action-btn.edit {
+    color: #0d6efd;
+}
+
+.action-btn.delete {
+    color: #dc3545;
+}
+
+.action-btn.published {
+    color: #198754;
+}
+
+.action-btn:not(.published) {
+    color: #6c757d;
+}
+
+.action-btn:hover {
+    transform: scale(1.1);
+}

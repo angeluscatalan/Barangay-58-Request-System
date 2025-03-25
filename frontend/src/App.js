@@ -7,18 +7,27 @@ import Login from "./pages/Login.js";
 import AboutUs from "./pages/aboutusPage.js";
 import Navbar from "./components/Navbar.js";
 import Events from "./pages/Events.js";
+import Admin from "./pages/Admin.js";
+import ProtectedRoute from "./components/ProtectedRoute.js";
 
 function App() {
     return (
         <Router>
-            <Navbar />
             <Routes>
+                <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+                <Route path="*" element={
+                    <>
+                        <Navbar />
+                        <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/Request" element={<ReqPage />} />
                 <Route path="/Team" element={<TeamPage />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/AboutUs" element={<AboutUs />} />
                 <Route path="/Events" element={<Events />} />
+                        </Routes>
+                    </>
+                } />
             </Routes>
         </Router>
     );

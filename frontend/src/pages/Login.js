@@ -9,9 +9,22 @@ function Login() {
     const [rememberMe, setRememberMe] = useState(false);
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Login attempt with:", username, password, rememberMe);
+
+        // TODO: Replace with actual API call to validate credentials
+        if (username === 'admin' && password === 'admin123') {
+            // Store authentication state
+            localStorage.setItem('isAuthenticated', 'true');
+            if (rememberMe) {
+                localStorage.setItem('username', username);
+            }
+
+            // Redirect to admin page
+            navigate('/admin');
+        } else {
+            alert('Invalid credentials. Please try again.');
+        }
     };
 
     return (
