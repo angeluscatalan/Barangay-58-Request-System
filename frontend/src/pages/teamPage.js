@@ -6,7 +6,7 @@ import Footer from "../components/Footer";
 import kapMembers from "../assets/kapMembers.png";
 import kap from "../assets/kap.jpg";
 import april from "../assets/april.png";
-import lalain from "../assets/lalain.png";
+import lalaine from "../assets/lalaine.png";
 import harold from "../assets/harold.png";
 import jovic from "../assets/jovic.png";
 import thomas from "../assets/thomas.png";
@@ -38,11 +38,6 @@ function TeamPage() {
                 </p>
             </div>
 
-            <div className="kapMembersContainer">
-                <img src={kapMembers} alt="Kapitan and Kagawads" className="kapMembers" />
-            </div>
-
-    
             <div className="barangayChairman">
                 <img src={kap} alt="Barangay Chairman" className="chairmanImage" />
                 <p className="chairmanName">Hon. Andrea Amor "AA" D. Mercado</p>
@@ -56,7 +51,7 @@ function TeamPage() {
                     <p className="teamMemberTitle">Secretary</p>
                 </div>
                 <div className="teamMember">
-                    <img src={lalain} alt="Lalaine M. Del Corro" />
+                    <img src={lalaine} alt="Lalaine M. Del Corro" />
                     <p className="teamMemberName">Lalaine M. Del Corro</p>
                     <p className="teamMemberTitle">Treasurer</p>
                 </div>
@@ -80,30 +75,37 @@ function TeamPage() {
                 </div>
             </div>
 
-            <div className="teamMembersGrid3">
+            
+<           div className="teamMembersGrid">
                 <div className="teamMember">
                     <img src={antonio} alt="Antonio C. Aguilar" />
                     <p className="teamMemberName">Antonio C. Aguilar</p>
                     <p className="teamMemberTitle">Committee on Education, ALS & Business Programs</p>
                 </div>
                 <div className="teamMember">
-                    <img src={precy} alt="Precy G. Lopez" />
+                <img src={precy} alt="Precy G. Lopez" />
                     <p className="teamMemberName">Precy G. Lopez</p>
                     <p className="teamMemberTitle">Committee on Clean & Green / Beautification</p>
                 </div>
+            </div>
+
+
+            <div className="teamMembersGrid">
                 <div className="teamMember">
                     <img src={ruel} alt="Ruel A. Buan" />
                     <p className="teamMemberName">Ruel A. Buan</p>
                     <p className="teamMemberTitle">Committee on Public Works & Infrastructure / Livelihood</p>
                 </div>
-            </div>
-
-            <div className="teamMembersGrid">
                 <div className="teamMember">
                     <img src={gabriel} alt="Gabriel P. Fortun" />
                     <p className="teamMemberName">Gabriel P. Fortun</p>
                     <p className="teamMemberTitle">Committee on Peace & Order / IDADAIT VAWC / Senior, PWD & Single Parent</p>
                 </div>
+            </div>
+
+
+            <div className="kapMembersContainer">
+                <img src={kapMembers} alt="Kapitan and Kagawads" className="kapMembers" />
             </div>
 
             <div className="teamHeader">
@@ -112,10 +114,6 @@ function TeamPage() {
                 <p className="teamDesc">
                     The SK is more than a council—it’s a movement. Through innovation, leadership, and community involvement, we empower the youth to take charge and build a better future.
                 </p>
-            </div>
-
-            <div className="kapMembersContainer">
-                <img src={skTeam} alt="Sk Members" className="kapMembers" />
             </div>
     
             <div className="barangayChairman">
@@ -142,7 +140,7 @@ function TeamPage() {
                 </div>
             </div>
 
-            <div className="teamMembersGrid3">
+            <div className="teamMembersGrid2">
                 <div className="teamMember">
                     <img src={thomasSk} alt="Thomas O. Binarao" />
                     <p className="teamMemberName">Thomas O. Binarao</p>
@@ -153,21 +151,25 @@ function TeamPage() {
                     <p className="teamMemberName">Kepperpaul Nurani</p>
                     <p className="teamMemberTitle">Committee on Clean & Green / Beautification</p>
                 </div>
+            </div>
+
+            <div className="teamMembersGrid2">
                 <div className="teamMember">
                     <img src={michael} alt="Michael Macapagal" />
                     <p className="teamMemberName">Michael Macapagal</p>
                     <p className="teamMemberTitle">Committee on Human Rights, Law & Justice</p>
                 </div>
-            </div>
-
-            <div className="teamMembersGrid">
                 <div className="teamMember">
                     <img src={cris} alt="Cris Loviel Munda" />
                     <p className="teamMemberName">Cris Loviel Munda</p>
                     <p className="teamMemberTitle">Committee on Peace & Order / IDADAIT VAWC / Senior, PWD & Single Parent</p>
                 </div>
-                
-            </div> 
+            </div>
+
+
+            <div className="kapMembersContainer">
+                <img src={skTeam} alt="Sk Members" className="kapMembers" />
+            </div>
             <Footer />   
         </div>
       

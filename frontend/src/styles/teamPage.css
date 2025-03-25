@@ -22,7 +22,11 @@ html, body, #root {
     background-size: cover;
 }
 
-
+.equalSpacing {
+    width: 80%; 
+    max-width: 900px; 
+    justify-content: space-evenly; 
+}
 
 
 .teamHeader {
@@ -104,6 +108,13 @@ html, body, #root {
     
 }
 
+.teamMembersGrid2 {
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    margin-top: 30px;
+}
+
 .teamMembersGrid3 {
     display: flex;
     justify-content: center;
@@ -115,6 +126,7 @@ html, body, #root {
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 350px;
     
     
 }

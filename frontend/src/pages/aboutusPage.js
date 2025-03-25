@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import map from "../assets/map.png";
-import BarangayPlaceholder from "../assets/BarangayPlaceholder.png";
+import BarangayPlaceholder from "../assets/facade.jpg";
 import Feast from "../assets/Feast.jpg";
 import opHours from "../assets/opHours.png";
 import location from "../assets/location.png";

@@ -54,17 +54,17 @@ body {
 }
 
 .abtUsMap img {
-    width: 500px; 
-    height: auto;
-    max-width: none; 
+    border-radius: 15px; 
+    border: 3px #D3D3D3; 
+    width: 100%; 
+    max-width: 500px; 
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 .abtUsMap p {
-    font-family: "Manrope", sans-serif;
-    font-size: 1rem;
-    color: #333;
-    margin-top: -10px;
-    margin-left: -1vw; 
+    margin-top: 15px;
+    font-size: 14px;
+    color: #555; 
 }
 
 .abtUsHistory {
@@ -178,7 +178,10 @@ body {
     text-align: left;
 }
 
+
 .barangayImage {
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.3); 
+    border-radius: 10px; 
     flex: 1; 
     max-width: 500px;
     display: flex;
