@@ -4,6 +4,7 @@ import AddEvent from './AddEvent';
 
 function EventsManager() {
     const [showAddEvent, setShowAddEvent] = useState(false);
+    const [editingEvent, setEditingEvent] = useState(null);
     const [events, setEvents] = useState(() => {
         const savedEvents = localStorage.getItem('events');
         return savedEvents ? JSON.parse(savedEvents) : [];
@@ -18,6 +19,20 @@ function EventsManager() {
         if (window.confirm('Are you sure you want to delete this event?')) {
             setEvents(events.filter(event => event.id !== id));
         }
+    };
+
+    const handleEdit = (event) => {
+        setEditingEvent(event);
+        setShowAddEvent(true);
+    };
+
+    const handleEditSubmit = (updatedEvent) => {
+        const updatedEvents = events.map(event =>
+            event.id === editingEvent.id ? { ...updatedEvent, id: event.id, isPublished: event.isPublished } : event
+        );
+        setEvents(updatedEvents);
+        setShowAddEvent(false);
+        setEditingEvent(null);
     };
 
     const handlePublish = (id) => {
@@ -71,7 +86,10 @@ function EventsManager() {
                                 <td>{event.venue}</td>
                                 <td>
                                     <div className="action-buttons">
-                                        <button className="action-btn edit">
+                                        <button 
+                                            className="action-btn edit"
+                                            onClick={() => handleEdit(event)}
+                                        >
                                             <i className="fas fa-edit"></i>
                                             <span>Edit</span>
                                         </button>
@@ -98,7 +116,12 @@ function EventsManager() {
             </div>
             {showAddEvent && (
                 <AddEvent
-                    onClose={() => setShowAddEvent(false)}
+                    onClose={() => {
+                        setShowAddEvent(false);
+                        setEditingEvent(null);
+                    }}
+                    editData={editingEvent}
+                    onEditEvent={handleEditSubmit}
                     onAddEvent={(eventData) => {
                         const newEvent = {
                             ...eventData,

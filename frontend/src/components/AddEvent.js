@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import '../styles/AddEvent.css';
 
-function AddEvent({ onClose, onAddEvent }) {
-    const [eventData, setEventData] = useState({
+function AddEvent({ onClose, onAddEvent, editData = null, onEditEvent }) {
+    const [eventData, setEventData] = useState(editData || {
         name: '',
         date: '',
         timeStart: '',
@@ -46,7 +46,6 @@ function AddEvent({ onClose, onAddEvent }) {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-
         const formattedDate = new Date(eventData.date).toLocaleDateString('en-US', {
             month: '2-digit',
             day: '2-digit',
@@ -67,13 +66,17 @@ function AddEvent({ onClose, onAddEvent }) {
             timeEnd: formatTime(eventData.timeEnd)
         };
 
-        onAddEvent(formattedEventData);
+        if (editData) {
+            onEditEvent(formattedEventData);
+        } else {
+            onAddEvent(formattedEventData);
+        }
     };
 
     return (
         <div className="add-event-container">
             <div className="add-event-header">
-                <h2>Add New Event</h2>
+                <h2>{editData ? 'Edit Event' : 'Add New Event'}</h2>
                 <button className="close-button" onClick={onClose}>&times;</button>
             </div>
 
