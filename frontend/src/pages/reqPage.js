@@ -29,7 +29,14 @@ function reqPage() {
     const [errors, setErrors] = useState({ contact_no: false, email: false });
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        let { name, value } = e.target
+        if (["last_name", "first_name", "middle_name", "suffix"].includes(name)) {
+            value = value
+                .toLowerCase() // Convert to lowercase first
+                .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize first letter of each word
+               
+        }
+        setFormData({ ...formData, [name]: value });
     };
 
     var birthdateRef = useRef(null);
@@ -45,7 +52,7 @@ function reqPage() {
             return;
         }
     
-        const isPhoneValid = /^[0-9]{10}$/.test(formData.contact_no);
+        const isPhoneValid = (/^0\d{10}$/.test(formData.contact_no) || /^[1-9]\d{9}$/.test(formData.contact_no));
         const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
     
         if (!isPhoneValid || !isEmailValid) {
@@ -82,7 +89,7 @@ function reqPage() {
         });
     };
     const validatorNum = () => {
-        const isValid = /^[0-9]{10}$/.test(formData.contact_no);
+        const isValid = (/^0\d{10}$/.test(formData.contact_no) || /^[1-9]\d{9}$/.test(formData.contact_no));
         console.log('Phone validation:', isValid);
         setErrors(prev => ({ ...prev, contact_no: !isValid }));
     };
@@ -222,7 +229,7 @@ function reqPage() {
                                     />
 
                                     <div className="validators">
-                                        {errors.contact_no && <p className="phoneNumP">*Invalid Phone Number (must be 10 digits)</p>}
+                                        {errors.contact_no && <p className="phoneNumP">*Invalid Phone Number</p>}
                                         {errors.email && <p className="emailP">*Invalid Email (e.g., user@example.com)</p>}
                                     </div>
 
