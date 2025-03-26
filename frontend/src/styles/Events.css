@@ -173,18 +173,7 @@ body {
     flex-wrap: wrap; 
     justify-content: center;
   }
-  .event-card {
-    width: 300px; 
-    border-radius: 10px; 
-    overflow: hidden; 
-    display: flex;
-    flex-direction: column;
-    background-color: #FFD2DD;
-    box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-  }
-  
-
+ 
   .event-image {
     width: 100%; 
     object-fit: cover; 
@@ -192,17 +181,62 @@ body {
     border-top-left-radius: 15px;
     border-top-right-radius: 15px;
   }
-  
-  .event-info {
+  .event-card {
+    width: 300px;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background-color: #FFD2DD;
+    box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, z-index 0.3s ease-in-out;
+    position: relative;
+    z-index: 1;
+    will-change: transform;
+}
+
+.event-card:hover {
+  width: 500px;
+  transform: translateY(-30vh); 
+    box-shadow: 4px 6px 15px rgba(0, 0, 0, 0.2); /* Adds a stronger shadow */
+    z-index: 10; /* Brings it to the front */
+}
+
+.event-info {
     padding: 15px;
-    background-color: #FFD2DD; 
-    border-radius: 0 0 10px 10px; 
-    width: 100%; 
+    background-color: #FFD2DD;
+    border-radius: 0 0 10px 10px;
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-  }
+    transition: max-height 0.3s ease-in-out;
+}
+
+.event-description{
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+  text-overflow: ellipsis; 
+}
+
+.event-card:hover .event-info {
+    max-height: 500px; 
+    overflow:hidden;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    display: block;
+}
+
+.event-card:hover .event-description {
+  white-space: wrap;
+  overflow: visible;
   
+}
+
+
   .event-time {
     color: red;
     font-weight: bold;
