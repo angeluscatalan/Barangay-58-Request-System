@@ -241,7 +241,11 @@ function reqPage() {
 
                                     <select id="certType" name="type_of_certificate" className="reqFormCertSelect" value={formData.type_of_certificate} onChange={handleChange}>
                                         <option value="" disabled>TYPE OF CERTIFICATE</option>
-                                        <option value="IDApp">Barangay ID Application</option>
+                                        <option value="IDApp">Barangay Residency</option>
+                                        <option value="IDApp">Barangay Indigency</option>
+                                        <option value="IDApp">Barangay Jobseeker</option>
+                                        <option value="IDApp">Barangay Clearance</option>
+                                        <option value="IDApp">Barangay Certification</option>
                                     </select>
 
                                     <input type="text" id="reqPurpose" name="purpose_of_request" placeholder="PURPOSE OF REQUEST" className="reqFormInput" value={formData.purpose_of_request} onChange={handleChange} />

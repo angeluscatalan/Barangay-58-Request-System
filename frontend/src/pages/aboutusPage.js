@@ -80,7 +80,7 @@ function AboutUs(){
                     <img src={location} alt="Location"></img>
                     <ul>
                         <li><strong>Building Name:</strong> Barangay 58, Zone 7 Barangay Hall</li>
-                        <li><strong>Street Address:</strong> College Road, Taft Avenue, Pasay City, Metro Manila, Philippines</li>
+                        <li><strong>Street Address:</strong> 312B Taylo Street Pasay City </li>
                         <li><strong>ZIP Code:</strong> 1300</li>
                     </ul>
                 </div>
