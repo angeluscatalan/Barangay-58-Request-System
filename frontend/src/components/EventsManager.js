@@ -11,21 +11,14 @@ function EventsManager() {
 useEffect(() => {
     const fetchEvents = async () => {
         try {
-            const response = await fetch('http://localhost:5000/events/archive');
-            
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            setEvents(data);
-            
+          const response = await fetch('http://localhost:5000/events/archive');
+          if (!response.ok) throw new Error('Network response was not ok');
+          const data = await response.json();
+          setEvents(data);
         } catch (error) {
-            console.error('Fetch error:', error);
-            setEvents([]); 
+          console.error('Fetch error:', error);
         }
-    };
+      };
     fetchEvents();
 }, []);
 

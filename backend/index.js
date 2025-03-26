@@ -40,6 +40,17 @@ const upload = multer({
     })
 });
 
+const fetchRequests = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/requests');
+      if (!response.ok) throw new Error('Network response was not ok');
+      const data = await response.json();
+      setRequests(data);
+    } catch (error) {
+      console.error('Error fetching requests:', error);
+    }
+  };
+
 
 app.use(cors(corsOptions));
 
@@ -104,6 +115,17 @@ app.post("/requests", async (req, res) => {
         res.status(500).json({ message: "Database error", error });
     }
 });
+
+app.get("/events/published", async (req, res) => {
+    try {
+      const events = await Event.find({ published: true });
+      res.json(events);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  });
+
 
 module.exports = pool;
 

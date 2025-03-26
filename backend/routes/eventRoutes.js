@@ -118,49 +118,110 @@ router.delete("/archive/:id", async (req, res) => {
 });
 
 router.post('/upload', upload.single('image'), async (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ message: 'No image uploaded' });
-    }
+    console.log('Upload request received'); 
+    console.log('Request body:', req.body); 
+    console.log('Request file:', req.file); 
 
     try {
-        const fileContent = fs.readFileSync(req.file.path);
-        const fileName = `events/${Date.now()}-${req.file.originalname}`;
-        
-        await s3.send(new PutObjectCommand({
-            Bucket: process.env.AWS_BUCKET_NAME,
-            Key: fileName,
-            Body: fileContent,
-            ContentType: req.file.mimetype,
-        }));
+        if (!req.body.name || !req.body.date) {
+            console.error('Missing required fields');
+            return res.status(400).json({ 
+                message: 'Missing required fields (name and date are required)' 
+            });
+        }
 
-        const imageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+        let imageUrl = null;
 
-        const { name, date, timeStart, timeEnd, venue, description } = req.body;
-        await pool.execute(
+        if (req.file) {
+            console.log('Processing image upload...');
+            try {
+                const fileContent = fs.readFileSync(req.file.path);
+                const fileName = `events/${Date.now()}-${req.file.originalname}`;
+                
+                console.log('Uploading to S3...');
+                await s3.send(new PutObjectCommand({
+                    Bucket: process.env.AWS_BUCKET_NAME,
+                    Key: fileName,
+                    Body: fileContent,
+                    ContentType: req.file.mimetype,
+                }));
+
+                imageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+                console.log('Image uploaded to:', imageUrl);
+
+                fs.unlinkSync(req.file.path);
+            } catch (fileError) {
+                console.error('File processing error:', fileError);
+                throw new Error('Failed to process image upload');
+            }
+        }
+
+        console.log('Inserting into database...');
+        const [result] = await pool.execute(
             `INSERT INTO archive_events 
              (event_name, event_date, time_start, time_end, venue, description, image_url)
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [name, date, timeStart, timeEnd, venue, description, imageUrl]
+            [
+                req.body.name,
+                req.body.date,
+                req.body.timeStart || null,
+                req.body.timeEnd || null,
+                req.body.venue || null,
+                req.body.description || null,
+                imageUrl
+            ]
         );
 
-        try {
-            fs.unlinkSync(req.file.path);
-        } catch (err) {
-            console.error("Failed to delete temp file:", err);
-        }
-
+        console.log('Database insert successful');
         res.status(201).json({ 
             message: 'Event uploaded successfully',
+            id: result.insertId,
             imageUrl 
         });
         
     } catch (error) {
-        console.error('Upload error:', error);
+        console.error('Full error:', {
+            message: error.message,
+            stack: error.stack,
+            details: error.response?.data
+        });
         res.status(500).json({ 
-            message: 'Upload failed',
-            error: error.message 
+            message: 'Upload failed - ' + error.message,
+            errorDetails: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 });
+
+router.get('/published', async (req, res) => {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [rows] = await connection.query(`
+            SELECT 
+                id,
+                event_name AS name,
+                DATE_FORMAT(event_date, '%Y-%m-%d') as date,
+                TIME_FORMAT(time_start, '%H:%i') as timeStart,
+                TIME_FORMAT(time_end, '%H:%i') as timeEnd,
+                venue,
+                description,
+                image_url AS imageUrl
+            FROM archive_events
+            ORDER BY event_date DESC
+        `);
+        res.status(200).json(rows);
+    } catch (error) {
+        console.error('Database error:', error);
+        res.status(500).json({ 
+            message: 'Failed to fetch published events',
+            error: error.message 
+        });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
+
+
 
 module.exports = router;

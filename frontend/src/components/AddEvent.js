@@ -46,43 +46,48 @@ function AddEvent({ onClose, onAddEvent, editData = null, onEditEvent }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-    
+        
         const formData = new FormData();
-        formData.append('event_name', eventData.name);  
-        formData.append('event_date', eventData.date); 
-        formData.append('time_start', eventData.timeStart);
-        formData.append('time_end', eventData.timeEnd);
+        formData.append('name', eventData.name);
+        formData.append('date', eventData.date);
+        formData.append('timeStart', eventData.timeStart);
+        formData.append('timeEnd', eventData.timeEnd);
         formData.append('venue', eventData.venue);
         formData.append('description', eventData.description);
+        
         if (eventData.image) {
             formData.append('image', eventData.image);
         }
-    
+        
         try {
             const response = await fetch('http://localhost:5000/events/upload', {
                 method: 'POST',
                 body: formData
             });
-    
+            
+            const responseData = await response.json();
+            
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Upload failed');
+                const errorMsg = responseData.message || 
+                               responseData.error || 
+                               `Upload failed with status ${response.status}`;
+                throw new Error(errorMsg);
             }
-    
-            const result = await response.json();
+            
             onAddEvent({
                 ...eventData,
-                id: result.id || Date.now(),  
-                image_url: result.imageUrl,
-                event_name: eventData.name,
-                event_date: eventData.date,
-                time_start: eventData.timeStart,
-                time_end: eventData.timeEnd
+                id: responseData.id,
+                imageUrl: responseData.imageUrl
             });
             onClose();
+            
         } catch (error) {
-            console.error('Error uploading event:', error);
-            alert(error.message);
+            console.error('Full upload error:', {
+                error: error,
+                message: error.message,
+                stack: error.stack
+            });
+            alert(`Upload failed: ${error.message}`);
         }
     };
     
