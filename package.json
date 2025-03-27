@@ -9,5 +9,8 @@
         "backend": "cd backend && node server.js"
     },
     "author": "",
-    "license": "ISC"
+    "license": "ISC",
+    "dependencies": {
+        "lucide-react": "^0.484.0"
+    }
 }

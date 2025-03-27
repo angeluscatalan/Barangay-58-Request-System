@@ -1,46 +1,54 @@
-import React, { useState, useEffect } from "react";
-import "../styles/Events.css";
-import ScrollIcon from '../assets/SDA.png';
-import Announcement from '../assets/Announce.png';
+"use client"
 
+import { useContext } from "react"
+import "../styles/Events.css"
+import ScrollIcon from "../assets/SDA.png"
+import Announcement from "../assets/Announce.png"
+import EventCard from "../components/event-card"
+import EventModal from "../components/event-modal"
+import { EventsProvider, EventsContext } from "../components/events-context"
+
+// Main component wrapper with context
 const Events = () => {
-  const [publishedEvents, setPublishedEvents] = useState([]);
+  return (
+    <EventsProvider>
+      <EventsContent />
+    </EventsProvider>
+  )
+}
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await fetch("http://localhost:5000/events/published");
-        if (!response.ok) throw new Error("Failed to fetch events");
-        const data = await response.json();
-        setPublishedEvents(data);
-      } catch (error) {
-        console.error("Error fetching events:", error);
-      }
-    };
-
-    fetchEvents();
-  }, []);
+// Inner component that uses context
+const EventsContent = () => {
+  const { publishedEvents, loading, expandedEvent } = useContext(EventsContext)
 
   const scrollToSection = () => {
-    document.getElementById("second-section").scrollIntoView({ 
-      behavior: "smooth" 
-    });
-  };
+    document.getElementById("second-section").scrollIntoView({
+      behavior: "smooth",
+    })
+  }
 
   return (
     <>
       <section className="events-header-section">
         <div className="events-header">
-          <h1>Stay Tuned, Stay Involved,<br /> Stay Connected!</h1>
-          <p>Join us as we bring the community together through exciting events and meaningful<br /> gatherings.</p>
+          <h1>
+            Stay Tuned, Stay Involved,
+            <br /> Stay Connected!
+          </h1>
+          <p>
+            Join us as we bring the community together through exciting events and meaningful
+            <br /> gatherings.
+          </p>
         </div>
         <div className="scroll-container">
-          <p className="scroll-down" onClick={scrollToSection}>SCROLL DOWN</p>
-          <img 
-            src={ScrollIcon} 
-            alt="Scroll Down" 
+          <p className="scroll-down" onClick={scrollToSection}>
+            SCROLL DOWN
+          </p>
+          <img
+            src={ScrollIcon || "/placeholder.svg"}
+            alt="Scroll Down"
             className="scroll-down-icon"
-            onClick={scrollToSection} 
+            onClick={scrollToSection}
           />
         </div>
       </section>
@@ -57,32 +65,33 @@ const Events = () => {
               scrolling="no"
               frameBorder="0"
               allowFullScreen={true}
-            ></iframe> 
+            ></iframe>
           </div>
         </div>
 
         <section className="events-section">
-          <div className="event-cards-container">
-            {publishedEvents.map((event) => (
-              <div key={event.id} className="event-card">
-                <img 
-                  src={event.imageUrl || Announcement} 
-                  alt={event.name} 
-                  className="event-image" 
-                />
-                <div className="event-info">
-                  <h3>{event.name}</h3>
-                  <p className="event-date">📅 {event.date} &nbsp; 🕘 <span className="event-time">{event.timeStart} - {event.timeEnd}</span></p>
-                  <p className="event-venue"><strong>Venue:</strong> {event.venue}</p>
-                  <p className="event-description">{event.description}</p>
-                </div>
+          <div className={`event-cards-container ${expandedEvent ? "has-expanded-event" : ""}`}>
+            {loading ? (
+              <div className="loading-container">
+                <div className="loader"></div>
+                <p>Loading events...</p>
               </div>
-            ))}
+            ) : publishedEvents.length === 0 ? (
+              <div className="no-events">
+                <p>No events available at the moment. Check back soon!</p>
+              </div>
+            ) : (
+              publishedEvents.map((event) => <EventCard key={event.id} event={event} defaultImage={Announcement} />)
+            )}
           </div>
         </section>
       </section>
-    </>
-  );
-};
 
-export default Events;
+      {/* Event Modal - completely separate from the cards */}
+      <EventModal defaultImage={Announcement} />
+    </>
+  )
+}
+
+export default Events
+
