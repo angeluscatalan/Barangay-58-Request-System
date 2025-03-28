@@ -1,399 +1,576 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap");
 
-
+/* Base styles */
 .req {
-    background-image: url("../assets/reqPage_BG.png") ;
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center;
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-    min-width: 100vw;
+  background-image: url("../assets/reqPage_BG.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  min-height: 100vh;
+  width: 100%;
+  padding: 100px 20px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.allofelements{
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 50px;
-    max-width: 100%;
-    padding-top: 100px;
-    max-height: 150vh;
-    padding-bottom: 0;
-}
-.reqText{
-    width: 35vw;
-    text-wrap: wrap;
-    max-width: 800px;
-    align-self: flex-start;
+/* Mobile tabs for navigation */
+.mobile-tabs {
+  display: none;
+  width: 100%;
+  position: fixed;
+  top: 80px;
+  left: 0;
+  z-index: 100;
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.requirements{
-    display: flex;
-    flex-direction: column;
-    align-self: flex-end;
+.tab-button {
+  width: 50%;
+  padding: 12px;
+  border: none;
+  background: none;
+  font-family: "Manrope", sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: #666;
+  cursor: pointer;
+}
+
+.tab-button.active {
+  color: #da1c6f;
+  border-bottom: 3px solid #da1c6f;
+}
+
+.mobile-next-button,
+.mobile-back-button {
+  display: none;
+  width: 100%;
+  padding: 15px;
+  margin: 20px 0;
+  background-color: #da1c6f;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-family: "Manrope", sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.mobile-back-button {
+  background-color: #666;
+}
+
+.back-button-container {
+  margin-top: 20px;
+  width: 100%;
+}
+
+/* Main container */
+.req-container {
+  display: flex;
+  width: 100%;
+  max-width: 1400px;
+  gap: 30px;
+  justify-content: center;
+}
+
+/* Information section */
+.req-info {
+  flex: 1;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+}
+
+.reqText {
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.requirements {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .reqTitle {
-    font-size: 42px;
-    font-family: 'Montserrat';
-    font-style: normal;
-    font-weight: 800;
-    letter-spacing: 0.09em;
-    color: #DA1C6F;
+  font-size: 2.5rem;
+  font-family: "Montserrat";
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  color: #da1c6f;
+  margin-bottom: 15px;
+  line-height: 1.2;
 }
 
 .reqSubtext {
-    margin-top: 10px;
-    font-size: 1rem;
-    font-family: 'Montserrat';
-    font-style: normal;
-    font-weight: 700;
-    letter-spacing: 1px;
-    color: #000000;
+  font-size: 1.1rem;
+  font-family: "Montserrat";
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #000000;
+  margin-bottom: 20px;
+  line-height: 1.4;
 }
 
-
-.reqContainer {   
-    margin-top: 20px;
-    width: 40vw;
-    max-width: 530px;
-    height:auto;
-    padding: 2rem;
-    background-color: rgba(255, 197, 197, 0.10); 
-    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.15), inset 0px 4px 4px rgba(0, 0, 0, 0.15);
-    backdrop-filter: blur(2px);
-    border-radius: 40px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-weight:400;
-    font-family: "Manrope";
+.reqContainer {
+  width: 100%;
+  padding: 2rem;
+  border-radius: 35px;
+  background: linear-gradient(126deg, rgba(255, 255, 255, 0.18) 11.32%, rgba(255, 255, 255, 0.04) 73.74%);
+  box-shadow: 0px 4px 24px -1px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(20px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: 400;
+  font-family: "Manrope";
 }
 
 .reqSteps {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    width: 100%;
-    max-width: 600px;
-    gap: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  gap: 20px;
 }
 
-.reqStep1, .reqStep2, .reqStep3, .reqStep4 {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%; 
+.reqStep {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
 }
 
-.stepsInfo, .reqNote {
-    font-size: 1rem; 
-    line-height: 1.5;
-    letter-spacing: 0.05em;
-    color: #000000;
-    flex: 1;
+.step-icon {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.stepsInfo,
+.reqNote {
+  font-size: 1rem;
+  line-height: 1.5;
+  letter-spacing: 0.05em;
+  color: #000000;
+  flex: 1;
 }
 
 .reqNote {
-    margin-top: 1rem;
-    text-align: justify;
+  margin-top: 1.5rem;
+  text-align: justify;
+  padding: 15px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+  border-left: 4px solid #da1c6f;
 }
 
-.reqContainer2{
-    width: 855px;
-    height: 600px;
-    align-self:flex-end;
-    background: #FFC5C5;
-    background-color: rgba(255, 197, 197, 0.27); 
-    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25), inset 0px 4px 4px rgba(0, 0, 0, 0.25);
-    backdrop-filter: blur(2px);
-    padding: 3.75rem;
-    padding-top: 2rem;
-    align-items: center;
-    justify-content: center;
-    font-weight:400;
-    font-family: "Manrope";
-    border-radius: 35px;
+/* Form section */
+.req-form {
+  flex: 1.5;
+  max-width: 800px;
 }
 
-
-.fillUpTitle{
-    margin-left: 2rem;
-    margin-bottom: 2rem;
-    width: 651px;
-    height: 39px;
-
-
-    font-family: 'Manrope';
-    font-style: normal;
-    font-weight: 700;
-    font-size: 22px;
-    line-height: 33px;
-    letter-spacing: 0.09em;
-    text-align: center;
-
-    color: #000000;
-
-    border-bottom: 1px solid #000000;
-    transform: rotate(-0.09deg);
-
-    z-index: 2;
+.reqContainer2 {
+  width: 100%;
+  border-radius: 35px;
+  background: linear-gradient(126deg, rgba(255, 255, 255, 0.18) 11.32%, rgba(255, 255, 255, 0.04) 73.74%);
+  box-shadow: 0px 4px 24px -1px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(20px);
+  padding: 30px;
+  align-items: center;
+  justify-content: center;
+  font-weight: 400;
+  font-family: "Manrope";
 }
 
-.reqForm{
-    position: absolute;
-    width: 760px;
-    height: 500px;
-
-    z-index: 3;
+.fillUpTitle {
+  width: 100%;
+  font-family: "Manrope";
+  font-weight: 700;
+  font-size: 1.4rem;
+  line-height: 1.5;
+  letter-spacing: 0.09em;
+  text-align: center;
+  color: #000000;
+  border-bottom: 1px solid #000000;
+  padding-bottom: 15px;
+  margin-bottom: 25px;
 }
 
-.reqForm h1{
-    font-family: 'Manrope';
-    font-style: normal;
-    font-weight: 800;
-    font-size: 12px;
-    line-height: 15px;
-    letter-spacing: 0.09em;
-
-    color: #DA1C6F;
-
-    margin-bottom: 10px;
+.reqForm {
+  width: 100%;
+  position: relative;
 }
 
-.reqForm input {
-    width: 241px;
-    height: 48px;
-
-    background: #FFFEFE;
-    border:none;
-    border-radius: 5px;
-
-    font-family: 'Manrope';
-    font-style: normal;
-    font-weight: 200;
-    font-size: 11px;
-    line-height: 15px;
-    letter-spacing: 0.09em;
-    padding-left: 2%; 
-    text-indent: 0;
-
-    margin-right: 10px;
-    color: #000000;
+.form-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
 }
 
-.reqForm input::placeholder {
-    position: absolute;
-    left: 5%; 
-    transform: translate(0, -70%); 
-    font-size: 11px; 
-    color: #A6A6A6;
-    text-transform: uppercase;
-
-    text-indent: 0; 
-    padding: 0; 
-    
+.reqFormPersonal,
+.reqFormCert {
+  width: 100%;
 }
 
-.validators{
-    display:flex;
-    flex-direction: row;
-    justify-content: flex-end;
-}
-.validators p{
-    color: red;
-    font-size: 0.8rem;
-}
-.phoneNumP{
-    margin-right: 2%;
+.reqFormPersonalTitle,
+.reqFormCertTitle {
+  font-family: "Manrope";
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.09em;
+  color: #da1c6f;
+  margin-bottom: 15px;
 }
 
-.emailP{
-    margin-right: 1%;
+.form-row {
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+.form-row-split {
+  display: flex;
+  gap: 15px;
+}
+
+.input-container {
+  flex: 1;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.reqFormInput,
+.reqFormSelect,
+.reqFormNum,
+.reqFormEmail,
+.reqFormAddress,
+.reqFormCertSelect,
+.reqFormCopyAmount {
+  width: 100%;
+  height: 48px;
+  background: #fffefe;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-family: "Manrope";
+  font-size: 14px;
+  padding: 0 15px;
+  color: #000000;
 }
 
 .reqFormSelect {
-    width: 110px;
-    height: 48px;
-    border: none;
-    border-radius: 5px;
-    margin-top: 20px;
-    margin-right:10px;
-
-    font-family: 'Manrope';
-    font-size: 11px;
-    font-weight: 400;
-    color: #A6A6A6; 
-    text-transform: uppercase;
-    padding-left: 10px;
+  width: 100%;
+  color: #333;
 }
 
 .reqFormSelect option:disabled {
-    color: #A6A6A6;
-    top:50%;
+  color: #a6a6a6;
 }
 
-.reqForm input.reqFormNum {
-    width: 154px;
+.birthdate-container {
+  width: 100%;
 }
 
-.reqForm input.reqFormNum {
-    width: 133px;
+.birthdate-container input {
+  width: 100% !important;
+  height: 48px;
+  background: #fffefe;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-family: "Manrope";
+  font-size: 14px;
+  padding: 0 15px;
+  color: #000000;
 }
 
-.reqForm input.reqFormAddress {
-    margin-top:20px;
-    width: 745px;
+.error-message {
+  color: #ff4444;
+  font-size: 0.8rem;
+  margin-top: 5px;
+  position: absolute;
+  bottom: -20px;
+  left: 0;
 }
-
-.reqForm input.reqFormAddress::placeholder {
-    position: absolute;
-    left: 5%; 
-    transform: translate(-45%, -80%); 
-    font-size: 11px; 
-    color: #A6A6A6;
-    text-transform: uppercase;
-
-    text-indent: 0; 
-    padding: 0; 
-    
-}
-
-.reqFormCertTitle{
-margin-top: 20px;
-}
-
-.reqFormCertSelect,.reqFormCopyAmount{
-    height: 48px;
-    border: none;
-    border-radius: 5px;
-    margin-top: 5px;
-    margin-right:10px;
-
-    font-family: 'Manrope';
-    font-size: 11px;
-    font-weight: 400;
-    color: #A6A6A6; 
-    text-transform: uppercase;
-    padding-left: 10px;
-}
-.reqFormCertSelect{
-    width: 230px;
-}
-
-.reqFormCopyAmount{
-    width: 253px;
-}
-
-.reqFormCert input{
-    margin-top:5px !important;
-}
-
 
 .reqFormTermsContainer {
-    display: flex;
-    align-items: center; 
-    justify-content: center; 
-    gap: 10px; 
-    width: 100%; 
-    margin-top: 35px; 
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 25px 0;
 }
 
-.reqForm input[type="checkbox"].reqFormTerms {
-    background: #FFFEFE !important;
-    border-radius: 5px !important;
-    border: none !important;
-    height: 25px !important;
-    width: 25px !important;
+.reqFormTerms {
+  width: 20px !important;
+  height: 20px !important;
+  margin-top: 3px;
 }
 
 .reqFormTermsLabel {
-    font-family: 'Manrope';
-    font-style: normal;
-    font-weight: 400;
-    font-size: 18px;
-    line-height: 27px;
-    text-align: justify;
-    letter-spacing: 0.09em;
-    color: #000000;
-    max-width: 620px;
+  font-family: "Manrope";
+  font-weight: 400;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  letter-spacing: 0.05em;
+  color: #000000;
 }
 
 .reqFormSubmitContainer {
-    display: flex;
-    justify-content: center;
-    margin-top: 30px; 
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
 }
 
 .reqFormSubmit {
-    width: 225px;
-    height: 43px;
-
-    background: #DA1C6F;
-    border-radius: 5px;
-    border:none;
-
-    font-family: 'Manrope';
-    font-style: normal;
-    text-align: center;
-    font-weight: 700;
-    font-size: 20px;
-    line-height: 36px;
-
-    color: #FFE3E2;
+  width: 100%;
+  max-width: 300px;
+  height: 50px;
+  background: #da1c6f;
+  border-radius: 5px;
+  border: none;
+  font-family: "Manrope";
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #ffe3e2;
+  cursor: pointer;
+  transition: background-color 0.3s;
 }
 
+
+/* Contact section */
 .reqContact {
-    width: 418px;
-    z-index: 2;
-    margin-top: 10px;
-    align-self: center;
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 15px;
+  padding: 20px;
+  margin-top: 20px;
 }
 
-.reqContact h1, .reqContact h2 {
-    font-family: 'Manrope';
-    font-style: normal;
-    font-weight: 400;
-    font-size: 18px;
-    line-height: 27px;
-    letter-spacing: 0.09em;
-    color: #000000;
-    margin-bottom: 5px; 
+.reqContactTitle {
+  font-family: "Manrope";
+  font-weight: 600;
+  font-size: 1.2rem;
+  letter-spacing: 0.05em;
+  color: #000000;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.contact-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 .reqContactNumber,
 .reqContactFacebook,
 .reqContactEmail {
-    display: flex;
-    align-items: center; 
-    gap: 10px; 
-    margin-bottom: 8px; 
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
 
 .reqContact img {
-    width: 32px; 
-    height: 32px;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.reqContact h2 {
+  font-family: "Manrope";
+  font-weight: 400;
+  font-size: 1rem;
+  color: #000000;
+  margin: 0;
 }
 
 .input-error {
-    border: 2px solid #ff4444 !important;
+  border: 2px solid #ff4444 !important;
 }
 
-.phoneNumP, .emailP {
-    color: #ff4444;
-    font-size: 0.8rem;
-    margin-top: 0.25rem;
+/* Responsive styles */
+@media screen and (max-width: 1200px) {
+  .req-container {
+    gap: 20px;
+  }
+
+  .reqTitle {
+    font-size: 2rem;
+  }
+
+  .reqSubtext {
+    font-size: 1rem;
+  }
+}
+
+@media screen and (max-width: 992px) {
+  .req {
+    margin-top: 40px;
+    padding: 120px 15px 30px;
+  }
+
+  .req-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .req-info,
+  .req-form {
+    max-width: 700px;
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .req {
+    padding: 130px 10px 20px;
+  }
+
+  .mobile-tabs {
+    display: flex;
+  }
+
+  .mobile-next-button,
+  .mobile-back-button {
     display: block;
+  }
+
+  .req-info:not(.active),
+  .req-form:not(.active) {
+    display: none;
+  }
+
+  .reqTitle {
+
+    font-size: 1.8rem;
+  }
+
+  .reqSubtext {
+    font-size: 0.9rem;
+  }
+
+  .fillUpTitle {
+    font-size: 1.2rem;
+  }
+
+  .form-row-split {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .reqFormTermsLabel {
+    font-size: 0.8rem;
+  }
+
+  .reqFormSubmit {
+    font-size: 1rem;
+    height: 45px;
+  }
+
+  .reqContactTitle {
+    font-size: 1rem;
+  }
+
+  .reqContact h2 {
+    font-size: 0.9rem;
+  }
+
+  .reqContact img {
+    width: 20px;
+    height: 20px;
+  }
 }
 
+@media screen and (max-width: 576px) {
+  .req {
+    padding: 120px 10px 20px;
+  }
 
-@media screen and (max-width: 1439px) {
-    
+  .reqTitle {
+    font-size: 1.5rem;
+    letter-spacing: 0.05em;
+  }
+
+  .reqSubtext {
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+  }
+
+  .reqContainer {
+    padding: 1.5rem;
+  }
+
+  .step-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .stepsInfo,
+  .reqNote {
+    font-size: 0.9rem;
+  }
+
+  .reqContainer2 {
+    padding: 20px 15px;
+  }
+
+  .fillUpTitle {
+    font-size: 1.1rem;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+  }
+
+  .reqFormPersonalTitle,
+  .reqFormCertTitle {
+    font-size: 0.9rem;
+  }
+
+  .reqFormInput,
+  .reqFormSelect,
+  .reqFormNum,
+  .reqFormEmail,
+  .reqFormAddress,
+  .reqFormCertSelect,
+  .reqFormCopyAmount,
+  .birthdate-container input {
+    height: 42px;
+    font-size: 13px;
+  }
+
+  .reqFormTermsContainer {
+    margin: 15px 0;
+  }
+
+  .reqFormTermsLabel {
+    font-size: 0.75rem;
+  }
+
+  .reqFormSubmit {
+    height: 40px;
+    font-size: 0.9rem;
+  }
+
+  .contact-methods {
+    gap: 10px;
+  }
+
+  .error-message {
+    font-size: 0.7rem;
+    bottom: -18px;
+  }
 }
+

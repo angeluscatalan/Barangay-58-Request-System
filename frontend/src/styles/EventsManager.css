@@ -44,7 +44,10 @@
 }
 
 .add-request-btn:hover {
-    background-color: #b81860;
+    border-radius: 5px;
+    border: 1px solid #da1c6f;
+    color: #da1c6f;
+    background-color: transparent;
 }
 
 .manage-events-btn {

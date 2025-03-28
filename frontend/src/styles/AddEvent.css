@@ -128,7 +128,10 @@
 }
 
 .select-image-btn:hover {
-    background-color: #b81860;
+    border-radius: 5px;
+    border: 1px solid #da1c6f;
+    color: #da1c6f;
+    background-color: transparent;
 }
 
 .image-preview {
@@ -155,7 +158,10 @@
 }
 
 .remove-image:hover {
-    background-color: rgb(220, 53, 69);
+    border-radius: 5px;
+    border: 1px solid rgb(220, 53, 69);
+    color: rgb(220, 53, 69);
+    background-color: transparent;
 }
 
 .upload-event-btn {
@@ -172,5 +178,8 @@
 }
 
 .upload-event-btn:hover {
-    background-color: #b81860;
+    border-radius: 5px;
+    border: 1px solid #da1c6f;
+    color: #da1c6f;
+    background-color: transparent;
 }

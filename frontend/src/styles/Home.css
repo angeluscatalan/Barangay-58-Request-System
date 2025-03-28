@@ -180,3 +180,9 @@ html, body, #root, .indexBg {
     }
   }
   
+  button:hover {
+    border-radius: 5px;
+    border: 1px solid #da1c6f;
+    color: #da1c6f;
+    background-color: transparent;
+  }

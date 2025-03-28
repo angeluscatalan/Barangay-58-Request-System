@@ -1,90 +1,222 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap");
 
 .indexHeader {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: 2rem;
-    padding: 1rem 2rem;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 2rem;
+  padding: 1rem 2rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: linear-gradient(126deg, rgba(255, 255, 255, 0.18) 11.32%, rgba(255, 255, 255, 0.04) 73.74%);
+  backdrop-filter: blur(50px);
 }
 
 .indexLogoContainer {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .indexLogo {
-    width: 50px;
-    height: 50px;
+  width: 50px;
+  height: 50px;
 }
 
 .indexTitle {
-    font-family: "Inter";
-    font-size: 1.5rem;
-    color: #333;
-    margin: 0;
+  font-family: "Inter";
+  font-size: 1.5rem;
+  color: #333;
+  margin: 0;
 }
 
 .indexNav {
-    display: flex;
-    gap: 4rem;
-    justify-content: center;
+  display: flex;
+  gap: 4rem;
+  justify-content: center;
 }
 
 .indexNav a {
-    font-family: 'Manrope';
-    font-style: normal;
-    font-weight: 400;
-    font-size: 24px;
-    line-height: 33px;
-    text-decoration: none;
-    position: relative;
-    color: #000;
+  font-family: "Manrope";
+  font-style: normal;
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 33px;
+  text-decoration: none;
+  position: relative;
+  color: #000;
 }
 
-
 .indexNav a:hover {
-    color: #ff1493;
+  color: #ff1493;
 }
 
 .loginBtn {
-    padding: 0.2rem 2rem;
-    width: 137px;
-    height: 43px;
-    
-    font-family: 'Manrope';
-    font-style: normal;
-    font-weight: 700;
-    font-size: 26px;
-    line-height: 36px;
+  padding: 0.2rem 2rem;
+  width: 137px;
+  height: 43px;
 
-    background: #ff1493;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    text-decoration: none;
-    transition: background-color 0.2s;
-    justify-self: end;
+  font-family: "Manrope";
+  font-style: normal;
+  font-weight: 700;
+  font-size: 26px;
+  line-height: 36px;
+
+  background: #da1c6f;;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.2s;
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .loginBtn:hover {
-    border-radius: 5px;
-    border: 1px solid #DA1C6F;
-    color:#DA1C6F;
-    background-color: transparent;
+  border-radius: 5px;
+  border: 1px solid #da1c6f;
+  color: #da1c6f;
+  background-color: transparent;
 }
 
 .indexNav a.active {
-    color: #ff1493;
-    font-weight: bold;
-    border-bottom: 2px solid #ff1493;
+  color: #ff1493;
+  font-weight: bold;
+  border-bottom: 2px solid #ff1493;
 }
+
+/* Mobile menu toggle button */
+.mobile-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #333;
+  padding: 0.5rem;
+  z-index: 1001;
+  position: absolute;
+  right: 1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Mobile navigation */
+.mobile-nav {
+  display: none;
+  position: fixed;
+  top: 0;
+  right: -300px;
+  width: 300px;
+  height: 100vh;
+  background: white;
+  backdrop-filter: blur(50px);
+  z-index: 1000;
+  transition: right 0.3s ease-in-out;
+  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+  max-height: 100vh; /* Ensure it doesn't exceed viewport height */
+  overflow-y: auto; /* Make it scrollable if content is too large */
+}
+
+.mobile-nav.open {
+  right: 0;
+}
+
+.mobile-nav-content {
+  display: flex;
+  flex-direction: column;
+  padding: 5rem 2rem 2rem;
+  height: 100%;
+}
+
+.mobile-nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.mobile-nav-links a {
+  font-family: "Manrope";
+  font-style: normal;
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 33px;
+  text-decoration: none;
+  color: #000;
+  position: relative;
+}
+
+.mobile-nav-links a.active {
+  color: #ff1493;
+  font-weight: bold;
+  border-bottom: 2px solid #ff1493;
+}
+
+.mobile-login {
+  margin-top: 2rem;
+  align-self: center;
+}
+
+/* Responsive styles */
+@media (max-width: 1200px) {
+  .indexNav {
+    gap: 2rem;
+  }
+
+  .indexNav a {
+    font-size: 20px;
+  }
+
+  .loginBtn {
+    width: 120px;
+    height: 40px;
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 992px) {
+  .indexHeader {
+    grid-template-columns: auto 1fr auto;
+  }
+
+  .desktop-nav,
+  .desktop-login {
+    display: none;
+  }
+
+  .mobile-menu-toggle {
+    display: block;
+  }
+
+  .mobile-nav {
+    display: block;
+  }
+}
+
+@media (max-width: 576px) {
+  .indexHeader {
+    padding: 0.75rem 1rem;
+    gap: 1rem;
+  }
+
+  .indexTitle {
+    font-size: 1.2rem;
+  }
+
+  .indexLogo {
+    width: 40px;
+    height: 40px;
+  }
+
+  .mobile-nav {
+    width: 250px;
+  }
+}
+
