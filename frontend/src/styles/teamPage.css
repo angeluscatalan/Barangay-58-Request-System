@@ -68,6 +68,7 @@ html, body, #root {
 }
 
 .barangayChairman {
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -76,6 +77,10 @@ html, body, #root {
 }
 
 .chairmanImage {
+    width: 90%; /* Make it flexible */
+    max-width: 500px; /* Prevent it from getting too large */
+    height: auto; /* Maintain aspect ratio */
+    flex: 1;
     width: 500px;
     border-radius: 30px;
     background: lightgray 50% / cover no-repeat, #D9D9D9;
@@ -102,6 +107,7 @@ html, body, #root {
 
 .teamMembersGrid {
     display: flex;
+    flex-wrap: wrap; 
     justify-content: center;
     gap: 150px;
     margin-top: 30px;
@@ -110,6 +116,7 @@ html, body, #root {
 
 .teamMembersGrid2 {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     gap: 50px;
     margin-top: 30px;
@@ -117,6 +124,7 @@ html, body, #root {
 
 .teamMembersGrid3 {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     gap: 50px;
     margin-top: 30px;
@@ -149,14 +157,18 @@ html, body, #root {
     border: 1px solid #000;
     margin: 15px;
     min-width: 300px;
+    max-width: 100%; 
     text-align: center;
+    word-wrap: break-word;
 }
 
 .teamMemberTitle {
-    font-size: 16px;
+    font-size: 1rem;
     color: #000000;
     font-family: 'Manrope';
     font-style: italic;
+    max-width: 100%;
+    word-wrap: break-word; 
 }
 .teamDesc
 {
