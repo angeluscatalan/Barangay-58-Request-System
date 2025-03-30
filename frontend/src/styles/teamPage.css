@@ -1,176 +1,254 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap");
 
-html, body, #root {
-    overflow-y: auto;
-    overflow-x: hidden;
-    height: auto;
-    min-height: 100vh;
-
+html,
+body,
+#root {
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: auto;
+  min-height: 100vh;
 }
 
 .teamPage {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-    padding-bottom: 0;
-    margin-top: auto;
-
-    background: url("../assets/teamPage_BG.png") no-repeat center center;
-    background-size: cover;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding-bottom: 0;
+  margin-top: auto;
+  background: url("../assets/teamPage_BG.png") no-repeat center center;
+  background-size: cover;
 }
 
 .equalSpacing {
-    width: 80%; 
-    max-width: 900px; 
-    justify-content: space-evenly; 
+  width: 80%;
+  max-width: 900px;
+  justify-content: space-evenly;
 }
 
-
 .teamHeader {
-    text-align: center;
-    max-width: 800px;
-    margin-top: 50px;
+  text-align: center;
+  max-width: 800px;
+  padding: 0 10px; /* Add padding for mobile */
 }
 
 .teamHeader h1 {
-    font-family: 'Montserrat';
-    margin-top: 70px;
-    font-size: 62px;
-    font-weight: 800;
-    color: #DA1C6F;
+  font-family: "Montserrat";
+  margin-top: 70px;
+  font-size: clamp(2.5rem, 8vw, 4rem); /* Responsive font size */
+  font-weight: 800;
+  color: #da1c6f;
 }
 
 .teamHeader h2 {
-    font-family: 'Montserrat';
-    font-size: 22px;
-    font-weight: 700;
-    margin: 10px;
+  font-family: "Montserrat";
+  font-size: clamp(1.2rem, 4vw, 1.4rem); /* Responsive font size */
+  font-weight: 700;
+  margin: 10px;
 }
 
 .teamHeader p {
-    font-size: 18px;
-    font-weight: 400;
+  font-size: clamp(1rem, 3vw, 1.1rem); /* Responsive font size */
+  font-weight: 400;
 }
 
-
 .kapMembersContainer {
-    display: flex;
-    justify-content: center;
-    margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+  width: 100%;
+  padding: 0 20px; /* Add padding for mobile */
 }
 
 .kapMembers {
-    width: 80%;
-    border-radius: 20px;
+  width: 100%;
+  max-width: 1000px;
+  border-radius: 20px;
 }
 
 .barangayChairman {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 50px;
-    text-align: center;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 50px;
+  text-align: center;
+  padding: 0 20px; /* Add padding for mobile */
 }
 
 .chairmanImage {
-    width: 90%; /* Make it flexible */
-    max-width: 500px; /* Prevent it from getting too large */
-    height: auto; /* Maintain aspect ratio */
-    flex: 1;
-    width: 500px;
-    border-radius: 30px;
-    background: lightgray 50% / cover no-repeat, #D9D9D9;
-    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25), 0px 4px 4px 0px rgba(0, 0, 0, 0.25), 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+  width: 60%;
+  max-width: 500px;
+  height: auto;
+  border-radius: 30px;
+  background: lightgray 50% / cover no-repeat, #d9d9d9;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25), 0px 4px 4px 0px rgba(0, 0, 0, 0.25), 0px 4px 4px 0px
+    rgba(0, 0, 0, 0.25);
 }
 
 .chairmanName {
-    display: inline-block;  
-    padding: 10px 20px;
-    border-radius: 50px;
-    border: 1px solid #000;
-    font-size: 18px;
-    font-weight: 700;
-    margin: 15px;
-    font-family: 'Manrope';
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 50px;
+  border: 1px solid #000;
+  font-size: clamp(0.9rem, 2vw, 1.1rem); /* Responsive font size */
+  font-weight: 700;
+  margin: 15px;
+  font-family: "Manrope";
 }
 
 .chairmanTitle {
-    font-size: 16px;
-    color: #000000;
-    font-family: 'Manrope';
-    font-style: italic;
+  font-size: clamp(0.9rem, 3vw, 1rem); /* Responsive font size */
+  color: #000000;
+  font-family: "Manrope";
+  font-style: italic;
+}
+
+/* Grid layouts - modified to maintain structure on mobile */
+.teamMembersGrid,
+.teamMembersGrid3 {
+  display: grid;
+  justify-content: center;
+  margin-top: 30px;
+  width: 100%;
+  padding: 0 10px; /* Add padding for mobile */
+  gap: 5px;
 }
 
 .teamMembersGrid {
-    display: flex;
-    flex-wrap: wrap; 
-    justify-content: center;
-    gap: 150px;
-    margin-top: 30px;
-    
+  grid-template-columns: repeat(2, 1fr); /* Always 2 columns */
 }
 
 .teamMembersGrid2 {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 50px;
-    margin-top: 30px;
+  grid-template-columns: repeat(2, 1fr); /* Always 2 columns */
+  display: grid;
+  justify-content: center;
+  margin-top: 30px;
+  width: 40%;
+  padding: 0 10px; /* Add padding for mobile */
+  gap: 20px; /* Consistent gap */
 }
 
 .teamMembersGrid3 {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 50px;
-    margin-top: 30px;
+  grid-template-columns: repeat(3, 1fr); /* Always 3 columns */
 }
 
 .teamMember {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 350px;
-    
-    
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 0 5px;
 }
 
 .teamMember img {
-    width: 300px;
-    border-radius: 20px;
-    background: lightgray 50% / cover no-repeat, #D9D9D9;
-    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25), 0px 4px 4px 0px rgba(0, 0, 0, 0.25), 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
-
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  border-radius: 20px;
+  background: lightgray 50% / cover no-repeat, #d9d9d9;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25), 0px 4px 4px 0px rgba(0, 0, 0, 0.25), 0px 4px 4px 0px
+    rgba(0, 0, 0, 0.25);
 }
 
+
 .teamMemberName {
-    font-size: 16px;
-    font-weight: 700;
-    font-family: 'Manrope';
-    display: inline-block;  
-    padding: 10px 50px;
-    border-radius: 50px;
-    border: 1px solid #000;
-    margin: 15px;
-    min-width: 300px;
-    max-width: 100%; 
-    text-align: center;
-    word-wrap: break-word;
+  font-size: clamp(0.8rem, 2.5vw, 1rem);
+  font-weight: 700;
+  font-family: "Manrope";
+  display: inline-block;
+  width: clamp(10px, 30vw, 300px);
+  padding: 15px;
+  border-radius: 50px;
+  border: 1px solid #000;
+  margin: 10px;
+  text-align: center;
+  white-space: nowrap; /* Prevent wrapping */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Add "..." if too long */
 }
 
 .teamMemberTitle {
-    font-size: 1rem;
-    color: #000000;
-    font-family: 'Manrope';
-    font-style: italic;
+  font-size: clamp(0.7rem, 2.5vw, 1rem); /* Responsive font size */
+  color: #000000;
+  font-family: "Manrope";
+  font-style: italic;
+  max-width: 100%;
+  word-wrap: break-word;
+  text-align: center; /* Center the title */
+  padding: 0 5px;
+}
+
+.teamDesc {
+  font-family: Manrope;
+}
+
+@media (min-width: 1024px) {
+  .teamMembersGrid,
+  .teamMembersGrid3 {
+    gap: 30px; 
+    max-width: 30vw;
+  }
+
+  .teamMember {
+    gap: 10px;
+    margin: 20px;
+  }
+}
+
+/* Media queries for different screen sizes */
+@media (max-width: 768px) {
+  .teamMembersGrid,
+  .teamMembersGrid3 {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: clamp(5px, 1.5vw, 15px);
+    
+  }
+
+  .teamMembersGrid img,
+  .teamMembersGrid3 img{
+    border-radius: 10px;
+    
+  }
+
+  .teamMember {
+    padding: 0 2px;
+  }
+
+  .teamMemberName {
+    padding: 8px 15px;
+    margin: 10px;
+  }
+  .teamMembersGrid img {
+    width: 66.66%; /* Reduce size to match Grid3 */
     max-width: 100%;
-    word-wrap: break-word; 
+  }
 }
-.teamDesc
-{
-font-family: Manrope;
+
+/* For very small screens */
+@media (max-width: 480px) {
+  .teamMembersGrid,
+  .teamMembersGrid2,
+  .teamMembersGrid3 {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 5px;
+  }
+
+  .teamMember img {
+    max-width: 100%;
+  }
+
+
+  .teamMemberName {
+    font-size: 0.7rem;
+    padding: 5px 10px;
+    margin: 8px;
+  }
+
+  .teamMemberTitle {
+    font-size: 0.6rem;
+  }
 }
+

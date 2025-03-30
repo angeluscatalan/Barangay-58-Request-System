@@ -140,7 +140,7 @@ function TeamPage() {
                 </div>
             </div>
 
-            <div className="teamMembersGrid2">
+            <div className="teamMembersGrid">
                 <div className="teamMember">
                     <img src={thomasSk} alt="Thomas O. Binarao" />
                     <p className="teamMemberName">Thomas O. Binarao</p>
@@ -153,7 +153,7 @@ function TeamPage() {
                 </div>
             </div>
 
-            <div className="teamMembersGrid2">
+            <div className="teamMembersGrid">
                 <div className="teamMember">
                     <img src={michael} alt="Michael Macapagal" />
                     <p className="teamMemberName">Michael Macapagal</p>

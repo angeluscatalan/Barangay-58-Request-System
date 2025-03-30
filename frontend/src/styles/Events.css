@@ -26,25 +26,33 @@ body {
   text-align: center;
   width: 100%;
   height: 100vh;
+  padding: 0 20px; /* Add padding for smaller screens */
 }
 
+/* Improved responsive heading */
 .events-header h1 {
-  font-size: clamp(4.5rem, 5vw, 6rem); 
+  font-size: clamp(2.5rem, 8vw, 6rem); /* More responsive font sizing */
   font-family: "Montserrat", sans-serif;
   font-weight: 800;
   color: #da1c6f;
   text-align: center;
-  white-space: nowrap;
-  letter-spacing: 5px;
-  white-space: normal;
+  letter-spacing: 3px;
+  line-height: 1.2; /* Improve line height for better readability */
+  margin: 0 auto; /* Center the text */
+  max-width: 100%; /* Ensure it doesn't overflow */
 }
 
+/* Improved responsive subheading */
 .events-header p {
-  font-size: 1.6rem;
+  font-size: clamp(1rem, 3vw, 1.6rem); /* More responsive font sizing */
   font-family: "Montserrat", sans-serif;
   font-weight: 700;
   color: black;
   margin-top: 1.6rem;
+  line-height: 1.4; /* Improve line height */
+  max-width: 90%; /* Prevent overflow on small screens */
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .scroll-container {
@@ -57,7 +65,7 @@ body {
 .scroll-down {
   margin-bottom: 5px;
   margin-top: -5rem;
-  font-size: 1.3rem;
+  font-size: clamp(0.8rem, 2vw, 1.3rem); /* Responsive font size */
   text-transform: uppercase;
   font-weight: bold;
   color: black;
@@ -99,17 +107,18 @@ body {
 }
 
 .events-content-section h2 {
-  font-size: 2rem;
+  font-size: clamp(1.5rem, 5vw, 2rem); /* Responsive font size */
   font-weight: 800;
   color: #d90452;
   margin-bottom: 20px;
 }
 
+/* Improved responsive Facebook embed container */
 .embed-container {
-  background: #ffc0cb;
+  background: linear-gradient(135deg, #ffc0cb, #ffb6c1);
   border-radius: 20px;
   padding: 20px;
-  width: 80%;
+  width: 90%; /* Wider container for small screens */
   max-width: 900px;
   margin: 20px auto;
   text-align: center;
@@ -117,19 +126,71 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 8px 20px rgba(218, 28, 111, 0.15);
+  border: 1px solid rgba(218, 28, 111, 0.2);
 }
 
 .embed-container h2 {
   text-align: center;
   width: 100%;
+  margin-bottom: 25px;
+  color: #d90452;
+  font-family: "Montserrat", sans-serif;
+  position: relative;
 }
 
+.embed-container h2::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background-color: #d90452;
+  border-radius: 3px;
+}
+
+/* Improved responsive Facebook embed */
 .events-content {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   width: 100%;
+  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.events-content iframe {
+  width: 100% !important; /* Make iframe responsive */
+  max-width: 500px;
+  height: 350px;
+}
+
+/* Added separate upcoming events title */
+.upcoming-events-title {
+  font-size: clamp(1.5rem, 5vw, 2.2rem); /* Responsive font size */
+  font-weight: 800;
+  color: #d90452;
+  margin: 40px 0 20px;
+  text-align: center;
+  font-family: "Montserrat", sans-serif;
+  position: relative;
+  display: inline-block;
+}
+
+.upcoming-events-title::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 3px;
+  background-color: #d90452;
+  border-radius: 3px;
 }
 
 .events-section {
@@ -204,7 +265,6 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  
 }
 
 .event-title {
@@ -330,14 +390,16 @@ p.event-modal-overlay {
   color: white;
 }
 
+/* Updated modal image container to adapt to image without white space */
 .modal-image-container {
   width: 100%;
+  line-height: 0; /* Remove any line height spacing */
   overflow: hidden;
 }
 
 .modal-image {
   width: 100%;
-  height: 100%;
+  display: block;
   object-fit: cover;
 }
 
@@ -361,49 +423,88 @@ p.event-modal-overlay {
   font-size: 1rem;
 }
 
-.modal-date,
-.modal-time,
-.modal-venue {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #444;
-}
-
-.modal-icon {
-  font-size: 1.2rem;
-}
-
-.time-value {
-  color: #d90452;
-  font-weight: bold;
+/* This is the key change - making the description scroll vertically */
+.modal-description {
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 10px;
 }
 
 .modal-description h3 {
   font-size: 1.3rem;
   color: #333;
   margin-bottom: 15px;
+  position: sticky;
+  top: 0;
+  background-color: white;
+  padding: 5px 0;
+  z-index: 1;
 }
 
 .modal-description p {
   font-size: 1rem;
   line-height: 1.8;
   color: #444;
+  white-space: normal;
+  word-wrap: break-word;
+}
 
+/* Custom scrollbar for modal description */
+.modal-description::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-description::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.modal-description::-webkit-scrollbar-thumb {
+  background: #d90452;
+  border-radius: 10px;
+}
+
+.modal-description::-webkit-scrollbar-thumb:hover {
+  background: #b8003e;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .modal-image-container {
-    width: 100%;;
-  }
-
   .modal-title {
     font-size: 1.5rem;
   }
 
   .modal-content {
     padding: 20px;
+  }
+
+  .modal-description {
+    max-height: 200px;
+  }
+
+  .event-card {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+/* Small mobile screens */
+@media (max-width: 480px) {
+  .events-header br {
+    display: none; /* Remove line breaks on very small screens */
+  }
+
+  .embed-container {
+    padding: 15px;
+  }
+
+  .events-content iframe {
+    height: 300px;
+  }
+
+  .modal-content {
+    padding: 15px;
   }
 }
 
