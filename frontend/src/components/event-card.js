@@ -19,7 +19,7 @@ const EventCard = ({ event, defaultImage }) => {
       <div className="event-info">
         <h3 className="event-title">{event.event_name}</h3>
         <p className="event-date">
-          📅 {event.date} &nbsp; 🕘{" "}
+          📅 {event.event_date} &nbsp; 🕘{" "}
           <span className="event-time">
             {event.time_start} - {event.time_end}
           </span>
