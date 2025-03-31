@@ -14,14 +14,14 @@ const EventCard = ({ event, defaultImage }) => {
   return (
     <div className="event-card" onClick={handleCardClick}>
       <div className="event-image-container">
-        <img src={event.imageUrl || defaultImage} alt={event.name} className="event-image" />
+        <img src={event.image_url || defaultImage} alt={event.name} className="event-image" />
       </div>
       <div className="event-info">
-        <h3 className="event-title">{event.name}</h3>
+        <h3 className="event-title">{event.event_name}</h3>
         <p className="event-date">
           📅 {event.date} &nbsp; 🕘{" "}
           <span className="event-time">
-            {event.timeStart} - {event.timeEnd}
+            {event.time_start} - {event.time_end}
           </span>
         </p>
         <p className="event-venue">

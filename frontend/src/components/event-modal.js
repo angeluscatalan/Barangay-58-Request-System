@@ -27,20 +27,20 @@ const EventModal = ({ defaultImage }) => {
         </button>
 
         <div className="modal-image-container">
-          <img src={expandedEvent.imageUrl || defaultImage} alt={expandedEvent.name} className="modal-image" />
+          <img src={expandedEvent.image_url || defaultImage} alt={expandedEvent.name} className="modal-image" />
         </div>
 
         <div className="modal-content">
-          <h2 className="modal-title">{expandedEvent.name}</h2>
+          <h2 className="modal-title">{expandedEvent.event_name}</h2>
 
           <div className="modal-details">
             <p className="modal-date">
-              <span className="modal-icon">📅</span> {expandedEvent.date}
+              <span className="modal-icon">📅</span> {expandedEvent.event_date}
             </p>
             <p className="modal-time">
               <span className="modal-icon">🕘</span>
               <span className="time-value">
-                {expandedEvent.timeStart} - {expandedEvent.timeEnd}
+                {expandedEvent.time_start} - {expandedEvent.time_end}
               </span>
             </p>
             <p className="modal-venue">
