@@ -9,7 +9,7 @@ function Home() {
                 <img src={pinkGradient} alt="Pink Gradient" className="indexImage" />
 
                 <div className="indexText">
-                    <h1 className="indexTitle1">Fast & Easy Barangay Services!</h1>
+                    <h1 className="indexTitle1">Test test Test Fast & Easy Barangay Services!</h1>
                     <p className="indexSubtext1">
                         Request certificates online. Stay updated. Save time!
                     </p>
