@@ -12,11 +12,11 @@ const eventRoutes = require("./routes/eventRoutes.js");
 const app = express();
 
 const corsOptions = {
-  origin: "https://barangay-58-request-system-development.vercel.app", 
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  credentials: true,
-  optionsSuccessStatus: 204,
-};
+    origin: "http://localhost:3000", 
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true,
+    optionsSuccessStatus: 204,
+  };
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION,
