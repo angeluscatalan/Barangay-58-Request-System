@@ -11,7 +11,7 @@ function EventsManager() {
 useEffect(() => {
     const fetchEvents = async () => {
         try {
-          const response = await fetch('http://localhost:5000/events/archive');
+          const response = await fetch('https://barangay-58-request-system-frontend.vercel.app/events/archive');
           if (!response.ok) throw new Error('Network response was not ok');
           const data = await response.json();
           setEvents(data);
@@ -31,7 +31,7 @@ useEffect(() => {
         if (!window.confirm('Are you sure you want to delete this event?')) return;
     
         try {
-            const response = await fetch(`http://localhost:5000/archive/${id}`, {
+            const response = await fetch(`https://barangay-58-request-system-frontend.vercel.app/archive/${id}`, {
                 method: 'DELETE'
             });
     

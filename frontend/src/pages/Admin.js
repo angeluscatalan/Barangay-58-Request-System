@@ -16,7 +16,7 @@ function Admin() {
     useEffect(() => {
         const fetchRequests = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/requests'); 
+                const response = await axios.get('hhttps://barangay-58-request-system-frontend.vercel.app/requests'); 
                 setRequests(response.data);
             } catch (error) {
                 console.error('Error fetching requests:', error);
