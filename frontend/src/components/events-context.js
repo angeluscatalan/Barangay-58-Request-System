@@ -9,7 +9,7 @@ export const EventsProvider = ({ children }) => {
   const [publishedEvents, setPublishedEvents] = useState([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  useEffect(() => { 
     const fetchEvents = async () => {
       try {
         setLoading(true)
