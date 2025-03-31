@@ -16,7 +16,7 @@ function Admin() {
     useEffect(() => {
         const fetchRequests = async () => {
             try {
-                const response = await axios.get('https://barangay-58-request-system-1.onrender.com/requests'); 
+                const response = await axios.get('http://localhost:5000/requests'); 
                 setRequests(response.data);
             } catch (error) {
                 console.error('Error fetching requests:', error);
@@ -28,15 +28,16 @@ function Admin() {
 
     const updateStatus = async (id, newStatus) => {
         try {
-            await axios.put(`https://barangay-58-request-system-1.onrender.com/requests/${id}`, { status: newStatus }, {
-                headers: { "Content-Type": "application/json" },
-              });
-            // Update local state immediately so UI reflects the change
+            await axios.put(
+                `http://localhost:5000/requests/${id}`, 
+                { status: newStatus },
+                {
+                    headers: { "Content-Type": "application/json" },
+                }
+            );
             setRequests((prevRequests) =>
                 prevRequests.map(req => req.id === id ? { ...req, status: newStatus } : req)
             );
-    
-            console.log(`Status of request ${id} updated to: ${newStatus}`);
         } catch (error) {
             console.error("Error updating status:", error);
         }

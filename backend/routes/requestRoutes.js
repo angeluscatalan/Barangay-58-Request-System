@@ -16,6 +16,10 @@ const validateRequest = [
     check('number_of_copies').isInt({ min: 1 })
 ];
 
+
+
+
+
 router.post('/', validateRequest, async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -62,4 +66,38 @@ router.get('/', async (req, res) => {
     }
 });
 
+
+// GET single request
+router.get('/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [rows] = await pool.query('SELECT * FROM requests WHERE id = ?', [id]);
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Request not found' });
+        }
+        res.json(rows[0]);
+    } catch (error) {
+        console.error('Database error:', error);
+        res.status(500).json({ error: 'Database operation failed' });
+    }
+});
+
+// PUT update request status
+router.put('/:id', async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    try {
+        const [result] = await pool.query(
+            'UPDATE requests SET status = ? WHERE id = ?',
+            [status, id]
+        );
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Request not found' });
+        }
+        res.json({ success: true, message: 'Status updated successfully' });
+    } catch (error) {
+        console.error('Database error:', error);
+        res.status(500).json({ error: 'Database operation failed' });
+    }
+});
 module.exports = router;

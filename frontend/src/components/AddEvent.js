@@ -60,7 +60,7 @@ function AddEvent({ onClose, onAddEvent, editData = null, onEditEvent }) {
         }
         
         try {
-            const response = await fetch('https://barangay-58-request-system-1.onrender.com/events/upload', {
+            const response = await fetch('https://localhost:5000/events/upload', {
                 method: 'POST',
                 body: formData
             });

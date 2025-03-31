@@ -62,7 +62,7 @@ function reqPage() {
     }
 
     axios
-      .post("https://barangay-58-request-system-1.onrender.com/requests", requestData, {
+      .post("http://localhost:5000/requests", requestData, {
         headers: { "Content-Type": "application/json" },
         timeout: 5000,
       })

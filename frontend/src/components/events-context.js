@@ -13,7 +13,7 @@ export const EventsProvider = ({ children }) => {
     const fetchEvents = async () => {
       try {
         setLoading(true)
-        const response = await fetch("https://barangay-58-request-system-1.onrender.com/events")
+        const response = await fetch("http://localhost:5000/events")
         if (!response.ok) throw new Error("Failed to fetch events")
         const data = await response.json()
         setPublishedEvents(data)
