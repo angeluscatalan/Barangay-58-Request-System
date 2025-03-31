@@ -26,20 +26,21 @@ function Admin() {
         fetchRequests();
     }, []);
 
-    const getStatusColor = (status) => {
-        if (!status) return 'black'; 
-        switch (status.toLowerCase()) {
-            case 'approved': return 'green';
-            case 'rejected': return 'red';
-            case 'for pickup': return 'blue';
-            case 'pending': return 'orange';
-            default: return 'black';
+    const updateStatus = async (id, newStatus) => {
+        try {
+            await axios.put(`https://barangay-58-request-system-1.onrender.com/requests${id}`, { status: newStatus });
+            setRequests(prevRequests => 
+                prevRequests.map(req => req.id === id ? { ...req, status: newStatus } : req)
+            );
+        } catch (error) {
+            console.error('Error updating status:', error);
         }
     };
 
     const filteredRequests = requests.filter(request => {
-        const matchesType = typeFilter === 'All' || request.certificate_type === typeFilter;
+        const matchesType = typeFilter === 'All' || request.type_of_certificate === typeFilter;
         const matchesStatus = statusFilter === 'All' || request.status === statusFilter;
+
         return matchesType && matchesStatus;
     });
 
@@ -111,7 +112,7 @@ function Admin() {
                                     >
                                         <option value="All">All Types</option>
                                         <option value="Barangay Clearance">Barangay Clearance</option>
-                                        <option value="Certificate of Residency">Certificate of Residency</option>
+                                        <option value="IDApp">ID Application</option>
                                     </select>
                                     <select
                                         value={statusFilter}
@@ -130,6 +131,7 @@ function Admin() {
                                     <thead>
                                         <tr>
                                             <th>NAME</th>
+                                            <th>SUFFIX</th>
                                             <th>SEX</th>
                                             <th>BIRTHDAY</th>
                                             <th>ADDRESS</th>
@@ -145,6 +147,7 @@ function Admin() {
                                         {filteredRequests.map((request, index) => (
                                             <tr key={index}>
                                                 <td>{`${request.last_name}, ${request.first_name} ${request.middle_name || ''}`}</td>
+                                                <td>{request.suffix}</td>
                                                 <td>{request.sex}</td>
                                                 <td>{request.birthday ? request.birthday.split('T')[0] : ''}</td>
                                                 <td>{request.address}</td>
@@ -154,9 +157,12 @@ function Admin() {
                                                 <td>{request.purpose_of_request}</td>
                                                 <td>{request.number_of_copies}</td>
                                                 <td>
-                                                    <span style={{ color: getStatusColor(request.status || '') }}>
-                                                        {request.status || 'Unknown'}
-                                                    </span>
+                                                <select value={request.status} onChange={(e) => updateStatus(request.id, e.target.value)}>
+                                                        <option value="Pending">Pending</option>
+                                                        <option value="Approved">Approved</option>
+                                                        <option value="Rejected">Rejected</option>
+                                                        <option value="For Pickup">For Pickup</option>
+                                                    </select>
                                                 </td>
                                             </tr>
                                         ))}

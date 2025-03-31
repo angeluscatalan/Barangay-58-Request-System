@@ -73,7 +73,7 @@ const RequestForm = ({
                     <option value="" disabled>
                       SUFFIX
                     </option>
-                    <option value="none">NONE</option>
+                    <option value="None">None</option>
                     <option value="I.">I.</option>
                     <option value="II.">II.</option>
                     <option value="III.">III.</option>

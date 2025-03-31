@@ -27,7 +27,7 @@ function reqPage() {
 
   const handleChange = (e) => {
     let { name, value } = e.target
-    if (["last_name", "first_name", "middle_name", "suffix"].includes(name)) {
+    if (["last_name", "first_name", "middle_name"].includes(name)) {
       value = value
         .toLowerCase() // Convert to lowercase first
         .replace(/\b\w/g, (char) => char.toUpperCase()) // Capitalize first letter of each word
