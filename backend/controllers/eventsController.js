@@ -126,16 +126,10 @@ exports.uploadEvent = async (req, res) => {
 
 exports.getEvents = async (req, res) => {
     try {
-        const [rows] = await pool.query(`
-            SELECT id, event_name AS name, DATE_FORMAT(event_date, '%Y-%m-%d') as date,
-                   TIME_FORMAT(time_start, '%H:%i') as timeStart,
-                   TIME_FORMAT(time_end, '%H:%i') as timeEnd, venue, description, image_url AS imageUrl
-            FROM archive_events
-            ORDER BY event_date DESC
-        `);
+        const [rows] = await pool.query("SELECT * FROM archive_events");
         res.status(200).json(rows);
     } catch (error) {
-        console.error('Database error:', error);
-        res.status(500).json({ message: 'Failed to fetch events', error: error.message });
+        console.error("Database error:", error);
+        res.status(500).json({ message: "Failed to fetch events", error: error.message });
     }
 };
