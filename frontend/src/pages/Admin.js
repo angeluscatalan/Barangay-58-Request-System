@@ -28,14 +28,21 @@ function Admin() {
 
     const updateStatus = async (id, newStatus) => {
         try {
-            await axios.put(`https://barangay-58-request-system-1.onrender.com/requests${id}`, { status: newStatus });
-            setRequests(prevRequests => 
+            await axios.put(`https://barangay-58-request-system-1.onrender.com/requests/${id}`, { status: newStatus }, {
+                headers: { "Content-Type": "application/json" },
+              });
+            // Update local state immediately so UI reflects the change
+            setRequests((prevRequests) =>
                 prevRequests.map(req => req.id === id ? { ...req, status: newStatus } : req)
             );
+    
+            console.log(`Status of request ${id} updated to: ${newStatus}`);
         } catch (error) {
-            console.error('Error updating status:', error);
+            console.error("Error updating status:", error);
         }
     };
+    
+    
 
     const filteredRequests = requests.filter(request => {
         const matchesType = typeFilter === 'All' || request.type_of_certificate === typeFilter;
@@ -157,12 +164,12 @@ function Admin() {
                                                 <td>{request.purpose_of_request}</td>
                                                 <td>{request.number_of_copies}</td>
                                                 <td>
-                                                <select value={request.status} onChange={(e) => updateStatus(request.id, e.target.value)}>
-                                                        <option value="Pending">Pending</option>
-                                                        <option value="Approved">Approved</option>
-                                                        <option value="Rejected">Rejected</option>
-                                                        <option value="For Pickup">For Pickup</option>
-                                                    </select>
+                                                <select value={request.status} onChange={(e) => {const newStatus = e.target.value; updateStatus(request.id, newStatus); console.log("Updated status to:", newStatus);}}>
+                                                    <option value="pending">Pending</option>
+                                                    <option value="approved">Approved</option>
+                                                    <option value="rejected">Rejected</option>
+                                                    <option value="for pickup">For Pickup</option>
+                                                </select>
                                                 </td>
                                             </tr>
                                         ))}
