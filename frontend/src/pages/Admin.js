@@ -127,10 +127,10 @@ function Admin() {
                                         onChange={(e) => setStatusFilter(e.target.value)}
                                     >
                                         <option value="All">All Status</option>
-                                        <option value="Pending">Pending</option>
-                                        <option value="Approved">Approved</option>
-                                        <option value="Rejected">Rejected</option>
-                                        <option value="For Pickup">For Pickup</option>
+                                        <option value="pending">Pending</option>
+                                        <option value="approved">Approved</option>
+                                        <option value="rejected">Rejected</option>
+                                        <option value="for pickup">For Pickup</option>
                                     </select>
                                 </div>
                             </div>
