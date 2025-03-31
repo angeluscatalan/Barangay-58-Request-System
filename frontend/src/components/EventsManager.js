@@ -31,13 +31,13 @@ useEffect(() => {
         if (!window.confirm('Are you sure you want to delete this event?')) return;
     
         try {
-            const response = await fetch(`http://localhost:5000/archive/${id}`, {
+            const response = await fetch(`http://localhost:5000/events/archive/${id}`, {
                 method: 'DELETE'
             });
     
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Delete failed');
+                const errorText = await response.text(); // Read response body
+                throw new Error(`Delete failed: ${errorText}`);
             }
     
             setEvents(prevEvents => prevEvents.filter(event => event.id !== id));
@@ -47,6 +47,7 @@ useEffect(() => {
             alert(`Delete failed: ${error.message}`);
         }
     };
+    
 
     const handleEditSubmit = (updatedEvent) => {
         const updatedEvents = events.map(event =>
@@ -55,14 +56,6 @@ useEffect(() => {
         setEvents(updatedEvents);
         setShowAddEvent(false);
         setEditingEvent(null);
-    };
-
-    const handlePublish = (id) => {
-        const updatedEvents = events.map(event =>
-            event.id === id ? { ...event, isPublished: !event.isPublished } : event
-        );
-        setEvents(updatedEvents);
-        localStorage.setItem('events', JSON.stringify(updatedEvents));
     };
 
     const formatDate = (dateString) => {
@@ -144,13 +137,6 @@ useEffect(() => {
                                         >
                                             <i className="fas fa-trash"></i>
                                             <span>Delete</span>
-                                        </button>
-                                        <button
-                                            className={`action-btn ${event.isPublished ? 'published' : ''}`}
-                                            onClick={() => handlePublish(event.id)}
-                                        >
-                                            <i className="fas fa-globe"></i>
-                                            <span>{event.isPublished ? 'Unpublish' : 'Publish'}</span>
                                         </button>
                                     </div>
                                 </td>

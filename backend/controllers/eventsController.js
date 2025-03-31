@@ -12,7 +12,9 @@ const s3 = new S3Client({
 
 // ✅ Archive an event (UPLOAD + SAVE to DB)
 exports.archiveEvent = async (req, res) => {
-    if (!req.file) return res.status(400).json({ message: 'No image uploaded' });
+    if (!req.file) {
+        console.warn('No image uploaded, proceeding without image.');
+    }    
 
     const fileContent = fs.readFileSync(req.file.path);
     const fileName = `events/${Date.now()}-${req.file.originalname}`;
@@ -63,8 +65,13 @@ exports.deleteArchivedEvent = async (req, res) => {
     const { id } = req.params;
 
     try {
+        console.log(`Deleting event with ID: ${id}`);
+
         const [rows] = await pool.execute("SELECT image_url FROM archive_events WHERE id = ?", [id]);
-        if (rows.length === 0) return res.status(404).json({ message: "Event not found" });
+        if (rows.length === 0) {
+            console.log(`Event ID ${id} not found`);
+            return res.status(404).json({ message: "Event not found" });
+        }
 
         const imageKey = rows[0].image_url.split(".com/")[1];
 
@@ -75,12 +82,14 @@ exports.deleteArchivedEvent = async (req, res) => {
 
         await pool.execute("DELETE FROM archive_events WHERE id = ?", [id]);
 
+        console.log(`Deleted event ID: ${id}`);
         res.status(200).json({ message: "Event deleted successfully" });
     } catch (error) {
         console.error("Delete error:", error);
         res.status(500).json({ message: "Failed to delete event", error: error.message });
     }
 };
+
 
 // ✅ Upload a new event
 exports.uploadEvent = async (req, res) => {
@@ -101,15 +110,14 @@ exports.uploadEvent = async (req, res) => {
                 Body: fileContent,
                 ContentType: req.file.mimetype,
             }));
-
+    
             imageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
             fs.unlinkSync(req.file.path);
         } catch (error) {
             console.error('File processing error:', error);
             return res.status(500).json({ message: 'Failed to process image upload' });
         }
-    }
-
+    }    
     try {
         const [result] = await pool.execute(
             `INSERT INTO archive_events (event_name, event_date, time_start, time_end, venue, description, image_url)
