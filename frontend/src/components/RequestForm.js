@@ -174,6 +174,10 @@ const RequestForm = ({
                       TYPE OF CERTIFICATE
                     </option>
                     <option value="IDApp">Barangay ID Application</option>
+                    <option value="IndigencyCert">Certificate of Indigency</option>
+                    <option value="JobseekerCert">Barangay Jobseeker</option>
+                    <option value="ClearanceCert">Barangay Clearance</option>
+                    <option value="BrgyCert">Barangay Certificate</option>
                   </select>
                 </div>
 

@@ -2,9 +2,11 @@
 
 .admin-container {
     display: flex;
+    flex-direction: row;
     min-height: 100vh;
     font-family: 'Inter', sans-serif;
     position: relative;
+    overflow: hidden;
 }
 
 .top-line {
@@ -193,6 +195,7 @@ header {
 
 .filters {
     display: flex;
+    flex-wrap: wrap;
     gap: 15px;
     margin-bottom: 20px;
 }
@@ -264,3 +267,18 @@ tr:hover {
 .status-pending {
     color: orange;
 }
+
+.search-bar {
+    padding: 8px 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: white;
+    width: 250px;
+    font-size: 14px;
+    outline: none;
+}
+.search-bar::placeholder {
+    color: #aaa;
+}
+
+

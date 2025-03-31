@@ -12,12 +12,14 @@ function Admin() {
     const [requests, setRequests] = useState([]);
     const [typeFilter, setTypeFilter] = useState('All');
     const [statusFilter, setStatusFilter] = useState('All');
+    const [searchQuery, setSearchQuery] = useState(''); 
 
     useEffect(() => {
         const fetchRequests = async () => {
             try {
                 const response = await axios.get('http://localhost:5000/requests'); 
                 setRequests(response.data);
+                console.log("Fetched requests:", response.data);
             } catch (error) {
                 console.error('Error fetching requests:', error);
             }
@@ -42,14 +44,17 @@ function Admin() {
             console.error("Error updating status:", error);
         }
     };
-    
-    
 
+    // Filter requests based on type, status, and search query
     const filteredRequests = requests.filter(request => {
         const matchesType = typeFilter === 'All' || request.type_of_certificate === typeFilter;
         const matchesStatus = statusFilter === 'All' || request.status === statusFilter;
+        const matchesSearch = searchQuery === '' || 
+            `${request.last_name}, ${request.first_name} ${request.middle_name || ''}`
+                .toLowerCase()
+                .includes(searchQuery.toLowerCase());
 
-        return matchesType && matchesStatus;
+        return matchesType && matchesStatus && matchesSearch;
     });
 
     return (
@@ -114,13 +119,23 @@ function Admin() {
                                     <h1>Requests ({filteredRequests.length})</h1>
                                 </div>
                                 <div className="filters">
+                                    <input
+                                        type="text"
+                                        placeholder="Search by name..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="search-bar"
+                                    />
                                     <select
                                         value={typeFilter}
                                         onChange={(e) => setTypeFilter(e.target.value)}
                                     >
                                         <option value="All">All Types</option>
-                                        <option value="Barangay Clearance">Barangay Clearance</option>
+                                        <option value="ClearanceCert">Barangay Clearance</option>
                                         <option value="IDApp">ID Application</option>
+                                        <option value="IndigencyCert">Certificate of Indigency</option>
+                                        <option value="JobseekerCert">Barangay Jobseeker</option>
+                                        <option value="BrgyCert">Barangay Certificate</option>
                                     </select>
                                     <select
                                         value={statusFilter}
@@ -165,12 +180,15 @@ function Admin() {
                                                 <td>{request.purpose_of_request}</td>
                                                 <td>{request.number_of_copies}</td>
                                                 <td>
-                                                <select value={request.status} onChange={(e) => {const newStatus = e.target.value; updateStatus(request.id, newStatus); console.log("Updated status to:", newStatus);}}>
-                                                    <option value="pending">Pending</option>
-                                                    <option value="approved">Approved</option>
-                                                    <option value="rejected">Rejected</option>
-                                                    <option value="for pickup">For Pickup</option>
-                                                </select>
+                                                    <select 
+                                                        value={request.status} 
+                                                        onChange={(e) => updateStatus(request.id, e.target.value)}
+                                                    >
+                                                        <option value="pending">Pending</option>
+                                                        <option value="approved">Approved</option>
+                                                        <option value="rejected">Rejected</option>
+                                                        <option value="for pickup">For Pickup</option>
+                                                    </select>
                                                 </td>
                                             </tr>
                                         ))}
