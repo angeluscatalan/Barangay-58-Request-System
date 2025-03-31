@@ -60,7 +60,7 @@ function AddEvent({ onClose, onAddEvent, editData = null, onEditEvent }) {
         }
         
         try {
-            const response = await fetch('https://barangay-58-request-system-frontend.vercel.app/events/upload', {
+            const response = await fetch('https://barangay-58-request-system-1.onrender.com/events/upload', {
                 method: 'POST',
                 body: formData
             });

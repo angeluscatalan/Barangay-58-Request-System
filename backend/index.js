@@ -12,7 +12,7 @@ const eventRoutes = require("./routes/eventRoutes.js");
 const app = express();
 
 const corsOptions = {
-  origin: "https://barangay-58-request-system-frontend.vercel.app", 
+  origin: "https://barangay-58-request-system-site.vercel.app", 
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
   optionsSuccessStatus: 204,

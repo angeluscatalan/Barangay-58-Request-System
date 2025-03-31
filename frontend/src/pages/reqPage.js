@@ -62,7 +62,7 @@ function reqPage() {
     }
 
     axios
-      .post("https://barangay-58-request-system-frontend.vercel.app/requests", requestData, {
+      .post("https://barangay-58-request-system-1.onrender.com/requests", requestData, {
         headers: { "Content-Type": "application/json" },
         timeout: 5000,
       })
