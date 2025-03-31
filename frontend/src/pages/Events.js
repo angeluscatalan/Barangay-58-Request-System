@@ -80,7 +80,9 @@ const EventsContent = () => {
                 <p>No events available at the moment. Check back soon!</p>
               </div>
             ) : (
-              publishedEvents.map((event) => <EventCard key={event.id} event={event} defaultImage={Announcement} />)
+              publishedEvents.map((event) => (
+                <EventCard key={event.id} event={event} defaultImage={Announcement} />
+              ))
             )}
           </div>
         </section>
