@@ -10,7 +10,29 @@ const s3 = new S3Client({
     },
 });
 
-// ✅ Archive an event (UPLOAD + SAVE to DB)
+const backupEvent = async (eventData) => {
+    try {
+        await pool.execute(
+            `INSERT INTO backup_events 
+             (event_name, event_date, time_start, time_end, venue, description, image_url, original_id)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                eventData.eventName,
+                eventData.eventDate,
+                eventData.timeStart,
+                eventData.timeEnd,
+                eventData.venue,
+                eventData.description,
+                eventData.imageUrl,
+                eventData.id
+            ]
+        );
+        console.log('Event backed up successfully');
+    } catch (error) {
+        console.error('Backup failed:', error);
+    }
+};
+
 exports.archiveEvent = async (req, res) => {
     if (!req.file) {
         console.warn('No image uploaded, proceeding without image.');
@@ -30,13 +52,26 @@ exports.archiveEvent = async (req, res) => {
         const imageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
         const { eventName, eventDate, timeStart, timeEnd, venue, description } = req.body;
         
-        await pool.execute(
+        // Insert into archive_events
+        const [result] = await pool.execute(
             `INSERT INTO archive_events (event_name, event_date, time_start, time_end, venue, description, image_url)
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [eventName, eventDate, timeStart, timeEnd, venue, description, imageUrl]
         );
 
-        res.status(201).json({ message: 'Event archived successfully', imageUrl });
+        // Backup to backup_events
+        await backupEvent({
+            id: result.insertId, // Get the newly inserted ID
+            eventName, 
+            eventDate, 
+            timeStart, 
+            timeEnd, 
+            venue, 
+            description, 
+            imageUrl
+        });
+
+        res.status(201).json({ message: 'Event archived and backed up successfully', imageUrl });
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ message: 'Error processing request', error });
@@ -125,7 +160,19 @@ exports.uploadEvent = async (req, res) => {
             [req.body.name, req.body.date, req.body.timeStart || null, req.body.timeEnd || null, req.body.venue || null, req.body.description || null, imageUrl]
         );
 
-        res.status(201).json({ message: 'Event uploaded successfully', id: result.insertId, imageUrl });
+        // Backup to backup_events
+        await backupEvent({
+            id: result.insertId,
+            eventName: req.body.name,
+            eventDate: req.body.date,
+            timeStart: req.body.timeStart || null,
+            timeEnd: req.body.timeEnd || null,
+            venue: req.body.venue || null,
+            description: req.body.description || null,
+            imageUrl
+        });
+
+        res.status(201).json({ message: 'Event uploaded and backed up successfully', id: result.insertId, imageUrl });
     } catch (error) {
         console.error('Database error:', error);
         res.status(500).json({ message: 'Upload failed', error: error.message });

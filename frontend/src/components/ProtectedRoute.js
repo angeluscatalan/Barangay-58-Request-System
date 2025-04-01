@@ -1,14 +1,25 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 
 const ProtectedRoute = ({ children }) => {
-    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
 
-    if (!isAuthenticated) {
-        return <Navigate to="/login" replace />;
-    }
+  useEffect(() => {
+    const verifyAuth = async () => {
+      try {
+        const res = await fetch('/api/auth/verify', {
+          credentials: 'include'
+        });
+        setIsAuthenticated(res.ok);
+      } catch (err) {
+        setIsAuthenticated(false);
+      }
+    };
+    verifyAuth();
+  }, []);
 
-    return children;
+  if (isAuthenticated === null) return <div>Loading...</div>;
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
 
 export default ProtectedRoute;

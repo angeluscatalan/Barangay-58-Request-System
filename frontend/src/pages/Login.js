@@ -11,19 +11,28 @@ function Login() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        // TODO: Replace with actual API call to validate credentials
-        if (username === 'admin' && password === 'admin123') {
-            // Store authentication state
-            localStorage.setItem('isAuthenticated', 'true');
-            if (rememberMe) {
-                localStorage.setItem('username', username);
+        
+        try {
+            const response = await fetch("http://localhost:5000/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ username, password }),
+            });
+    
+            console.log("Response status:", response.status); // Debug
+            const data = await response.json();
+            console.log("Response data:", data); // Debug
+    
+            if (response.ok) {
+                console.log("Login successful, navigating..."); // Debug
+                navigate("/admin");
+            } else {
+                alert(data.message);
             }
-
-            // Redirect to admin page
-            navigate('/admin');
-        } else {
-            alert('Invalid credentials. Please try again.');
+        } catch (error) {
+            console.error("Login error:", error);
+            alert("Server error. Please try again later.");
         }
     };
 

@@ -11,5 +11,4 @@ router.delete('/archive/:id', eventsController.deleteArchivedEvent);
 router.post('/upload', upload.single('image'), eventsController.uploadEvent);
 router.get("/", eventsController.getEvents);
 
-
 module.exports = router;

@@ -3,11 +3,14 @@ const multer = require("multer");
 const cors = require("cors");
 const mysql = require("mysql2");
 const multerS3 = require("multer-s3");
+const cookieParser = require("cookie-parser");
 require("dotenv").config();
 const { S3Client } = require("@aws-sdk/client-s3");
 const fs = require("fs");
 const path = require("path");
+
 const eventRoutes = require("./routes/eventRoutes.js");
+const authRoutes = require("./routes/adminRoutes");
 
 const app = express();
 
@@ -26,12 +29,15 @@ const s3Client = new S3Client({
   },
 });
 
-app.use(cors(corsOptions));
 app.use(express.json());
+app.use(cookieParser());
+app.use(cors(corsOptions));
+
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/requests", require("./routes/requestRoutes"));
 app.use('/events', eventRoutes);
+app.use("/api/auth", authRoutes); 
 
 const pool = require('./config/db');
 
@@ -47,44 +53,6 @@ const pool = require('./config/db');
 
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to the Barangay API!" });
-});
-
-app.post("/requests", async (req, res) => {
-  try {
-    const {
-      lastName,
-      firstName,
-      middleName,
-      suffix,
-      sex,
-      birthday,
-      contactNo,
-      email,
-      address,
-      certificateType,
-      purpose,
-      numberOfCopies,
-      dateRequested,
-    } = req.body;
-
-    if (!lastName || !firstName || !sex || !birthday || !contactNo || !email || !address || !certificateType || !purpose || !numberOfCopies || !dateRequested) {
-      return res.status(400).json({ error: "Missing required fields" });
-    }
-
-    const sql = `INSERT INTO requests 
-                 (last_name, first_name, middle_name, suffix, sex, birthday, contact_no, email, address, type_of_certificate, purpose_of_request, number_of_copies, created_at) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-
-    await pool.execute(sql, [
-      lastName, firstName, middleName, suffix, sex, birthday,
-      contactNo, email, address, certificateType, purpose, numberOfCopies, dateRequested
-    ]);
-
-    res.json({ message: "Request submitted successfully" });
-  } catch (error) {
-    console.error("Database error:", error);
-    res.status(500).json({ message: "Database error", error });
-  }
 });
 
 const PORT = process.env.PORT || 5000;
