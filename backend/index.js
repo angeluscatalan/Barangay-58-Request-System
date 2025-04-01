@@ -12,11 +12,11 @@ const eventRoutes = require("./routes/eventRoutes.js");
 const app = express();
 
 const corsOptions = {
-    origin: "http://localhost:3000", 
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    credentials: true,
-    optionsSuccessStatus: 204,
-  };
+  origin: "http://localhost:3000",
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true,
+  optionsSuccessStatus: 204,
+};
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION,
@@ -33,20 +33,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/requests", require("./routes/requestRoutes"));
 app.use('/events', eventRoutes);
 
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: "ga94PAWrPQKmdb8VylSq",
-  database: "barangayDB",
-  port: 3306,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-  ssl: {
-      rejectUnauthorized: true,
-      ca: fs.readFileSync(__dirname + "/certs/global-bundle.pem")
-  }
-}).promise();
+const pool = require('./config/db');
 
 (async () => {
   try {
@@ -102,7 +89,7 @@ app.post("/requests", async (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
 
 module.exports = app;

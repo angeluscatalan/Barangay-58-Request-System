@@ -1,4 +1,4 @@
-const mysql = require('mysql2/promise'); 
+const mysql = require('mysql2/promise');
 const fs = require('fs');
 const path = require('path');
 
@@ -11,10 +11,10 @@ if (!fs.existsSync(certPath)) {
 }
 
 const pool = mysql.createPool({
-    host: process.env.DB_HOST || "barangay-db.c1ga824sw14r.ap-southeast-1.rds.amazonaws.com",
-    user: process.env.DB_USER || "admin",
-    password: process.env.DB_PASSWORD || "ga94PAWrPQKmdb8VylSq",
-    database: process.env.DB_NAME || "barangayDB",
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
     port: process.env.DB_PORT || 3306,
     waitForConnections: true,
     connectionLimit: 10,
