@@ -11,7 +11,7 @@ function EventsManager() {
 useEffect(() => {
     const fetchEvents = async () => {
         try {
-          const response = await fetch('http://localhost:5000/events/archive');
+          const response = await fetch('http://localhost:5000/events');
           if (!response.ok) throw new Error('Network response was not ok');
           const data = await response.json();
           setEvents(data);
@@ -23,7 +23,16 @@ useEffect(() => {
 }, []);
 
     const handleEdit = (event) => {
-        setEditingEvent(event);
+        setEditingEvent({
+            id: event.id,
+            name: event.event_name,
+            date: event.event_date,
+            timeStart: event.time_start,
+            timeEnd: event.time_end,
+            venue: event.venue,
+            description: event.description,
+            image_url: event.image_url  
+        });
         setShowAddEvent(true);
     };
 
@@ -31,7 +40,7 @@ useEffect(() => {
         if (!window.confirm('Are you sure you want to delete this event?')) return;
     
         try {
-            const response = await fetch(`http://localhost:5000/events/archive/${id}`, {
+            const response = await fetch(`http://localhost:5000/events/${id}`, {
                 method: 'DELETE'
             });
     

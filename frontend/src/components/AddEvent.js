@@ -2,7 +2,16 @@ import React, { useState } from 'react';
 import '../styles/AddEvent.css';
 
 function AddEvent({ onClose, onAddEvent, editData = null, onEditEvent }) {
-    const [eventData, setEventData] = useState(editData || {
+    const [eventData, setEventData] = useState(editData ? {
+        name: editData.name || '',
+        date: editData.date || '',
+        timeStart: editData.timeStart || '',
+        timeEnd: editData.timeEnd || '',
+        venue: editData.venue || '',
+        description: editData.description || '',
+        image: null,
+        image_url: editData.image_url || null  
+    } : {
         name: '',
         date: '',
         timeStart: '',
@@ -12,7 +21,8 @@ function AddEvent({ onClose, onAddEvent, editData = null, onEditEvent }) {
         image: null
     });
 
-    const [imagePreview, setImagePreview] = useState(null);
+    const [imagePreview, setImagePreview] = useState(editData?.image_url || null);
+
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -60,34 +70,42 @@ function AddEvent({ onClose, onAddEvent, editData = null, onEditEvent }) {
         }
         
         try {
-            const response = await fetch('http://localhost:5000/events/upload', {
-                method: 'POST',
-                body: formData
-            });
+            const url = editData 
+                ? `http://localhost:5000/events/${editData.id}`
+                : 'http://localhost:5000/events';
+                
+            const method = editData ? 'PUT' : 'POST';
             
+            const response = await fetch(url, {
+                method,
+                body: formData
+                // Don't set Content-Type header - let the browser set it with boundary
+            });
+    
             const responseData = await response.json();
             
             if (!response.ok) {
-                const errorMsg = responseData.message || 
-                               responseData.error || 
-                               `Upload failed with status ${response.status}`;
-                throw new Error(errorMsg);
+                throw new Error(responseData.message || 'Request failed');
+            }
+    
+            if (editData) {
+                onEditEvent({
+                    ...eventData,
+                    id: editData.id,
+                    imageUrl: responseData.imageUrl || eventData.image_url
+                });
+            } else {
+                onAddEvent({
+                    ...eventData,
+                    id: responseData.id,
+                    imageUrl: responseData.imageUrl
+                });
             }
             
-            onAddEvent({
-                ...eventData,
-                id: responseData.id,
-                imageUrl: responseData.imageUrl
-            });
             onClose();
-            
         } catch (error) {
-            console.error('Full upload error:', {
-                error: error,
-                message: error.message,
-                stack: error.stack
-            });
-            alert(`Upload failed: ${error.message}`);
+            console.error('Error:', error);
+            alert(`Operation failed: ${error.message}`);
         }
     };
     
@@ -182,13 +200,20 @@ function AddEvent({ onClose, onAddEvent, editData = null, onEditEvent }) {
                     <div className="image-upload-area">
                         {imagePreview ? (
                             <div className="image-preview">
-                                <img src={imagePreview} alt="Event preview" />
+                                <img 
+                                    src={typeof imagePreview === 'string' ? imagePreview : URL.createObjectURL(imagePreview)} 
+                                    alt="Event preview" 
+                                />
                                 <button
                                     type="button"
                                     className="remove-image"
                                     onClick={() => {
                                         setImagePreview(null);
-                                        setEventData(prev => ({ ...prev, image: null }));
+                                        setEventData(prev => ({ 
+                                            ...prev, 
+                                            image: null,
+                                            image_url: null 
+                                        }));
                                     }}
                                 >
                                     Remove
