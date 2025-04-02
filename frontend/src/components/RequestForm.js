@@ -222,7 +222,7 @@ const RequestForm = ({
               </button>
             </div>
 
-            {/* Back to Information button moved to the bottom */}
+            {}
             <div className="back-button-container">
               <button className="mobile-back-button" onClick={() => toggleSection("info")}>
                 Back to Information

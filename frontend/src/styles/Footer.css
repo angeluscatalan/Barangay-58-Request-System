@@ -41,10 +41,10 @@
     font-family: 'Manrope';
     display: flex;
     align-items: center;
-    gap: 10px; /* Space between logo and text */
-    font-weight: 900; /* Extra bold */
-    font-size: 22px; /* Adjust font size if needed */
-    justify-content: center; /* Ensure alignment */
+    gap: 10px; 
+    font-weight: 900;
+    font-size: 22px;
+    justify-content: center;
 }
 .footer-image {
     height: 110px; 

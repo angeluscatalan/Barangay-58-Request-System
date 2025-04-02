@@ -93,7 +93,6 @@
   border-bottom: 2px solid #ff1493;
 }
 
-/* Mobile menu toggle button */
 .mobile-menu-toggle {
   display: none;
   background: none;
@@ -108,7 +107,6 @@
   transform: translateY(-50%);
 }
 
-/* Mobile navigation */
 .mobile-nav {
   display: none;
   position: fixed;
@@ -121,8 +119,8 @@
   z-index: 1000;
   transition: right 0.3s ease-in-out;
   box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
-  max-height: 100vh; /* Ensure it doesn't exceed viewport height */
-  overflow-y: auto; /* Make it scrollable if content is too large */
+  max-height: 100vh; 
+  overflow-y: auto;
 }
 
 .mobile-nav.open {
@@ -164,7 +162,6 @@
   align-self: center;
 }
 
-/* Responsive styles */
 @media (max-width: 1200px) {
   .indexNav {
     gap: 2rem;

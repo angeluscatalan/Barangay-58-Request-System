@@ -1,284 +1,402 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap");
 
 .admin-container {
-    display: flex;
-    flex-direction: row;
-    min-height: 100vh;
-    font-family: 'Inter', sans-serif;
-    position: relative;
-    overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+  font-family: "Inter", sans-serif;
+  position: relative;
+  overflow: hidden;
 }
 
 .top-line {
-    width: 100%;
-    height: 3px;
-    background-color: black;
-    position: absolute;
-    top: 90px;
-    left: 0;
-    z-index: 1;
+  width: 100%;
+  height: 3px;
+  background-color: black;
+  position: absolute;
+  top: 90px;
+  left: 0;
+  z-index: 1;
 }
 
 .sidebar {
-    width: 250px;
-    display: flex;
-    flex-direction: column;
+  width: 250px;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar nav li {
-    padding: 15px;
-    margin-bottom: 5px;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: background-color 0.3s;
-    color: white;
-    font-family: 'Manrope', sans-serif;
-    font-weight: 500;
+  padding: 15px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+  color: white;
+  font-family: "Manrope", sans-serif;
+  font-weight: 500;
 }
 
 .sidebar nav {
-    background-color: #DA1C6F;
-    padding: 20px;
-    flex: 1;
+  background-color: #da1c6f;
+  padding: 20px;
+  flex: 1;
 }
 
 .sidebar nav ul {
-    list-style: none;
-    padding: 0;
+  list-style: none;
+  padding: 0;
 }
 
 .sidebar nav li {
-    padding: 15px;
-    margin-bottom: 5px;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: background-color 0.3s;
+  padding: 15px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s;
 }
 
 .sidebar nav li:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .sidebar nav li.active {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: white;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
 }
 
 .main-content {
-    flex: 1;
-    background-color: #FFE3E2;
-    padding: 20px;
+  flex: 1;
+  background-color: #ffe3e2;
+  padding: 20px;
+  overflow-x: auto;
 }
 
 header {
-    display: flex;
-    justify-content: flex-end;
-    padding: 20px;
-    height: 90px;
-    box-sizing: border-box;
-    position: relative;
+  display: flex;
+  justify-content: flex-end;
+  padding: 20px;
+  height: 90px;
+  box-sizing: border-box;
+  position: relative;
 }
 
 .sidebar-header {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 20px;
-    height: 90px;
-    box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  height: 90px;
+  box-sizing: border-box;
 }
 
 .sidebar-header img.admin-logo {
-    width: 50px;
-    height: 50px;
+  width: 50px;
+  height: 50px;
 }
 
 .sidebar-header h1 {
-    color: black;
-    font-size: 22px;
-    margin: 0;
-    font-weight: bold;
-    white-space: nowrap;
+  color: black;
+  font-size: 22px;
+  margin: 0;
+  font-weight: bold;
+  white-space: nowrap;
 }
 
 .profile-section {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    position: absolute;
-    top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: absolute;
+  top: 15px;
 }
 
 .notifications {
-    font-size: 20px;
-    color: #666;
-    cursor: pointer;
+  font-size: 20px;
+  color: #666;
+  cursor: pointer;
 }
 
 .avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    overflow: hidden;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
 }
 
 .avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.2s;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.2s;
 }
 
 .avatar:hover img {
-    transform: scale(1.05);
+  transform: scale(1.05);
 }
 
 .profile-menu {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    padding: 8px;
-    margin-top: 5px;
-    min-width: 150px;
-    z-index: 1000;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 8px;
+  margin-top: 5px;
+  min-width: 150px;
+  z-index: 1000;
 }
 
 .logout-button {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    padding: 10px;
-    border: none;
-    background: none;
-    color: #dc3545;
-    font-size: 14px;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px;
+  border: none;
+  background: none;
+  color: #dc3545;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s;
 }
 
 .logout-button:hover {
-    background-color: rgba(220, 53, 69, 0.1);
+  background-color: rgba(220, 53, 69, 0.1);
 }
 
 .logout-button i {
-    font-size: 16px;
+  font-size: 16px;
 }
 
 .dashboard {
-    background-color: white;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    overflow-x: auto;
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: auto;
+  min-height: 500px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .dashboard-header {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 .header-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
 }
 
 .dashboard-header h1 {
-    font-size: 24px;
-    margin: 0;
+  font-size: 24px;
+  margin: 0;
 }
 
 .filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+  align-items: center;
 }
 
 .filters select {
-    padding: 8px 15px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: white;
-    min-width: 150px;
+  padding: 8px 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: white;
+  min-width: 150px;
 }
 
 .add-request-btn {
-    background-color: #DA1C6F;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
+  background-color: #da1c6f;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
 }
 
 .add-request-btn:hover {
-    border-radius: 5px;
-    border: 1px solid #da1c6f;
-    color: #da1c6f;
-    background-color: transparent;
+  border-radius: 5px;
+  border: 1px solid #da1c6f;
+  color: #da1c6f;
+  background-color: transparent;
+}
+
+.dashboard-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .table-container {
-    overflow-x: auto;
+  overflow: auto;
+  transition: transform 0.3s ease;
+  margin: 0 auto;
+  width: 100%;
+  max-height: calc(100vh - 100px);
+  position: relative;
 }
 
 table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
 }
 
 th,
 td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
 }
 
 th {
-    background-color: #f8f9fa;
-    font-weight: 600;
+  background-color: #f8f9fa;
+  font-weight: 600;
 }
 
 tr:hover {
-    background-color: #f8f9fa;
+  background-color: #f8f9fa;
 }
 
-/* Status colors */
 .status-approved {
-    color: green;
+  color: white !important;
+  background-color: #28a745 !important;
+  border-color: #28a745 !important;
 }
 
 .status-rejected {
-    color: red;
+  color: white !important;
+  background-color: #dc3545 !important;
+  border-color: #dc3545 !important;
 }
 
 .status-pickup {
-    color: blue;
+  color: white !important;
+  background-color: #007bff !important;
+  border-color: #007bff !important;
 }
 
 .status-pending {
-    color: orange;
+  color: #212529 !important;
+  background-color: #ffc107 !important;
+  border-color: #ffc107 !important;
 }
 
 .search-bar {
-    padding: 8px 15px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: white;
-    width: 250px;
-    font-size: 14px;
-    outline: none;
+  padding: 8px 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: white;
+  width: 250px;
+  font-size: 14px;
+  outline: none;
 }
+
 .search-bar::placeholder {
-    color: #aaa;
+  color: #aaa;
+}
+
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.zoom-btn {
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.zoom-btn:hover {
+  background-color: #e0e0e0;
+}
+
+.zoom-level {
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  min-width: 45px;
+  text-align: center;
+}
+
+@media (min-width: 1024px) and (max-width: 1439px) {
+  .sidebar {
+    width: 220px;
+  }
+
+  .main-content {
+    padding: 15px;
+  }
+
+  .table-container {
+    font-size: 14px;
+  }
+
+  th,
+  td {
+    padding: 10px 12px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .sidebar {
+    width: 280px;
+  }
+
+  .main-content {
+    padding: 25px;
+  }
+
+  .dashboard {
+    padding: 25px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 28px;
+  }
+
+  .filters select,
+  .search-bar {
+    padding: 10px 18px;
+    font-size: 15px;
+  }
 }
 
 
+@media (max-width: 1023px) {
+  .admin-container {
+    display: none;
+  }
+
+  .admin-mobile-message {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 20px;
+    text-align: center;
+    font-family: "Inter", sans-serif;
+    font-size: 18px;
+    color: #333;
+  }
+}
