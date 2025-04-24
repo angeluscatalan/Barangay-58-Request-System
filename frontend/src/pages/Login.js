@@ -25,7 +25,12 @@ function Login() {
             console.log("Response data:", data); // Debug
     
             if (response.ok) {
-                console.log("Login successful, navigating..."); // Debug
+                // If you're using token-based auth, store the token from the response
+                if (data.token) {
+                    localStorage.setItem("token", data.token);
+                }
+                localStorage.setItem("access_level", data.user.access_level); 
+                console.log("Login successful, navigating...");
                 navigate("/admin");
             } else {
                 alert(data.message);

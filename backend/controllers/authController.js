@@ -1,6 +1,189 @@
 const pool = require("../config/db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
+
+// Email transporter setup
+const transporter = nodemailer.createTransport({
+    service: process.env.EMAIL_SERVICE || 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+    }
+  });
+
+  exports.authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1] || req.cookies.token;
+    
+    console.log("Received token:", token ? "Yes" : "No");
+  
+    if (!token) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+  
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+      if (err) {
+        console.error("Token verification error:", err);
+        return res.status(403).json({ message: "Invalid or expired token" });
+      }
+  
+      console.log("Token verified, user:", decoded);
+      req.user = decoded;
+      next();
+    });
+  };
+  
+// Temporary storage for verification codes (use Redis in production)
+const verificationCodes = {};
+
+// Password Reset Functions
+exports.forgotPassword = async (req, res) => {
+    const { email } = req.body;
+  
+    try {
+      // Validate input
+      if (!email) {
+        return res.status(400).json({ success: false, message: "Email is required" });
+      }
+  
+      // Check if email exists
+      const [admin] = await pool.execute(
+        "SELECT id, username, password, access_level FROM admin WHERE username = ?", 
+        [email]
+    );
+  
+      if (admin.length === 0) {
+        return res.status(404).json({ success: false, message: "Email not found" });
+      }
+  
+      // Generate 6-digit code
+      const code = crypto.randomInt(100000, 999999).toString();
+      verificationCodes[email] = {
+        code,
+        expiresAt: Date.now() + 15 * 60 * 1000, // 15 minutes expiry
+        adminId: admin[0].id
+      };
+  
+      // Send email
+      await transporter.sendMail({
+        from: `"Barangay 58 Admin" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: 'Password Reset Code',
+        html: `
+          <h2>Password Reset Request</h2>
+          <p>Your verification code is: <strong>${code}</strong></p>
+          <p>This code will expire in 15 minutes.</p>
+        `
+      });
+  
+      res.json({ 
+        success: true,
+        message: "Verification code sent to email"
+      });
+  
+    } catch (error) {
+      console.error("Forgot password error:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to process password reset",
+        error: error.message 
+      });
+    }
+  };
+
+  exports.verifyResetCode = async (req, res) => {
+    const { email, code } = req.body;
+  
+    try {
+      // Validate input
+      if (!email || !code) {
+        return res.status(400).json({ success: false, message: "Email and code are required" });
+      }
+  
+      const storedCode = verificationCodes[email];
+  
+      // Check if code exists and matches
+      if (!storedCode || storedCode.code !== code) {
+        return res.status(400).json({ success: false, message: "Invalid verification code" });
+      }
+  
+      // Check if code has expired
+      if (Date.now() > storedCode.expiresAt) {
+        delete verificationCodes[email];
+        return res.status(400).json({ success: false, message: "Verification code has expired" });
+      }
+  
+      res.json({ 
+        success: true,
+        message: "Code verified successfully",
+        tempToken: jwt.sign(
+          { email, code, adminId: storedCode.adminId },
+          process.env.JWT_SECRET,
+          { expiresIn: '15m' }
+        )
+      });
+  
+    } catch (error) {
+      console.error("Verify code error:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to verify code",
+        error: error.message 
+      });
+    }
+  };
+  
+  exports.resetPassword = async (req, res) => {
+    const { tempToken, newPassword, confirmPassword } = req.body;
+  
+    try {
+      // Validate input
+      if (!tempToken || !newPassword || !confirmPassword) {
+        return res.status(400).json({ success: false, message: "All fields are required" });
+      }
+  
+      if (newPassword !== confirmPassword) {
+        return res.status(400).json({ success: false, message: "Passwords do not match" });
+      }
+  
+      // Verify temp token
+      const decoded = jwt.verify(tempToken, process.env.JWT_SECRET);
+      const { email, code, adminId } = decoded;
+  
+      // Verify code again
+      const storedCode = verificationCodes[email];
+      if (!storedCode || storedCode.code !== code || storedCode.adminId !== adminId) {
+        return res.status(400).json({ success: false, message: "Invalid token" });
+      }
+  
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+  
+      // Update password in database
+      await pool.execute(
+        "UPDATE admin SET password = ? WHERE id = ?",
+        [hashedPassword, adminId]
+      );
+  
+      // Clear the used code
+      delete verificationCodes[email];
+  
+      res.json({ 
+        success: true,
+        message: "Password reset successfully" 
+      });
+  
+    } catch (error) {
+      console.error("Reset password error:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to reset password",
+        error: error.message 
+      });
+    }
+  };
 
 // Authentication functions
 exports.loginAdmin = async (req, res) => {
@@ -14,7 +197,7 @@ exports.loginAdmin = async (req, res) => {
 
         // Find admin in database
         const [admin] = await pool.execute(
-            "SELECT id, username, password FROM admin WHERE username = ?", 
+            "SELECT id, username, password, access_level FROM admin WHERE username = ?", 
             [username]
         );
 
@@ -29,14 +212,18 @@ exports.loginAdmin = async (req, res) => {
         }
 
         // Generate JWT token
+        const user = admin[0]; // Extract once for clarity
         const token = jwt.sign(
-            { 
-                id: admin[0].id, 
-                username: admin[0].username 
+            {
+            id: user.id,
+            username: user.username,
+            access_level: user.access_level 
             },
             process.env.JWT_SECRET,
-            { expiresIn: "1h" }
+            { expiresIn: '1h' }
         );
+
+          
 
         // Set secure HTTP-only cookie
         res.cookie("token", token, {
@@ -47,10 +234,15 @@ exports.loginAdmin = async (req, res) => {
         });
 
         res.json({ 
-            success: true,
-            message: "Login successful",
-            user: { id: admin[0].id, username: admin[0].username }
-        });
+    success: true,
+    message: "Login successful",
+    token: token,
+    user: { 
+        id: admin[0].id, 
+        username: admin[0].username,
+        access_level: admin[0].access_level
+    }
+});
 
     } catch (error) {
         console.error("Login error:", error);
@@ -60,30 +252,6 @@ exports.loginAdmin = async (req, res) => {
             error: error.message 
         });
     }
-};
-
-// Middleware function 
-exports.authenticateToken = (req, res, next) => {
-    const token = req.cookies.token;
-
-    if (!token) {
-        return res.status(401).json({ 
-            success: false,
-            message: "Authentication required" 
-        });
-    }
-
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(403).json({ 
-                success: false,
-                message: "Invalid or expired token" 
-            });
-        }
-        
-        req.user = decoded;
-        next();
-    });
 };
 
 exports.logoutAdmin = (req, res) => {
@@ -98,3 +266,22 @@ exports.logoutAdmin = (req, res) => {
         message: "Logout successful" 
     });
 };
+  
+  exports.getCurrentUser = async (req, res) => {
+      try {
+        const [user] = await pool.execute(
+          "SELECT id, username, access_level FROM admin WHERE id = ?",
+          [req.user.id]
+        )
+        if (user.length === 0) {
+          return res.status(404).json({ success: false, message: "User not found" })
+        }
+        res.json({ 
+          success: true,
+          ...user[0] 
+        })
+      } catch (error) {
+        console.error("Error fetching user:", error)
+        res.status(500).json({ success: false, message: "Failed to fetch user data" })
+      }
+    }

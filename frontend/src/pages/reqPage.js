@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState} from "react"
 import axios from "axios"
 import RequestTitlesandSteps from "../components/RequestTitlesandSteps"
 import RequestForm from "../components/RequestForm"
@@ -34,8 +34,6 @@ function reqPage() {
     }
     setFormData({ ...formData, [name]: value })
   }
-
-  var birthdateRef = useRef(null)
 
   const getReq = () => {
     if (Object.values(formData).some((value) => value.trim() === "")) {

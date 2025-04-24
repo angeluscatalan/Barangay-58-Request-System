@@ -6,6 +6,9 @@ import { useNavigate } from "react-router-dom"
 import "../styles/Admin.css"
 import brgyLoginPageLogo from "../assets/brgyLoginPageLogo.png"
 import EventsManager from "../components/EventsManager"
+import Request_Manager from "../components/Request_Manager";
+import Account_Manager from "../components/Account_Manager";
+
 
 function Admin() {
   const navigate = useNavigate()
@@ -16,20 +19,59 @@ function Admin() {
   const [statusFilter, setStatusFilter] = useState("All")
   const [searchQuery, setSearchQuery] = useState("")
   const [zoomLevel, setZoomLevel] = useState(100)
+  const [userAccessLevel, setUserAccessLevel] = useState(null)
 
   useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        
+        // Add some debugging
+        console.log("Token found:", token ? "Yes" : "No");
+        
+        if (!token) {
+          console.log("No token found, redirecting to login");
+          navigate("/");
+          return;
+        }
+        
+        const response = await axios.get("http://localhost:5000/api/auth/me", {
+          headers: { 
+            Authorization: `Bearer ${token}`
+          }
+        });
+        
+        console.log("User data response:", response.data);
+        setUserAccessLevel(response.data.access_level);
+        console.log("Access Level:", response.data.access_level);
+      } catch (error) {
+        console.error("Error fetching user data:", error.response ? error.response.data : error.message);
+        navigate("/");
+      }
+    };
+
+    
+    
     const fetchRequests = async () => {
       try {
         const response = await axios.get("http://localhost:5000/requests")
         setRequests(response.data)
-        console.log("Fetched requests:", response.data)
       } catch (error) {
         console.error("Error fetching requests:", error)
       }
     }
 
-    fetchRequests()
-  }, [])
+    fetchUserData(); // Call the function to fetch user data
+    fetchRequests(); // Call the function to fetch requests
+  }, []); // Empty dependency array means this runs once on component mount
+
+  const handleSectionChange = (section) => {
+    if (section === "acc_manager" && userAccessLevel !== 2) {
+      alert("You don't have permission to access Accounts Manager")
+      return
+    }
+    setActiveSection(section)
+  }
 
   const updateStatus = async (id, newStatus) => {
     try {
@@ -102,12 +144,21 @@ function Admin() {
           </div>
           <nav>
             <ul>
-              <li className={activeSection === "requests" ? "active" : ""} onClick={() => setActiveSection("requests")}>
+              <li className={activeSection === "requests" ? "active" : ""} onClick={() => handleSectionChange("requests")}>
                 Certificate Request
               </li>
-              <li className={activeSection === "events" ? "active" : ""} onClick={() => setActiveSection("events")}>
+              <li className={activeSection === "events" ? "active" : ""} onClick={() => handleSectionChange("events")}>
                 Events Manager
               </li>
+              <li className={activeSection === "req_manager" ? "active" : ""}  onClick={() => handleSectionChange("req_manager")}>
+                Requests Manager
+              </li>
+              {userAccessLevel === 2 && (
+                <li className={activeSection === "acc_manager" ? "active" : ""} 
+                    onClick={() => handleSectionChange("acc_manager")}>
+                  Accounts Manager
+                </li>
+              )}
             </ul>
           </nav>
         </div>
@@ -128,8 +179,10 @@ function Admin() {
                 <div className="profile-menu">
                   <button
                     onClick={() => {
-                      localStorage.removeItem("isAuthenticated")
-                      navigate("/")
+                      // Clear all auth-related items
+                      localStorage.removeItem("token");
+                      localStorage.removeItem("access_level");
+                      navigate("/");
                     }}
                     className="logout-button"
                   >
@@ -242,9 +295,21 @@ function Admin() {
                 </div>
               </div>
             </div>
+            
+         ) : activeSection === "events" ? (
+          <EventsManager />
+        ) : activeSection === "req_manager" ? (
+          <Request_Manager />
+        ) : activeSection === "acc_manager" ? (
+          userAccessLevel === 2 ? (
+            <Account_Manager />
           ) : (
-            <EventsManager />
-          )}
+            <div className="unauthorized-message">
+              <h2>Access Denied</h2>
+              <p>You don't have permission to view this section.</p>
+            </div>
+          )
+        ) : null}
         </div>
       </div>
     </>

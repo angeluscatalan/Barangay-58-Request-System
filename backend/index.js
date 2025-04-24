@@ -5,8 +5,9 @@ require("dotenv").config();
 
 // Route imports
 const eventRoutes = require("./routes/eventRoutes");
-const authRoutes = require("./routes/adminRoutes");
+const authRoutes = require("./routes/authRoutes");
 const requestRoutes = require("./routes/requestRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 // Express app setup
 const app = express();
@@ -26,6 +27,8 @@ app.use(cors({
 app.use("/requests", requestRoutes);
 app.use('/events', eventRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
+
 
 // Server start
 const PORT = process.env.PORT || 5000;

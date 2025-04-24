@@ -8,6 +8,7 @@ import AboutUs from "./pages/aboutusPage.js";
 import Navbar from "./components/Navbar.js";
 import Events from "./pages/Events.js";
 import Admin from "./pages/Admin.js";
+import Forgot_Password from "./pages/Forgot_Password.js";
 import ProtectedRoute from "./components/ProtectedRoute.js";
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
                 <Route path="/Request" element={<ReqPage />} />
                 <Route path="/Team" element={<TeamPage />} />
                 <Route path="/login" element={<Login />} />
+                 <Route path="/forgot-password" element={<Forgot_Password />} />
                 <Route path="/AboutUs" element={<AboutUs />} />
                 <Route path="/Events" element={<Events />} />
                 <Route 

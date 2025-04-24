@@ -27,7 +27,6 @@ export const EventsProvider = ({ children }) => {
     fetchEvents()
   }, [])
 
-  // Prevent scrolling when modal is open
   useEffect(() => {
     if (expandedEvent) {
       document.body.style.overflow = "hidden"
