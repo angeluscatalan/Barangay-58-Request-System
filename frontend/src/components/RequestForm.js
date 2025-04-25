@@ -145,17 +145,44 @@ const RequestForm = ({
                     {errors.email && <p className="error-message">*Invalid Email</p>}
                   </div>
                 </div>
-
+                <label htmlFor="address" className="form-label">
+                      ADDRESS
+                    </label>
                 <div className="form-row">
+                
                   <input
                     type="text"
                     id="address"
-                    name="address"
-                    placeholder="ADDRESS"
+                    name="address_street"
+                    placeholder="STREET/PUROK"
                     className="reqFormAddress"
-                    value={formData.address}
+                    value={formData.address_street}
                     onChange={handleChange}
                   />
+                    <input
+                      type="text"
+                      name="address_barangay"
+                      placeholder="BARANGAY"
+                      className="reqFormAddress"
+                      value={formData.address_barangay}
+                      onChange={handleChange}
+                  />
+                     <input
+                        type="text"
+                        name="address_city"
+                        placeholder="CITY/MUNICIPALITY"
+                        className="reqFormAddress"
+                        value={formData.address_city}
+                        onChange={handleChange}
+                      />
+                      <input
+                        type="text"
+                        name="address_province"
+                        placeholder="PROVINCE"
+                        className="reqFormAddress"
+                        value={formData.address_province}
+                         onChange={handleChange}
+                      />
                 </div>
               </div>
 
