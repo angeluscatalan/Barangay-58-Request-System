@@ -16,11 +16,15 @@ function reqPage() {
     birthday: "",
     contact_no: "",
     email: "",
-    address: "",
+    address_street: "",
+    address_barangay: "",
+    address_city: "",
+    address_province: "",
     type_of_certificate: "",
     purpose_of_request: "",
     number_of_copies: "",
   })
+  
 
   const [errors, setErrors] = useState({ contact_no: false, email: false })
   const [activeSection, setActiveSection] = useState("info") // "info" or "form"
@@ -54,10 +58,14 @@ function reqPage() {
       return
     }
 
+    const fullAddress = `${formData.address_street}, ${formData.address_barangay}, ${formData.address_city}, ${formData.address_province}, ${formData.address_zip}`
+
     const requestData = {
       ...formData,
+      address: fullAddress,
       number_of_copies: Number(formData.number_of_copies),
     }
+  
 
     axios
       .post("http://localhost:5000/requests", requestData, {
@@ -76,7 +84,10 @@ function reqPage() {
           birthday: "",
           contact_no: "",
           email: "",
-          address: "",
+          address_street: "",
+          address_barangay: "",
+          address_city: "",
+          address_province: "",
           type_of_certificate: "",
           purpose_of_request: "",
           number_of_copies: "",

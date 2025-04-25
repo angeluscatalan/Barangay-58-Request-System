@@ -207,14 +207,6 @@ function Admin() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="search-bar"
                   />
-                  <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
-                    <option value="All">All Types</option>
-                    <option value="ClearanceCert">Barangay Clearance</option>
-                    <option value="IDApp">ID Application</option>
-                    <option value="IndigencyCert">Certificate of Indigency</option>
-                    <option value="JobseekerCert">Barangay Jobseeker</option>
-                    <option value="BrgyCert">Barangay Certificate</option>
-                  </select>
                   <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
                     <option value="All">All Status</option>
                     <option value="pending">Pending</option>
@@ -237,6 +229,10 @@ function Admin() {
                 </div>
               </div>
               <div className="dashboard-content" style={{ height: zoomLevel !== 100 ? `calc(100vh - 200px)` : 'auto' }}>
+                <div className="filter-tabs">
+                    {["All", "ClearanceCert", "IDApp", "IndigencyCert", "JobseekerCert", "BrgyCert"].map((type) => ( <button key={type} className={`tab-button ${typeFilter === type ? "active-tab" : ""}`} onClick={() => setTypeFilter(type)}>
+                      {type === "All" ? "All Types" : type} </button> ))}
+                </div>
                 <div 
                   className="table-container"
                   style={{ 
@@ -250,6 +246,7 @@ function Admin() {
                   <table>
                     <thead>
                       <tr>
+                        <th>DATE REQUESTED</th>
                         <th>NAME</th>
                         <th>SUFFIX</th>
                         <th>SEX</th>
@@ -266,6 +263,7 @@ function Admin() {
                     <tbody>
                       {filteredRequests.map((request, index) => (
                         <tr key={index}>
+                          <td>{request.created_at}</td>
                           <td>{`${request.last_name}, ${request.first_name} ${request.middle_name || ""}`}</td>
                           <td>{request.suffix}</td>
                           <td>{request.sex}</td>

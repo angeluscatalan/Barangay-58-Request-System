@@ -411,3 +411,29 @@ tr:hover {
   font-size: 2rem;
   margin-bottom: 1rem;
 }
+.filter-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.tab-button {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.tab-button:hover {
+  background-color: #f5b6d1;
+}
+
+.active-tab {
+  background-color: #da1c6f;
+  color: white;
+  border-color: #da1c6f;
+}
