@@ -246,6 +246,7 @@ function Admin() {
                   <table>
                     <thead>
                       <tr>
+                        <th>DATE REQUESTED</th>
                         <th>NAME</th>
                         <th>SUFFIX</th>
                         <th>SEX</th>
@@ -262,6 +263,7 @@ function Admin() {
                     <tbody>
                       {filteredRequests.map((request, index) => (
                         <tr key={index}>
+                          <td>{request.created_at}</td>
                           <td>{`${request.last_name}, ${request.first_name} ${request.middle_name || ""}`}</td>
                           <td>{request.suffix}</td>
                           <td>{request.sex}</td>
