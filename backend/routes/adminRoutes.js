@@ -10,4 +10,15 @@ router.get('/accounts',
   adminController.getAllAccounts // Finally get accounts
 );
 
+router.post('/accounts',
+  authController.authenticateToken,
+  adminController.requireAccountsAccess,
+  adminController.createAccount
+);
+
+router.put('/accounts/:id',
+  authController.authenticateToken,
+  adminController.requireAccountsAccess,
+  adminController.updateAccount
+);
 module.exports = router;

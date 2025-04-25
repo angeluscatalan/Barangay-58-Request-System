@@ -187,71 +187,74 @@ exports.forgotPassword = async (req, res) => {
 
 // Authentication functions
 exports.loginAdmin = async (req, res) => {
-    const { username, password } = req.body;
+  const { username, password } = req.body;
 
-    try {
-        // Validate input
-        if (!username || !password) {
-            return res.status(400).json({ message: "Username and password are required" });
-        }
+  try {
+    console.log("Login attempt with:", { username, passwordLength: password?.length });
+    
+    // Find admin in database (include archive status in the query)
+    const [admin] = await pool.execute(
+      "SELECT id, username, email, password, access_level, archive FROM admin WHERE LOWER(username) = LOWER(?) OR LOWER(email) = LOWER(?)", 
+      [username, username]
+    );
 
-        // Find admin in database
-        const [admin] = await pool.execute(
-            "SELECT id, username, password, access_level FROM admin WHERE username = ?", 
-            [username]
-        );
-
-        if (admin.length === 0) {
-            return res.status(401).json({ message: "Invalid credentials" });
-        }
-
-        // Verify password
-        const passwordMatch = await bcrypt.compare(password, admin[0].password);
-        if (!passwordMatch) {
-            return res.status(401).json({ message: "Invalid credentials" });
-        }
-
-        // Generate JWT token
-        const user = admin[0]; // Extract once for clarity
-        const token = jwt.sign(
-            {
-            id: user.id,
-            username: user.username,
-            access_level: user.access_level 
-            },
-            process.env.JWT_SECRET,
-            { expiresIn: '1h' }
-        );
-
-          
-
-        // Set secure HTTP-only cookie
-        res.cookie("token", token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
-            maxAge: 3600000 // 1 hour
-        });
-
-        res.json({ 
-    success: true,
-    message: "Login successful",
-    token: token,
-    user: { 
-        id: admin[0].id, 
-        username: admin[0].username,
-        access_level: admin[0].access_level
+    if (admin.length === 0) {
+      return res.status(401).json({ message: "Invalid credentials" });
     }
-});
 
-    } catch (error) {
-        console.error("Login error:", error);
-        res.status(500).json({ 
-            success: false,
-            message: "Authentication failed",
-            error: error.message 
-        });
+    // Check if account is archived/disabled
+    if (admin[0].archive === 'YES') {
+      return res.status(403).json({ 
+        message: "Account disabled. Please contact the administrator." 
+      });
     }
+
+    // Verify password
+    const passwordMatch = await bcrypt.compare(password, admin[0].password);
+    
+    if (!passwordMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // Generate JWT token
+    const user = admin[0];
+    const token = jwt.sign(
+      {
+        id: user.id,
+        username: user.username,
+        access_level: user.access_level 
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    // Set cookie and respond
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 3600000 // 1 hour
+    });
+
+    res.json({ 
+      success: true,
+      message: "Login successful",
+      token: token,
+      user: { 
+        id: user.id, 
+        username: user.username,
+        access_level: user.access_level
+      }
+    });
+
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ 
+      success: false,
+      message: "Authentication failed",
+      error: error.message 
+    });
+  }
 };
 
 exports.logoutAdmin = (req, res) => {

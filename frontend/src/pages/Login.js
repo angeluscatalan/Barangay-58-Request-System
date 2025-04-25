@@ -7,10 +7,12 @@ function Login() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setErrorMessage(""); // Clear previous errors
         
         try {
             const response = await fetch("http://localhost:5000/api/auth/login", {
@@ -20,9 +22,7 @@ function Login() {
                 body: JSON.stringify({ username, password }),
             });
     
-            console.log("Response status:", response.status); // Debug
             const data = await response.json();
-            console.log("Response data:", data); // Debug
     
             if (response.ok) {
                 // If you're using token-based auth, store the token from the response
@@ -33,11 +33,16 @@ function Login() {
                 console.log("Login successful, navigating...");
                 navigate("/admin");
             } else {
-                alert(data.message);
+                // Handle different error cases
+                if (response.status === 403) {
+                    setErrorMessage(data.message || "Account disabled. Please contact the administrator.");
+                } else {
+                    setErrorMessage(data.message || "Invalid username or password");
+                }
             }
         } catch (error) {
             console.error("Login error:", error);
-            alert("Server error. Please try again later.");
+            setErrorMessage("Server error. Please try again later.");
         }
     };
 
@@ -53,6 +58,12 @@ function Login() {
                         <h1>Login</h1>
                         <h2>Welcome Back to Barangay 58 Portal</h2>
                     </div>
+                    {/* Display error message if exists */}
+                    {errorMessage && (
+                        <div className="login-error-message">
+                            {errorMessage}
+                        </div>
+                    )}
                     <form onSubmit={handleSubmit}>
                         <div className="form-group">
                             <label htmlFor="username">Username</label>
@@ -100,4 +111,4 @@ function Login() {
     );
 }
 
-export default Login; 
+export default Login;
