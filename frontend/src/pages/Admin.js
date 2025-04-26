@@ -1,69 +1,65 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios"
 import { useNavigate } from "react-router-dom"
+import { useRequests } from "../components/requestContext"
 import "../styles/Admin.css"
 import brgyLoginPageLogo from "../assets/brgyLoginPageLogo.png"
 import EventsManager from "../components/EventsManager"
-import Request_Manager from "../components/Request_Manager";
-import Account_Manager from "../components/Account_Manager";
-
+import Request_Manager from "../components/Request_Manager"
+import Account_Manager from "../components/Account_Manager"
 
 function Admin() {
   const navigate = useNavigate()
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [activeSection, setActiveSection] = useState("requests")
-  const [requests, setRequests] = useState([])
   const [typeFilter, setTypeFilter] = useState("All")
   const [statusFilter, setStatusFilter] = useState("All")
   const [searchQuery, setSearchQuery] = useState("")
   const [zoomLevel, setZoomLevel] = useState(100)
   const [userAccessLevel, setUserAccessLevel] = useState(null)
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        
-        // Add some debugging
-        console.log("Token found:", token ? "Yes" : "No");
-        
-        if (!token) {
-          console.log("No token found, redirecting to login");
-          navigate("/");
-          return;
-        }
-        
-        const response = await axios.get("http://localhost:5000/api/auth/me", {
-          headers: { 
-            Authorization: `Bearer ${token}`
-          }
-        });
-        
-        console.log("User data response:", response.data);
-        setUserAccessLevel(response.data.access_level);
-        console.log("Access Level:", response.data.access_level);
-      } catch (error) {
-        console.error("Error fetching user data:", error.response ? error.response.data : error.message);
-        navigate("/");
-      }
-    };
+  const { 
+    requests, 
+    loading: requestsLoading, 
+    error: requestsError, 
+    fetchRequests,
+    updateRequestStatus 
+  } = useRequests()
 
-    
-    
-    const fetchRequests = async () => {
-      try {
-        const response = await axios.get("http://localhost:5000/requests")
-        setRequests(response.data)
-      } catch (error) {
-        console.error("Error fetching requests:", error)
+  // Memoize fetchUserData with no dependencies
+  const fetchUserData = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        navigate("/")
+        return
       }
+      
+      const response = await axios.get("http://localhost:5000/api/auth/me", {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      setUserAccessLevel(response.data.access_level)
+    } catch (error) {
+      console.error("Error fetching user data:", error)
+      navigate("/")
     }
+  }, [navigate]) // Only navigate as dependency
 
-    fetchUserData(); // Call the function to fetch user data
-    fetchRequests(); // Call the function to fetch requests
-  }, []); // Empty dependency array means this runs once on component mount
+  useEffect(() => {
+    // Initialize only once on mount
+    const initialize = async () => {
+      await fetchRequests()
+      await fetchUserData()
+    }
+    initialize()
+
+    // Cleanup function
+    return () => {
+      // Cancel any pending requests if needed
+    }
+  }, [])
 
   const handleSectionChange = (section) => {
     if (section === "acc_manager" && userAccessLevel !== 2) {
@@ -73,49 +69,52 @@ function Admin() {
     setActiveSection(section)
   }
 
+  // Updated to use context's updateRequestStatus
   const updateStatus = async (id, newStatus) => {
-    try {
-      await axios.put(
-        `http://localhost:5000/requests/${id}`,
-        { status: newStatus },
-        {
-          headers: { "Content-Type": "application/json" },
-        },
-      )
-      setRequests((prevRequests) => prevRequests.map((req) => (req.id === id ? { ...req, status: newStatus } : req)))
-    } catch (error) {
-      console.error("Error updating status:", error)
-    }
+    await updateRequestStatus(id, newStatus)
   }
 
+  // Filter to show only approved/pickup requests by default
+  const approvedRequests = useMemo(() => 
+    requests.filter(request => 
+      request.status !== 'Pending' && request.status !== 'Rejected'
+    ), 
+    [requests]
+  );
+  
   // Filter requests based on type, status, and search query
-  const filteredRequests = requests.filter((request) => {
-    const matchesType = typeFilter === "All" || request.type_of_certificate === typeFilter
-    const matchesStatus = statusFilter === "All" || request.status === statusFilter
-    const matchesSearch =
-      searchQuery === "" ||
-      `${request.last_name}, ${request.first_name} ${request.middle_name || ""}`
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase())
-
-    return matchesType && matchesStatus && matchesSearch
-  })
+  const filteredRequests = useMemo(() => 
+    approvedRequests.filter((request) => {
+      const matchesType = typeFilter === "All" || request.type_of_certificate === typeFilter;
+      const matchesStatus = statusFilter === "All" || request.status === statusFilter;
+      const matchesSearch =
+        searchQuery === "" ||
+        `${request.last_name}, ${request.first_name} ${request.middle_name || ""}`
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase());
+  
+      return matchesType && matchesStatus && matchesSearch;
+    }),
+    [approvedRequests, typeFilter, statusFilter, searchQuery]
+  );
 
   // Helper function to get status class
   const getStatusClass = (status) => {
-    switch (status) {
+    const statusLower = status.toLowerCase(); // Handle case variations
+    switch (statusLower) {
       case "pending":
-        return "status-pending"
+        return "status-pending";
       case "approved":
-        return "status-approved"
+        return "status-approved";
       case "rejected":
-        return "status-rejected"
+        return "status-rejected";
       case "for pickup":
-        return "status-pickup"
+      case "for_pickup": // Handle different possible formats
+        return "status-pickup";
       default:
-        return ""
+        return "";
     }
-  }
+  };
 
   const handleZoom = (action) => {
     switch (action) {
@@ -132,6 +131,9 @@ function Admin() {
         break
     }
   }
+
+  if (requestsLoading) return <div className="loading">Loading...</div>
+  if (requestsError) return <div className="error">Error: {requestsError}</div>
 
   return (
     <>
@@ -275,6 +277,9 @@ function Admin() {
                           <td>{request.purpose_of_request}</td>
                           <td>{request.number_of_copies}</td>
                           <td>
+                            <span className={`status-badge ${getStatusClass(request.status)}`}>
+                              {request.status}
+                            </span>
                             <select
                               value={request.status}
                               onChange={(e) => updateStatus(request.id, e.target.value)}
@@ -286,7 +291,7 @@ function Admin() {
                               <option value="for pickup">For Pickup</option>
                             </select>
                           </td>
-                        </tr>
+                       </tr>
                       ))}
                     </tbody>
                   </table>
@@ -294,7 +299,7 @@ function Admin() {
               </div>
             </div>
             
-         ) : activeSection === "events" ? (
+        ) : activeSection === "events" ? (
           <EventsManager />
         ) : activeSection === "req_manager" ? (
           <Request_Manager />

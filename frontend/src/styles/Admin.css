@@ -437,3 +437,45 @@ tr:hover {
   color: white;
   border-color: #da1c6f;
 }
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+.status-pending {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-approved {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-rejected {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.status-pickup {
+  background-color: #cce5ff;
+  color: #004085;
+}
+
+/* Style the select dropdown to match */
+select.status-pending {
+  border-color: #ffeeba;
+}
+select.status-approved {
+  border-color: #c3e6cb;
+}
+select.status-rejected {
+  border-color: #f5c6cb;
+}
+select.status-pickup {
+  border-color: #bee5eb;
+}

@@ -78,31 +78,32 @@ exports.createRequest = async (req, res) => {
 
 exports.getRequests = async (req, res) => {
     try {
-        const [rows] = await pool.query(`
-            SELECT id, 
-                   last_name, 
-                   first_name, 
-                   middle_name, 
-                   suffix,
-                   sex,
-                   DATE_FORMAT(birthday, '%Y-%m-%d') as birthday,
-                   contact_no,
-                   email,
-                   address,
-                   type_of_certificate,
-                   purpose_of_request,
-                   number_of_copies,
-                   status,
-                   DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at
-            FROM requests
-            ORDER BY created_at DESC
-        `);
-        res.status(200).json(rows);
+      const { status } = req.query;
+      let query = `
+        SELECT id, last_name, first_name, middle_name, suffix,
+               sex, DATE_FORMAT(birthday, '%Y-%m-%d') as birthday,
+               contact_no, email, address, type_of_certificate,
+               purpose_of_request, number_of_copies, status,
+               DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at
+        FROM requests
+      `;
+      
+      const params = [];
+      
+      if (status) {
+        query += ` WHERE LOWER(status) = LOWER(?)`;
+        params.push(status);
+      }
+      
+      query += ` ORDER BY created_at DESC`;
+      
+      const [rows] = await pool.query(query, params);
+      res.status(200).json(rows);
     } catch (error) {
-        console.error("Database error:", error);
-        res.status(500).json({ message: "Failed to fetch requests", error: error.message });
+      console.error("Database error:", error);
+      res.status(500).json({ message: "Failed to fetch requests", error: error.message });
     }
-};
+  };
 
 exports.getRequestById = async (req, res) => {
     const { id } = req.params;
