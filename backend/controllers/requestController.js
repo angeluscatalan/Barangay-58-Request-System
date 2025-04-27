@@ -22,7 +22,7 @@ const backupRequest = async (requestData) => {
                 requestData.type_of_certificate,
                 requestData.purpose_of_request,
                 requestData.number_of_copies,
-                requestData.status || 'Pending',
+                requestData.status || 'pending',
                 requestData.id
             ]
         );
@@ -137,7 +137,7 @@ exports.updateRequestStatus = async (req, res) => {
         return res.status(400).json({ error: 'Invalid status value' });
     }
 
-    const formattedStatus = statusLower.charAt(0).toUpperCase() + statusLower.slice(1);
+    const formattedStatus = statusLower;
 
     try {
         const [result] = await pool.query(

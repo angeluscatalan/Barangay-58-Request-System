@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import '../styles/EventsManager.css';
+import FullCalendar from '@fullcalendar/react';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import interactionPlugin from '@fullcalendar/interaction';
+import '../styles/EventsManager.css'; 
 import AddEvent from './AddEvent';
 
 function EventsManager() {
@@ -7,6 +10,7 @@ function EventsManager() {
     const [editingEvent, setEditingEvent] = useState(null);
     const [events, setEvents] = useState([]);
     const [sortBy, setSortBy] = useState('All');
+    const [viewMode, setViewMode] = useState('table');
 
 useEffect(() => {
     const fetchEvents = async () => {
@@ -73,8 +77,35 @@ useEffect(() => {
         return new Date(dateString).toLocaleDateString(undefined, options);
     };
 
+    const calendarEvents = events.map(event => ({
+        id: event.id,
+        title: event.event_name,
+        start: event.event_date,
+        allDay: true,
+        extendedProps: {
+            time_start: event.time_start,
+            time_end: event.time_end,
+            venue: event.venue
+        }
+    }));
+
     return (
         <div className="events-section">
+            {/* Switch Buttons */}
+            <div className="view-buttons">
+                <button 
+                    className={viewMode === 'table' ? 'active' : ''} 
+                    onClick={() => setViewMode('table')}>
+                    Table View
+                </button>
+                <button 
+                    className={viewMode === 'calendar' ? 'active' : ''} 
+                    onClick={() => setViewMode('calendar')}>
+                    Calendar View
+                </button>
+        </div>
+        {viewMode === 'table' ? (
+                <>
             <div className="table-header">
                 <div className="events-count">
                     Events <span className="event-count">({events.length})</span>
@@ -154,6 +185,42 @@ useEffect(() => {
                     </tbody>
                 </table>
             </div>
+            </>
+            ) : (
+                <div className="calendar-container">
+                <FullCalendar
+                    plugins={[dayGridPlugin, interactionPlugin]}
+                    initialView="dayGridMonth"
+                    events={calendarEvents}
+                    eventColor="#da1c6f"
+                    headerToolbar={{
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: '',
+                    }}
+                    buttonText={{
+                        today: 'Today'
+                    }}
+                    height="auto"
+                    eventOverlap={false} // Prevent events from overlapping
+                    dayMaxEventRows={true}  // Ensure multiple events are scrollable
+                    eventTimeFormat={{
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true,
+                    }}
+                    eventContent={(eventInfo) => {
+                        return (
+                            <div className="event-content">
+                                <strong>{eventInfo.event.title}</strong> {/* Event title */}
+                                <div>Time: {eventInfo.event.extendedProps.time_start} - {eventInfo.event.extendedProps.time_end}</div> {/* Time range */}
+                                <div>Venue: {eventInfo.event.extendedProps.venue}</div> {/* Venue */}
+                            </div>
+                        );
+                    }}
+                />
+            </div>
+        )}
             {showAddEvent && (
                 <AddEvent
                     onClose={() => {
