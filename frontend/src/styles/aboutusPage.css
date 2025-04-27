@@ -1,342 +1,500 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap");
 
 body {
-    background-color: #FFE3E2;
-    margin: 0;
-    padding: 0;
+  background-color: #ffe3e2;
+  margin: 0;
+  padding: 0;
 }
 
 .abtUsContainer {
-    background: url("../assets/teamPage_BG.png");
-    background-size: cover;
-    background-repeat: no-repeat;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 100vw;
-    min-height: 100vh; 
-    gap: 10px;
-    margin-top: 50px; 
-    padding-bottom: 100px; 
-    overflow: auto; 
+  background: url("../assets/teamPage_BG.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 100vh;
+  gap: 10px;
+  margin-top: 50px;
+  padding-bottom: 100px;
+  overflow: hidden;
 }
 
 .abtTitle1 {
-    font-family: "Montserrat", sans-serif;
-    font-size: 3rem;
-    color: #DA1C6F;
-    text-align: center;
-    margin-top: 50px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 3rem;
+  color: #da1c6f;
+  text-align: center;
+  margin-top: 50px;
 }
 
 .abtUsContent {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap; 
-    align-items: center;
-    justify-content: space-between; 
-    gap: 30px;
-    width: 80vw;
-    max-width: 1200px;
-    margin-top: 30px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  width: 90%;
+  max-width: 1200px;
+  margin-top: 30px;
 }
 
 .abtUsMap {
-    flex: 1; 
-    max-width: 500px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+  flex: 1;
+  min-width: 300px;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .abtUsMap img {
-    border-radius: 15px; 
-    border: 3px #D3D3D3; 
-    width: 100%; 
-    max-width: 500px; 
-    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.3);
+  border-radius: 15px;
+  border: 3px #d3d3d3;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 .abtUsMap p {
-    margin-top: 15px;
-    font-size: 14px;
-    color: #555; 
+  margin-top: 15px;
+  font-size: 14px;
+  color: #555;
 }
 
 .abtUsHistory {
-    flex: 1;
-    max-width: 700px;
-    min-width: 400px; 
-    height: auto;
-    padding-left: 20px; 
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start; 
-    text-align: justify;
+  flex: 1;
+  min-width: 300px;
+  max-width: 700px;
+  height: auto;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  text-align: justify;
 }
 
 .abtUsHistory h1 {
-    font-size: 1.5rem;
-    font-family: "Montserrat", sans-serif;
-    text-align: left;
-    width: 100%;
-    margin-bottom: 10px;
-    max-width: 600px; 
+  font-size: 1.5rem;
+  font-family: "Montserrat", sans-serif;
+  text-align: left;
+  width: 100%;
+  margin-bottom: 10px;
 }
 
 .abtUsHistory p {
-    font-family: "Manrope", sans-serif;
-    font-size: 1rem;
-    color: #333;
-    line-height: 1.5;
-    max-width: 600px;
-}
-.abtTitle2 {
-    font-family: "Montserrat", sans-serif;
-    font-size: 2.5rem;
-    color: #DA1C6F;
-    text-align: center;
-    margin-top: 50px;
-    font-weight: 800;
+  font-family: "Manrope", sans-serif;
+  font-size: 1rem;
+  color: #333;
+  line-height: 1.5;
 }
 
-.feastContainer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 80vw;
-    max-width: 1200px;
-    text-align: center;
-    margin-top: 30px;
+.abtTitle2 {
+  font-family: "Montserrat", sans-serif;
+  font-size: 2.5rem;
+  color: #da1c6f;
+  text-align: center;
+  margin-top: 50px;
+  font-weight: 800;
 }
 
 .feastSection {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center; 
-    text-align: center;
-    width: 100%;
-    margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 90%;
+  max-width: 1200px;
+  margin-top: 30px;
 }
 
 .feastImage {
-    width: auto;
-    max-width: 800px;
-    height: auto;
-    background-color: #f0f0f0;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: 1 ;
-    color: #888;
-    font-family: "Manrope", sans-serif;
-    margin-bottom: 20px;
-    overflow: hidden;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 800px;
+  height: auto;
+  background-color: #f0f0f0;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-family: "Manrope", sans-serif;
+  margin-bottom: 20px;
+  overflow: hidden;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .feastImage img {
-    width: 90%; 
-    height: auto; 
-    object-fit: cover;
-    border-radius: 10px;
-    display: flex;
-    flex: 1 ;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 10px;
 }
 
 .feastImagePlaceholder {
-    width: 100%;
-    display: flex;
-    justify-content: center; 
-    align-items: center;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .feastDescription {
-    width:100vw;
-    font-family: "Manrope";
-    font-size: 1.2rem;
-    color: #333;
-    max-width: 900px;
-    text-align: center;
-    line-height: 1.5;
-    margin-top: 15px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: justify;
+  width: 100%;
+  font-family: "Manrope";
+  font-size: 1.2rem;
+  color: #333;
+  max-width: 900px;
+  text-align: center;
+  line-height: 1.5;
+  margin-top: 15px;
+  padding: 0 15px;
 }
 
 .barangayContainer {
-    display: flex;
-    flex-direction: row; 
-    flex-wrap: nowrap;
-    align-items: center;
-    justify-content: space-between; 
-    gap: 30px;
-    width: 80vw;
-    max-width: 1200px;
-    margin-top: 80px;
-    text-align: left;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  width: 90%;
+  max-width: 1200px;
+  margin-top: 80px;
+  text-align: left;
 }
 
-
 .barangayImage {
-    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.3); 
-    border-radius: 10px; 
-    flex: 1; 
-    max-width: 500px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  flex: 1;
+  min-width: 300px;
+  max-width: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .barangayImage img {
-    width: 100%;
-    max-width: 500px;
-    height: auto;
-    border-radius: 10px;
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  border-radius: 10px;
 }
 
 .barangayText {
-    flex: 1;
-    max-width: 700px;
-    min-width: 400px;
-    padding-left: 20px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    text-align: justify;
-
-    padding-bottom: 50px;
+  flex: 1;
+  min-width: 300px;
+  max-width: 700px;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  text-align: justify;
 }
 
 .barangayText h1 {
-    max-width: 600px;
-
-    font-size:2.5rem;
-    font-family: "Montserrat", sans-serif;
-    font-style: normal;
-    line-height: 48px;
-    text-align: center;
-    padding-bottom: 50px;
-    padding-right:90px;
-
-    color: #DA1C6F;
+  font-size: 2.5rem;
+  font-family: "Montserrat", sans-serif;
+  font-style: normal;
+  line-height: 1.2;
+  color: #da1c6f;
+  margin-bottom: 20px;
+  width: 100%;
+  text-align: center;
 }
 
 .barangayText p {
-    font-family: "Manrope", sans-serif;
-    font-size: 1.4rem;
-    color: #333;
-    line-height: 1.5;
-    max-width: 500px;
-    text-align: justify;
-    letter-spacing: 0.09em;
-
-    color: #000000;
+  font-family: "Manrope", sans-serif;
+  font-size: 1.4rem;
+  color: #333;
+  line-height: 1.5;
+  letter-spacing: 0.09em;
+  color: #000000;
 }
 
 .barangayDetails {
-    display: flex;
-    flex-direction: row; 
-    justify-content: center;
-    align-items: stretch;
-    gap: 120px; 
-    width: 80vw;
-    max-width: 1200px;
-    margin-top:20px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
+  gap: 40px;
+  width: 90%;
+  max-width: 1200px;
+  margin-top: 20px;
 }
 
 .opHours,
 .location {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center; 
-    justify-content: flex-start; 
-    background-image: url("../assets/detailsContainer.png");
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
-    padding: 90px 50px; 
-    border-radius: 10px;
-    min-height: 500px; 
-    max-width: 700px;
-    text-align: center;
+  flex: 1;
+  min-width: 300px;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background-image: url("../assets/detailsContainer.png");
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  padding: 90px 50px;
+  border-radius: 10px;
+  min-height: 500px;
+  text-align: center;
+  margin-bottom: 20px;
 }
 
 .opHours h1,
 .location h1 {
-    font-family: "Montserrat", sans-serif;
-    font-size: 1.6rem;
-    color: #000000;
-    margin-bottom: 15px;
-    width: 100%;
+  font-family: "Montserrat", sans-serif;
+  font-size: 1.6rem;
+  color: #000000;
+  margin-bottom: 15px;
+  width: 100%;
 }
 
 .opHours img,
 .location img {
-    width: 30%;
-    max-width: 200px;
-    height: auto;
-    border-radius: 10px;
+  width: 30%;
+  max-width: 200px;
+  height: auto;
+  border-radius: 10px;
 }
 
 .opHours ul,
 .location ul {
-    width: 100%; 
-    max-width: 400px; 
-    padding: 0;
-    margin-top: 20px; 
-    list-style-type: disc; 
-    text-align: left; 
+  width: 100%;
+  max-width: 400px;
+  padding: 0;
+  margin-top: 20px;
+  list-style-type: disc;
+  text-align: left;
 }
 
 .opHours li,
 .location li {
-    font-family: "Manrope", sans-serif;
-    font-size: 1.2rem;
-    color: #333;
-    line-height: 1.6;
-    margin-left: 20px; 
+  font-family: "Manrope", sans-serif;
+  font-size: 1.2rem;
+  color: #333;
+  line-height: 1.6;
+  margin-left: 20px;
 }
 
 .barangayMV {
-    max-width: 1000px; 
-    margin: auto; 
-    padding: 20px; 
+  max-width: 1000px;
+  margin: auto;
+  padding: 20px;
+  width: 90%;
 }
 
 .barangayMV h1 {
-    font-family: 'Montserrat';
-    font-style: normal;
-    font-weight: 800;
-    font-size: 3rem;
-    line-height: 59px;
-    text-align: center;
-    letter-spacing: 0.09em;
-    color: #000000;
-    margin-bottom: 20px;
+  font-family: "Montserrat";
+  font-style: normal;
+  font-weight: 800;
+  font-size: 3rem;
+  line-height: 1.2;
+  text-align: center;
+  letter-spacing: 0.09em;
+  color: #000000;
+  margin-bottom: 20px;
 }
 
 .barangayMV p {
-    font-family: 'Montserrat';
-    font-style: italic;
-    font-weight: 300;
-    font-size: 1.2rem;
-    line-height: 39px;
-    text-align: center;
-    letter-spacing: 0.09em;
-    color: #000000;
-    max-width: 1000px; 
-    margin: 0 auto 60px auto; 
+  font-family: "Montserrat";
+  font-style: italic;
+  font-weight: 300;
+  font-size: 1.2rem;
+  line-height: 1.5;
+  text-align: center;
+  letter-spacing: 0.09em;
+  color: #000000;
+  margin: 0 auto 60px auto;
 }
+
+/* Responsive styles */
+@media (max-width: 1200px) {
+  .abtTitle1 {
+    font-size: 2.5rem;
+  }
+
+  .abtTitle2 {
+    font-size: 2rem;
+  }
+
+  .barangayText h1 {
+    font-size: 2rem;
+  }
+
+  .barangayMV h1 {
+    font-size: 2.5rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .abtTitle1 {
+    font-size: 2rem;
+  }
+
+  .abtTitle2 {
+    font-size: 1.8rem;
+  }
+
+  .feastDescription {
+    font-size: 1.1rem;
+  }
+
+  .barangayText h1 {
+    font-size: 1.8rem;
+  }
+
+  .barangayText p {
+    font-size: 1.2rem;
+  }
+
+  .barangayMV h1 {
+    font-size: 2rem;
+  }
+
+  .barangayMV p {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .abtTitle1 {
+    font-size: 1.8rem;
+    margin-top: 80px;
+  }
+
+  .abtUsHistory h1 {
+    font-size: 1.3rem;
+  }
+
+  .abtUsHistory p {
+    font-size: 0.9rem;
+  }
+
+  .abtTitle2 {
+    font-size: 1.5rem;
+  }
+
+  .feastDescription {
+    font-size: 1rem;
+  }
+
+  .barangayText h1 {
+    font-size: 1.5rem;
+  }
+
+  .barangayText p {
+    font-size: 1rem;
+    letter-spacing: 0.05em;
+  }
+
+  .opHours h1,
+  .location h1 {
+    font-size: 1.4rem;
+  }
+
+  .opHours li,
+  .location li {
+    font-size: 1rem;
+  }
+
+  .barangayMV h1 {
+    font-size: 1.8rem;
+  }
+
+  .barangayMV p {
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+}
+
+@media (max-width: 576px) {
+  .abtTitle1 {
+    font-size: 1.5rem;
+  }
+
+  .abtUsContent {
+    gap: 20px;
+  }
+
+  .abtUsHistory h1 {
+    font-size: 1.2rem;
+  }
+
+  .abtUsHistory p {
+    font-size: 0.85rem;
+  }
+
+  .abtTitle2 {
+    font-size: 1.3rem;
+  }
+
+  .feastDescription {
+    font-size: 0.9rem;
+  }
+
+  .barangayText h1 {
+    font-size: 1.3rem;
+  }
+
+  .barangayText p {
+    font-size: 0.9rem;
+    letter-spacing: 0.03em;
+  }
+
+  .opHours,
+  .location {
+    padding: 70px 30px;
+    min-height: 400px;
+  }
+
+  .opHours h1,
+  .location h1 {
+    font-size: 1.2rem;
+  }
+
+  .opHours li,
+  .location li {
+    font-size: 0.9rem;
+  }
+
+  .barangayMV h1 {
+    font-size: 1.5rem;
+  }
+
+  .barangayMV p {
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+  }
+}
+
+@media (max-width: 400px) {
+  .abtTitle1 {
+    font-size: 1.3rem;
+  }
+
+  .abtUsMap p {
+    font-size: 12px;
+  }
+
+  .abtTitle2 {
+    font-size: 1.2rem;
+  }
+
+  .barangayMV h1 {
+    font-size: 1.3rem;
+  }
+}
+

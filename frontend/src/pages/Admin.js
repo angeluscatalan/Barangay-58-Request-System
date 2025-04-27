@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react"
 import axios from "axios"
 import { useNavigate } from "react-router-dom"
 import { useRequests } from "../components/requestContext"
@@ -19,26 +19,22 @@ function Admin() {
   const [searchQuery, setSearchQuery] = useState("")
   const [zoomLevel, setZoomLevel] = useState(100)
   const [userAccessLevel, setUserAccessLevel] = useState(null)
+  // Add a new state for sidebar visibility
+  const [sidebarVisible, setSidebarVisible] = useState(true)
 
-  const { 
-    requests, 
-    loading: requestsLoading, 
-    error: requestsError, 
-    fetchRequests,
-    updateRequestStatus 
-  } = useRequests()
+  const { requests, loading: requestsLoading, error: requestsError, fetchRequests, updateRequestStatus } = useRequests()
 
   // Memoize fetchUserData with no dependencies
   const fetchUserData = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem("token")
       if (!token) {
         navigate("/")
         return
       }
-      
+
       const response = await axios.get("http://localhost:5000/api/auth/me", {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       })
       setUserAccessLevel(response.data.access_level)
     } catch (error) {
@@ -75,46 +71,45 @@ function Admin() {
   }
 
   // Filter to show only approved/pickup requests by default
-  const approvedRequests = useMemo(() => 
-    requests.filter(request => 
-      request.status !== 'Pending' && request.status !== 'Rejected'
-    ), 
-    [requests]
-  );
-  
+  const approvedRequests = useMemo(
+    () => requests.filter((request) => request.status !== "Pending" && request.status !== "Rejected"),
+    [requests],
+  )
+
   // Filter requests based on type, status, and search query
-  const filteredRequests = useMemo(() => 
-    approvedRequests.filter((request) => {
-      const matchesType = typeFilter === "All" || request.type_of_certificate === typeFilter;
-      const matchesStatus = statusFilter === "All" || request.status === statusFilter;
-      const matchesSearch =
-        searchQuery === "" ||
-        `${request.last_name}, ${request.first_name} ${request.middle_name || ""}`
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase());
-  
-      return matchesType && matchesStatus && matchesSearch;
-    }),
-    [approvedRequests, typeFilter, statusFilter, searchQuery]
-  );
+  const filteredRequests = useMemo(
+    () =>
+      approvedRequests.filter((request) => {
+        const matchesType = typeFilter === "All" || request.type_of_certificate === typeFilter
+        const matchesStatus = statusFilter === "All" || request.status === statusFilter
+        const matchesSearch =
+          searchQuery === "" ||
+          `${request.last_name}, ${request.first_name} ${request.middle_name || ""}`
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())
+
+        return matchesType && matchesStatus && matchesSearch
+      }),
+    [approvedRequests, typeFilter, statusFilter, searchQuery],
+  )
 
   // Helper function to get status class
   const getStatusClass = (status) => {
-    const statusLower = status.toLowerCase(); // Handle case variations
+    const statusLower = status.toLowerCase() // Handle case variations
     switch (statusLower) {
       case "pending":
-        return "status-pending";
+        return "status-pending"
       case "approved":
-        return "status-approved";
+        return "status-approved"
       case "rejected":
-        return "status-rejected";
+        return "status-rejected"
       case "for pickup":
       case "for_pickup": // Handle different possible formats
-        return "status-pickup";
+        return "status-pickup"
       default:
-        return "";
+        return ""
     }
-  };
+  }
 
   const handleZoom = (action) => {
     switch (action) {
@@ -132,6 +127,11 @@ function Admin() {
     }
   }
 
+  // Add this function after other state declarations
+  const toggleSidebar = () => {
+    setSidebarVisible(!sidebarVisible)
+  }
+
   if (requestsLoading) return <div className="loading">Loading...</div>
   if (requestsError) return <div className="error">Error: {requestsError}</div>
 
@@ -139,32 +139,59 @@ function Admin() {
     <>
       <div className="top-line"></div>
       <div className="admin-container">
-        <div className="sidebar">
+        {/* Modify the sidebar div to include the collapsed class when needed */}
+        <div className={`sidebar ${sidebarVisible ? "" : "collapsed"}`}>
           <div className="sidebar-header">
             <img src={brgyLoginPageLogo || "/placeholder.svg"} alt="Barangay Logo" className="admin-logo" />
-            <h1>BARANGAY 58</h1>
+            {sidebarVisible && <h1>BARANGAY 58</h1>}
           </div>
           <nav>
             <ul>
-              <li className={activeSection === "requests" ? "active" : ""} onClick={() => handleSectionChange("requests")}>
-                Certificate Request
+              <li
+                className={activeSection === "requests" ? "active" : ""}
+                onClick={() => handleSectionChange("requests")}
+              >
+                {sidebarVisible ? "Certificate Request" : <i className="fas fa-file-alt"></i>}
               </li>
               <li className={activeSection === "events" ? "active" : ""} onClick={() => handleSectionChange("events")}>
-                Events Manager
+                {sidebarVisible ? "Events Manager" : <i className="fas fa-calendar-alt"></i>}
               </li>
-              <li className={activeSection === "req_manager" ? "active" : ""}  onClick={() => handleSectionChange("req_manager")}>
-                Requests Manager
+              <li
+                className={activeSection === "req_manager" ? "active" : ""}
+                onClick={() => handleSectionChange("req_manager")}
+              >
+                {sidebarVisible ? "Requests Manager" : <i className="fas fa-tasks"></i>}
               </li>
               {userAccessLevel === 2 && (
-                <li className={activeSection === "acc_manager" ? "active" : ""} 
-                    onClick={() => handleSectionChange("acc_manager")}>
-                  Accounts Manager
+                <li
+                  className={activeSection === "acc_manager" ? "active" : ""}
+                  onClick={() => handleSectionChange("acc_manager")}
+                >
+                  {sidebarVisible ? "Accounts Manager" : <i className="fas fa-users-cog"></i>}
                 </li>
               )}
             </ul>
           </nav>
+          <div className="sidebar-footer">
+            <button
+              onClick={() => {
+                // Clear all auth-related items
+                localStorage.removeItem("token")
+                localStorage.removeItem("access_level")
+                navigate("/")
+              }}
+              className="sidebar-logout-button"
+            >
+              <i className="fas fa-sign-out-alt"></i>
+              {sidebarVisible && <span>Logout</span>}
+            </button>
+          </div>
         </div>
-        <div className="main-content">
+        {/* Add a hamburger toggle button at the top of the main-content div */}
+        <div className={`main-content ${sidebarVisible ? "" : "expanded"}`}>
+          <div className="sidebar-toggle" onClick={toggleSidebar}>
+            <i className={`fas ${sidebarVisible ? "fa-bars" : "fa-chevron-right"}`}></i>
+          </div>
           <header>
             <div className="profile-section">
               <div className="notifications">
@@ -179,18 +206,10 @@ function Admin() {
               </div>
               {showProfileMenu && (
                 <div className="profile-menu">
-                  <button
-                    onClick={() => {
-                      // Clear all auth-related items
-                      localStorage.removeItem("token");
-                      localStorage.removeItem("access_level");
-                      navigate("/");
-                    }}
-                    className="logout-button"
-                  >
-                    <i className="fas fa-sign-out-alt"></i>
-                    Logout
-                  </button>
+                  <div className="profile-info">
+                    <p>Admin User</p>
+                    <small>Administrator</small>
+                  </div>
                 </div>
               )}
             </div>
@@ -216,6 +235,7 @@ function Admin() {
                     <option value="rejected">Rejected</option>
                     <option value="for pickup">For Pickup</option>
                   </select>
+                  {/* Update the zoom controls with proper icons */}
                   <div className="zoom-controls">
                     <button className="zoom-btn" onClick={() => handleZoom("out")} title="Zoom Out">
                       <i className="fas fa-search-minus"></i>
@@ -230,19 +250,26 @@ function Admin() {
                   </div>
                 </div>
               </div>
-              <div className="dashboard-content" style={{ height: zoomLevel !== 100 ? `calc(100vh - 200px)` : 'auto' }}>
+              <div className="dashboard-content" style={{ height: zoomLevel !== 100 ? `calc(100vh - 200px)` : "auto" }}>
                 <div className="filter-tabs">
-                    {["All", "ClearanceCert", "IDApp", "IndigencyCert", "JobseekerCert", "BrgyCert"].map((type) => ( <button key={type} className={`tab-button ${typeFilter === type ? "active-tab" : ""}`} onClick={() => setTypeFilter(type)}>
-                      {type === "All" ? "All Types" : type} </button> ))}
+                  {["All", "ClearanceCert", "IDApp", "IndigencyCert", "JobseekerCert", "BrgyCert"].map((type) => (
+                    <button
+                      key={type}
+                      className={`tab-button ${typeFilter === type ? "active-tab" : ""}`}
+                      onClick={() => setTypeFilter(type)}
+                    >
+                      {type === "All" ? "All Types" : type}{" "}
+                    </button>
+                  ))}
                 </div>
-                <div 
+                <div
                   className="table-container"
-                  style={{ 
-                    transform: `scale(${zoomLevel / 100})`, 
+                  style={{
+                    transform: `scale(${zoomLevel / 100})`,
                     transformOrigin: "top left",
-                    width: zoomLevel < 100 ? `${100 / (zoomLevel / 100)}%` : '100%',
-                    height: zoomLevel < 100 ? `${100 / (zoomLevel / 100)}%` : '100%',
-                    overflow: 'auto'
+                    width: zoomLevel < 100 ? `${100 / (zoomLevel / 100)}%` : "100%",
+                    height: zoomLevel < 100 ? `${100 / (zoomLevel / 100)}%` : "100%",
+                    overflow: "auto",
                   }}
                 >
                   <table>
@@ -277,9 +304,7 @@ function Admin() {
                           <td>{request.purpose_of_request}</td>
                           <td>{request.number_of_copies}</td>
                           <td>
-                            <span className={`status-badge ${getStatusClass(request.status)}`}>
-                              {request.status}
-                            </span>
+                            <span className={`status-badge ${getStatusClass(request.status)}`}>{request.status}</span>
                             <select
                               value={request.status}
                               onChange={(e) => updateStatus(request.id, e.target.value)}
@@ -291,28 +316,27 @@ function Admin() {
                               <option value="for pickup">For Pickup</option>
                             </select>
                           </td>
-                       </tr>
+                        </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
               </div>
             </div>
-            
-        ) : activeSection === "events" ? (
-          <EventsManager />
-        ) : activeSection === "req_manager" ? (
-          <Request_Manager />
-        ) : activeSection === "acc_manager" ? (
-          userAccessLevel === 2 ? (
-            <Account_Manager />
-          ) : (
-            <div className="unauthorized-message">
-              <h2>Access Denied</h2>
-              <p>You don't have permission to view this section.</p>
-            </div>
-          )
-        ) : null}
+          ) : activeSection === "events" ? (
+            <EventsManager />
+          ) : activeSection === "req_manager" ? (
+            <Request_Manager />
+          ) : activeSection === "acc_manager" ? (
+            userAccessLevel === 2 ? (
+              <Account_Manager />
+            ) : (
+              <div className="unauthorized-message">
+                <h2>Access Denied</h2>
+                <p>You don't have permission to view this section.</p>
+              </div>
+            )
+          ) : null}
         </div>
       </div>
     </>

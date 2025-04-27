@@ -6,7 +6,8 @@
   min-height: 100vh;
   font-family: "Inter", sans-serif;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 .top-line {
@@ -19,10 +20,33 @@
   z-index: 1;
 }
 
+/* Add styles for the collapsible sidebar */
 .sidebar {
   width: 250px;
   display: flex;
   flex-direction: column;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.sidebar.collapsed {
+  width: 70px;
+  min-width: 70px;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  height: 90px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.sidebar.collapsed .sidebar-header {
+  justify-content: center;
+  padding: 20px 5px;
 }
 
 .sidebar nav li {
@@ -34,12 +58,57 @@
   color: white;
   font-family: "Manrope", sans-serif;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sidebar.collapsed nav li {
+  justify-content: center;
+  padding: 15px 5px;
+}
+
+.sidebar.collapsed nav li i {
+  font-size: 18px;
 }
 
 .sidebar nav {
   background-color: #da1c6f;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
   flex: 1;
+  overflow-y: auto;
+}
+
+/* Update sidebar structure to properly position the footer */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Ensure sidebar takes full viewport height */
+  overflow: hidden; /* Prevent sidebar from overflowing */
+}
+
+.sidebar-header {
+  flex-shrink: 0;
+}
+
+.sidebar nav {
+  flex: 1;
+  overflow-y: auto;
+  max-height: calc(100vh - 180px); /* Subtract header and footer height */
+  padding-bottom: 20px; /* Add some padding at the bottom */
+}
+
+.sidebar-footer {
+  flex-shrink: 0;
+  padding: 15px 20px;
+  background-color: #da1c6f;
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .sidebar nav ul {
@@ -69,8 +138,38 @@
   background-color: #ffe3e2;
   padding: 20px;
   overflow-x: auto;
+  transition: margin-left 0.3s ease;
+  position: relative;
 }
 
+.main-content.expanded {
+  margin-left: 0;
+  width: calc(100% - 70px);
+}
+
+.sidebar-toggle {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 36px;
+  height: 36px;
+  background-color: #da1c6f;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.sidebar-toggle:hover {
+  background-color: #c01860;
+}
+
+/* Adjust header positioning to account for sidebar toggle */
 header {
   display: flex;
   justify-content: flex-end;
@@ -78,6 +177,7 @@ header {
   height: 90px;
   box-sizing: border-box;
   position: relative;
+  margin-left: 30px;
 }
 
 .sidebar-header {
@@ -87,6 +187,7 @@ header {
   padding: 20px;
   height: 90px;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .sidebar-header img.admin-logo {
@@ -145,6 +246,20 @@ header {
   margin-top: 5px;
   min-width: 150px;
   z-index: 1000;
+}
+
+.profile-info {
+  padding: 10px;
+  text-align: center;
+}
+
+.profile-info p {
+  margin: 0 0 5px 0;
+  font-weight: 500;
+}
+
+.profile-info small {
+  color: #666;
 }
 
 .logout-button {
@@ -307,6 +422,7 @@ tr:hover {
   color: #aaa;
 }
 
+/* Update zoom control styles */
 .zoom-controls {
   display: flex;
   align-items: center;
@@ -329,6 +445,11 @@ tr:hover {
 
 .zoom-btn:hover {
   background-color: #e0e0e0;
+}
+
+.zoom-btn i {
+  font-size: 14px;
+  color: #555;
 }
 
 .zoom-level {
@@ -381,7 +502,6 @@ tr:hover {
     font-size: 15px;
   }
 }
-
 
 @media (max-width: 1023px) {
   .admin-container {
@@ -443,7 +563,7 @@ tr:hover {
   padding: 20px;
   background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 /* --- FullCalendar specific tweaks --- */
@@ -518,7 +638,7 @@ tr:hover {
   overflow-x: auto;
   background: #fff;
   border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   padding: 10px;
 }
 
@@ -533,7 +653,6 @@ tr:hover {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   width: 300px;
 }
-
 
 .status-badge {
   padding: 4px 8px;
@@ -575,4 +694,45 @@ select.status-rejected {
 }
 select.status-pickup {
   border-color: #bee5eb;
+}
+
+/* Add these styles for the sidebar footer and logout button */
+.sidebar-footer {
+  padding: 20px;
+  background-color: #da1c6f;
+  margin-top: auto;
+}
+
+.sidebar-logout-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 15px;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.2s;
+  font-family: "Manrope", sans-serif;
+  font-weight: 500;
+}
+
+.sidebar-logout-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.sidebar-logout-button i {
+  font-size: 16px;
+}
+
+.sidebar.collapsed .sidebar-logout-button {
+  justify-content: center;
+  padding: 12px 5px;
+}
+
+.sidebar.collapsed .sidebar-logout-button span {
+  display: none;
 }
