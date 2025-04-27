@@ -51,7 +51,7 @@ function EventsManager() {
       })
 
       if (!response.ok) {
-        const errorText = await response.text() // Read response body
+        const errorText = await response.text()
         throw new Error(`Delete failed: ${errorText}`)
       }
 
@@ -138,9 +138,9 @@ function EventsManager() {
                   <tr key={event.id}>
                     <td>{index + 1}</td>
                     <td>
-                      {event.image_url && (
+                      {event.image_url ? (
                         <img
-                          src={event.image_url || "/placeholder.svg"}
+                          src={event.image_url}
                           alt="Event"
                           style={{ width: "50px", height: "50px", objectFit: "cover" }}
                           onError={(e) => {
@@ -148,6 +148,25 @@ function EventsManager() {
                             e.target.src = "/placeholder.jpg"
                           }}
                         />
+                      ) : (
+                        <div style={{
+                          width: "50px",
+                          height: "50px",
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          backgroundColor: "#f8f9fa",
+                          color: "#6c757d",
+                          border: "1px dashed #dee2e6",
+                          borderRadius: "4px",
+                          fontSize: "10px",
+                          textAlign: "center",
+                          padding: "4px"
+                        }}>
+                          <i className="fas fa-image" style={{ fontSize: "16px", marginBottom: "2px" }}></i>
+                          <span>No image</span>
+                        </div>
                       )}
                     </td>
                     <td>{event.event_name || "No name"}</td>
@@ -191,8 +210,8 @@ function EventsManager() {
               today: "Today",
             }}
             height="auto"
-            eventOverlap={false} // Prevent events from overlapping
-            dayMaxEventRows={true} // Ensure multiple events are scrollable
+            eventOverlap={false}
+            dayMaxEventRows={true}
             eventTimeFormat={{
               hour: "numeric",
               minute: "2-digit",

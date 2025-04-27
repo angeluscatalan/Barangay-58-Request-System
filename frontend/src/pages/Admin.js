@@ -132,6 +132,20 @@ function Admin() {
     setSidebarVisible(!sidebarVisible)
   }
 
+  const calculateAge = (birthday) => {
+    if (!birthday) return "";
+    const birthDate = new Date(birthday);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+
+    return age;
+  };
+
   if (requestsLoading) return <div className="loading">Loading...</div>
   if (requestsError) return <div className="error">Error: {requestsError}</div>
 
@@ -280,6 +294,7 @@ function Admin() {
                         <th>SUFFIX</th>
                         <th>SEX</th>
                         <th>BIRTHDAY</th>
+                        <th>AGE</th>
                         <th>ADDRESS</th>
                         <th>CONTACT NO.</th>
                         <th>EMAIL</th>
@@ -297,6 +312,7 @@ function Admin() {
                           <td>{request.suffix}</td>
                           <td>{request.sex}</td>
                           <td>{request.birthday ? request.birthday.split("T")[0] : ""}</td>
+                          <td>{calculateAge(request.birthday)}</td>
                           <td>{request.address}</td>
                           <td>{request.contact_no}</td>
                           <td>{request.email}</td>

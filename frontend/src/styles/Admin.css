@@ -86,8 +86,10 @@
 .sidebar {
   display: flex;
   flex-direction: column;
-  height: 100vh; /* Ensure sidebar takes full viewport height */
-  overflow: hidden; /* Prevent sidebar from overflowing */
+  height: 100vh;
+  /* Ensure sidebar takes full viewport height */
+  overflow: hidden;
+  /* Prevent sidebar from overflowing */
 }
 
 .sidebar-header {
@@ -97,8 +99,10 @@
 .sidebar nav {
   flex: 1;
   overflow-y: auto;
-  max-height: calc(100vh - 180px); /* Subtract header and footer height */
-  padding-bottom: 20px; /* Add some padding at the bottom */
+  max-height: calc(100vh - 180px);
+  /* Subtract header and footer height */
+  padding-bottom: 20px;
+  /* Add some padding at the bottom */
 }
 
 .sidebar-footer {
@@ -531,6 +535,7 @@ tr:hover {
   font-size: 2rem;
   margin-bottom: 1rem;
 }
+
 .filter-tabs {
   display: flex;
   flex-wrap: nowrap;
@@ -557,6 +562,7 @@ tr:hover {
   color: white;
   border-color: #da1c6f;
 }
+
 /* --- Calendar Container --- */
 .calendar-container {
   margin-top: 20px;
@@ -686,12 +692,15 @@ tr:hover {
 select.status-pending {
   border-color: #ffeeba;
 }
+
 select.status-approved {
   border-color: #c3e6cb;
 }
+
 select.status-rejected {
   border-color: #f5c6cb;
 }
+
 select.status-pickup {
   border-color: #bee5eb;
 }
