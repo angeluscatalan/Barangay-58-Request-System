@@ -16,10 +16,11 @@ function reqPage() {
     birthday: "",
     contact_no: "",
     email: "",
-    address_street: "",
-    address_barangay: "",
-    address_city: "",
-    address_province: "",
+    unit_no: "",
+    street: "",
+    barangay: "",
+    village: "",
+    city: "",
     type_of_certificate: "",
     purpose_of_request: "",
     number_of_copies: "",
@@ -58,7 +59,7 @@ function reqPage() {
       return
     }
 
-    const fullAddress = `${formData.address_street}, ${formData.address_barangay}, ${formData.address_city}, ${formData.address_province}, ${formData.address_zip}`
+    const fullAddress = `${formData.unit_no}, ${formData.street}, ${formData.barangay}, ${formData.village}, ${formData.city}`
 
     const requestData = {
       ...formData,
@@ -66,6 +67,7 @@ function reqPage() {
       number_of_copies: Number(formData.number_of_copies),
     }
   
+    console.log("Sending request data:", requestData);
 
     axios
       .post("http://localhost:5000/requests", requestData, {
@@ -84,10 +86,11 @@ function reqPage() {
           birthday: "",
           contact_no: "",
           email: "",
-          address_street: "",
-          address_barangay: "",
-          address_city: "",
-          address_province: "",
+          unit_no: "",
+          street: "",
+          barangay: "",
+          village: "",
+          city: "",
           type_of_certificate: "",
           purpose_of_request: "",
           number_of_copies: "",
