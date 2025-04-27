@@ -14,6 +14,19 @@ const RequestForm = ({
   setFormData,
   toggleSection,
 }) => {
+
+  function calculateAge(birthday) {
+    if (!birthday) return '';
+    const today = new Date();
+    const birthDate = new Date(birthday);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age >= 0 ? age : '';
+  }
+
   const birthdateRef = useRef(null)
   return (
     <div className="requirements">
@@ -98,15 +111,19 @@ const RequestForm = ({
                 </div>
 
                 <div className="form-row">
-                  <div className="birthdate-container">
-                    <label htmlFor="birthday" className="form-label">
-                      BIRTHDAY
-                    </label>
-                    <BirthdatePicker
-                      ref={birthdateRef}
-                      selectedDate={formData.birthday}
-                      onChange={(date) => setFormData({ ...formData, birthday: date })}
-                    />
+                  <div className="birthdate-container" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <label htmlFor="birthday" className="form-label">BIRTHDAY</label>
+                    <div className="address-field" style={{ display: 'flex', alignItems: 'center', width: '100%', background: '#fff', border: '1px solid #ccc', borderRadius: 6, padding: '0 1.5rem', height: '48px', fontSize: '1rem' }}>
+                      <BirthdatePicker
+                        ref={birthdateRef}
+                        selectedDate={formData.birthday}
+                        onChange={(date) => setFormData({ ...formData, birthday: date })}
+                        style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: '1rem', height: '100%', borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
+                      />
+                      <span style={{ marginLeft: 32, minWidth: 110, fontWeight: 500, color: '#666', fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', textAlign: 'right' }}>
+                        <span style={{ fontWeight: 600, marginRight: 4 }}>AGE:</span> {formData.birthday ? `${calculateAge(formData.birthday)} yrs old` : ''}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -153,7 +170,7 @@ const RequestForm = ({
                     type="text"
                     id="unitNo"
                     name="unit_no"
-                    placeholder="UNIT NO."
+                    placeholder="HOUSE/UNIT NO."
                     className="address-field"
                     value={formData.unit_no}
                     onChange={handleChange}
@@ -163,7 +180,7 @@ const RequestForm = ({
                     type="text"
                     id="street"
                     name="street"
-                    placeholder="STREET"
+                    placeholder="STREET NAME"
                     className="address-field"
                     value={formData.street}
                     onChange={handleChange}
@@ -171,31 +188,11 @@ const RequestForm = ({
                   <span className="address-separator">/</span>
                   <input
                     type="text"
-                    id="barangay"
-                    name="barangay"
-                    placeholder="BARANGAY"
+                    id="subdivision"
+                    name="subdivision"
+                    placeholder="NAME OF SUBDIVISION, SITIO OR PUROK"
                     className="address-field"
-                    value={formData.barangay}
-                    onChange={handleChange}
-                  />
-                  <span className="address-separator">/</span>
-                  <input
-                    type="text"
-                    id="village"
-                    name="village"
-                    placeholder="VILLAGE"
-                    className="address-field"
-                    value={formData.village}
-                    onChange={handleChange}
-                  />
-                  <span className="address-separator">/</span>
-                  <input
-                    type="text"
-                    id="city"
-                    name="city"
-                    placeholder="CITY"
-                    className="address-field"
-                    value={formData.city}
+                    value={formData.subdivision}
                     onChange={handleChange}
                   />
                 </div>
