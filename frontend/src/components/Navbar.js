@@ -1,14 +1,16 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Link, useLocation } from "react-router-dom"
-import { Menu, X } from "lucide-react"
+import { Menu, X, ChevronDown } from "lucide-react"
 import brgyLogo from "../assets/brgyMenuLogo.png"
 import "../styles/Navbar.css"
 
 function Navbar() {
   const location = useLocation()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [showServicesDropdown, setShowServicesDropdown] = useState(false)
+  const servicesDropdownRef = useRef(null)
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
@@ -17,6 +19,37 @@ function Navbar() {
   const closeMenu = () => {
     setIsMenuOpen(false)
   }
+
+  const toggleServicesDropdown = (e) => {
+    e.preventDefault()
+    setShowServicesDropdown(!showServicesDropdown)
+  }
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      // Close dropdown when clicking outside
+      if (servicesDropdownRef.current && !servicesDropdownRef.current.contains(event.target)) {
+        setShowServicesDropdown(false)
+      }
+
+      // Close mobile menu when clicking outside (but not when clicking the menu toggle)
+      const menuToggle = document.querySelector(".mobile-menu-toggle")
+      if (
+        isMenuOpen &&
+        !event.target.closest(".mobile-nav") &&
+        event.target !== menuToggle &&
+        !menuToggle?.contains(event.target)
+      ) {
+        setIsMenuOpen(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [isMenuOpen])
 
   return (
     <div className="indexHeader">
@@ -33,9 +66,25 @@ function Navbar() {
         <Link to="/Team" className={location.pathname === "/Team" ? "active" : ""}>
           TEAM
         </Link>
-        <Link to="/Request" className={location.pathname === "/Request" ? "active" : ""}>
-          SERVICES
-        </Link>
+        <div className="services-dropdown" ref={servicesDropdownRef}>
+          <a
+            href="#"
+            onClick={toggleServicesDropdown}
+            className={location.pathname === "/Request" || location.pathname === "/RBI" ? "active" : ""}
+          >
+            SERVICES <ChevronDown size={16} />
+          </a>
+          {showServicesDropdown && (
+            <div className="dropdown-menu">
+              <Link to="/Request" onClick={() => setShowServicesDropdown(false)}>
+                Certificate Request
+              </Link>
+              <Link to="/RBI" onClick={() => setShowServicesDropdown(false)}>
+                RBI Registration
+              </Link>
+            </div>
+          )}
+        </div>
         <Link to="/Events" className={location.pathname === "/Events" ? "active" : ""}>
           EVENTS
         </Link>
@@ -66,9 +115,41 @@ function Navbar() {
             <Link to="/Team" className={location.pathname === "/Team" ? "active" : ""} onClick={closeMenu}>
               TEAM
             </Link>
-            <Link to="/Request" className={location.pathname === "/Request" ? "active" : ""} onClick={closeMenu}>
-              SERVICES
-            </Link>
+            <div className="mobile-dropdown">
+              <div
+                className={`mobile-dropdown-header ${
+                  location.pathname === "/Request" || location.pathname === "/RBI" ? "active" : ""
+                }`}
+                onClick={(e) => {
+                  e.stopPropagation() // Prevent event bubbling
+                  setShowServicesDropdown(!showServicesDropdown)
+                }}
+              >
+                SERVICES <ChevronDown size={16} className={showServicesDropdown ? "rotate" : ""} />
+              </div>
+              {showServicesDropdown && (
+                <div className="mobile-dropdown-content">
+                  <Link
+                    to="/Request"
+                    onClick={() => {
+                      closeMenu()
+                      setShowServicesDropdown(false)
+                    }}
+                  >
+                    Certificate Request
+                  </Link>
+                  <Link
+                    to="/RBI"
+                    onClick={() => {
+                      closeMenu()
+                      setShowServicesDropdown(false)
+                    }}
+                  >
+                    RBI Registration
+                  </Link>
+                </div>
+              )}
+            </div>
             <Link to="/Events" className={location.pathname === "/Events" ? "active" : ""} onClick={closeMenu}>
               EVENTS
             </Link>
@@ -85,9 +166,9 @@ function Navbar() {
           )}
         </div>
       </div>
+      {isMenuOpen && <div className="mobile-menu-overlay" onClick={closeMenu}></div>}
     </div>
   )
 }
 
 export default Navbar
-

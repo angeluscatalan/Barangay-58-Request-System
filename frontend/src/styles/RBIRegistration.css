@@ -1,0 +1,536 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap");
+
+.rbi-container {
+  background-image: url("../assets/reqPage_BG.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  min-height: 100vh;
+  width: 100%;
+  padding: 100px 20px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.mobile-tabs {
+  display: none;
+  width: 100%;
+  position: fixed;
+  top: 80px;
+  left: 0;
+  z-index: 100;
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.tab-button {
+  width: 50%;
+  padding: 12px;
+  border: none;
+  background: none;
+  font-family: "Manrope", sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: #666;
+  cursor: pointer;
+}
+
+.tab-button.active {
+  color: #da1c6f;
+  border-bottom: 3px solid #da1c6f;
+}
+
+.mobile-next-button,
+.mobile-back-button {
+  display: none;
+  width: 100%;
+  padding: 15px;
+  margin: 20px 0;
+  background-color: #da1c6f;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-family: "Manrope", sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.mobile-back-button {
+  background-color: #666;
+}
+
+.back-button-container {
+  margin-top: 20px;
+  width: 100%;
+}
+
+.rbi-content {
+  display: flex;
+  width: 100%;
+  max-width: 1400px;
+  gap: 30px;
+  justify-content: center;
+}
+
+.rbi-info {
+  flex: 1;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+}
+
+.rbi-text {
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.rbi-form {
+  flex: 1.5;
+  max-width: 800px;
+}
+
+.rbi-title {
+  font-size: 2.5rem;
+  font-family: "Montserrat";
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  color: #da1c6f;
+  margin-bottom: 15px;
+  line-height: 1.2;
+}
+
+.rbi-subtext {
+  font-size: 1.1rem;
+  font-family: "Montserrat";
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #000000;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+
+.rbi-steps-container {
+  width: 100%;
+  padding: 2rem;
+  border-radius: 35px;
+  background: linear-gradient(126deg, rgba(255, 255, 255, 0.18) 11.32%, rgba(255, 255, 255, 0.04) 73.74%);
+  box-shadow: 0px 4px 24px -1px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(20px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: 400;
+  font-family: "Manrope";
+}
+
+.rbi-steps {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  gap: 20px;
+}
+
+.rbi-step {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+}
+
+.step-icon {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.steps-info,
+.rbi-note {
+  font-size: 1rem;
+  line-height: 1.5;
+  letter-spacing: 0.05em;
+  color: #000000;
+  flex: 1;
+}
+
+.rbi-note {
+  margin-top: 1.5rem;
+  text-align: justify;
+  padding: 15px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+  border-left: 4px solid #da1c6f;
+}
+
+.rbi-form-container {
+  width: 100%;
+  border-radius: 35px;
+  background: linear-gradient(126deg, rgba(255, 255, 255, 0.18) 11.32%, rgba(255, 255, 255, 0.04) 73.74%);
+  box-shadow: 0px 4px 24px -1px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(20px);
+  padding: 30px;
+  align-items: center;
+  justify-content: center;
+  font-weight: 400;
+  font-family: "Manrope";
+}
+
+.fill-up-title {
+  width: 100%;
+  font-family: "Manrope";
+  font-weight: 700;
+  font-size: 1.4rem;
+  line-height: 1.5;
+  letter-spacing: 0.09em;
+  text-align: center;
+  color: #000000;
+  border-bottom: 1px solid #000000;
+  padding-bottom: 15px;
+  margin-bottom: 25px;
+}
+
+.rbi-form-content {
+  width: 100%;
+  position: relative;
+}
+
+.form-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.rbi-form-personal,
+.rbi-form-address,
+.rbi-form-other-info {
+  width: 100%;
+}
+
+.rbi-form-section-title {
+  font-family: "Manrope";
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.09em;
+  color: #da1c6f;
+  margin-bottom: 15px;
+}
+
+.form-row {
+  margin-bottom: 15px;
+  width: 100%;
+  position: relative;
+}
+
+.rbi-form-input,
+.rbi-form-select {
+  width: 100%;
+  height: 48px;
+  background: #fffefe;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-family: "Manrope";
+  font-size: 14px;
+  padding: 0 15px;
+  color: #000000;
+}
+
+.birthdate-container {
+  width: 100%;
+}
+
+.birthdate-container input {
+  width: 100% !important;
+  height: 48px;
+  background: #fffefe;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-family: "Manrope";
+  font-size: 14px;
+  padding: 0 15px;
+  color: #000000;
+}
+
+.rbi-form-select {
+  width: 100%;
+  color: #333;
+}
+
+.rbi-form-select option:disabled {
+  color: #a6a6a6;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.error-message {
+  color: #ff4444;
+  font-size: 0.8rem;
+  margin-top: 5px;
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+}
+
+.input-error {
+  border: 2px solid #ff4444 !important;
+}
+
+.rbi-form-terms-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 25px 0;
+}
+
+.rbi-form-terms {
+  width: 20px !important;
+  height: 20px !important;
+  margin-top: 3px;
+}
+
+.rbi-form-terms-label {
+  font-family: "Manrope";
+  font-weight: 400;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  letter-spacing: 0.05em;
+  color: #000000;
+}
+
+.rbi-form-submit-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.rbi-form-submit {
+  width: 100%;
+  max-width: 300px;
+  height: 50px;
+  background: #da1c6f;
+  border-radius: 5px;
+  border: none;
+  font-family: "Manrope";
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #ffe3e2;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.rbi-form-submit:hover {
+  background-color: #b01758;
+}
+
+.rbi-contact {
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 15px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.rbi-contact-title {
+  font-family: "Manrope";
+  font-weight: 600;
+  font-size: 1.2rem;
+  letter-spacing: 0.05em;
+  color: #000000;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.contact-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.rbi-contact-number,
+.rbi-contact-facebook,
+.rbi-contact-email {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.rbi-contact img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.rbi-contact h2 {
+  font-family: "Manrope";
+  font-weight: 400;
+  font-size: 1rem;
+  color: #000000;
+  margin: 0;
+}
+
+@media screen and (max-width: 1200px) {
+  .rbi-content {
+    gap: 20px;
+  }
+
+  .rbi-title {
+    font-size: 2rem;
+  }
+
+  .rbi-subtext {
+    font-size: 1rem;
+  }
+}
+
+@media screen and (max-width: 992px) {
+  .rbi-container {
+    margin-top: 40px;
+    padding: 120px 15px 30px;
+  }
+
+  .rbi-content {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .rbi-info,
+  .rbi-form {
+    max-width: 700px;
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .rbi-container {
+    padding: 130px 10px 20px;
+  }
+
+  .mobile-tabs {
+    display: flex;
+  }
+
+  .mobile-next-button,
+  .mobile-back-button {
+    display: block;
+  }
+
+  .rbi-info:not(.active),
+  .rbi-form:not(.active) {
+    display: none;
+  }
+
+  .rbi-title {
+    font-size: 1.8rem;
+  }
+
+  .rbi-subtext {
+    font-size: 0.9rem;
+  }
+
+  .fill-up-title {
+    font-size: 1.2rem;
+  }
+
+  .rbi-form-terms-label {
+    font-size: 0.8rem;
+  }
+
+  .rbi-form-submit {
+    font-size: 1rem;
+    height: 45px;
+  }
+
+  .rbi-contact-title {
+    font-size: 1rem;
+  }
+
+  .rbi-contact h2 {
+    font-size: 0.9rem;
+  }
+
+  .rbi-contact img {
+    width: 20px;
+    height: 20px;
+  }
+
+  .error-message {
+    font-size: 0.7rem;
+    bottom: -18px;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .rbi-container {
+    padding: 120px 10px 20px;
+  }
+
+  .rbi-title {
+    font-size: 1.5rem;
+    letter-spacing: 0.05em;
+  }
+
+  .rbi-subtext {
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+  }
+
+  .rbi-steps-container {
+    padding: 1.5rem;
+  }
+
+  .step-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .steps-info,
+  .rbi-note {
+    font-size: 0.9rem;
+  }
+
+  .rbi-form-container {
+    padding: 20px 15px;
+  }
+
+  .fill-up-title {
+    font-size: 1.1rem;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+  }
+
+  .rbi-form-section-title {
+    font-size: 0.9rem;
+  }
+
+  .rbi-form-input,
+  .rbi-form-select {
+    height: 42px;
+    font-size: 13px;
+  }
+
+  .rbi-form-terms-container {
+    margin: 15px 0;
+  }
+
+  .rbi-form-terms-label {
+    font-size: 0.75rem;
+  }
+
+  .rbi-form-submit {
+    height: 40px;
+    font-size: 0.9rem;
+  }
+
+  .contact-methods {
+    gap: 10px;
+  }
+}
