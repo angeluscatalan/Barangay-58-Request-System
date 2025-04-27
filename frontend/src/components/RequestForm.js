@@ -45,10 +45,11 @@ const RequestForm = ({
                     id="lname"
                     name="last_name"
                     placeholder="LAST NAME"
-                    className="reqFormInput"
+                    className={`reqFormInput ${errors.last_name ? 'input-error' : ''}`}
                     value={formData.last_name}
                     onChange={handleChange}
                   />
+                  {errors.last_name && <p className="error-message">{errors.last_name}</p>}
                 </div>
 
                 <div className="form-row">
@@ -57,10 +58,11 @@ const RequestForm = ({
                     id="fname"
                     name="first_name"
                     placeholder="FIRST NAME"
-                    className="reqFormInput"
+                    className={`reqFormInput ${errors.first_name ? 'input-error' : ''}`}
                     value={formData.first_name}
                     onChange={handleChange}
                   />
+                   {errors.first_name && <p className="error-message">{errors.first_name}</p>}
                 </div>
 
                 <div className="form-row">
@@ -69,10 +71,11 @@ const RequestForm = ({
                     id="mname"
                     name="middle_name"
                     placeholder="MIDDLE NAME"
-                    className="reqFormInput"
+                    className={`reqFormInput ${errors.middle_name ? 'input-error' : ''}`}
                     value={formData.middle_name}
                     onChange={handleChange}
                   />
+                  {errors.middle_name && <p className="error-message">{errors.middle_name}</p>}
                 </div>
 
                 <div className="form-row form-row-split">
@@ -127,6 +130,7 @@ const RequestForm = ({
                   </div>
                 </div>
 
+
                 <div className="form-row form-row-split">
                   <div className="input-container">
                     <input
@@ -139,6 +143,7 @@ const RequestForm = ({
                       onChange={(e) => {
                         handleChange(e)
                         validatorNum()
+                        
                       }}
                       onBlur={validatorNum}
                     />
@@ -171,30 +176,33 @@ const RequestForm = ({
                     id="unitNo"
                     name="unit_no"
                     placeholder="HOUSE/UNIT NO."
-                    className="address-field"
+                    className={`address-field ${errors.unit_no ? "error" : ""}`}
                     value={formData.unit_no}
                     onChange={handleChange}
                   />
+                  {errors.unit_no && <p className="error-message">{errors.unit_no}</p>}
                   <span className="address-separator">/</span>
                   <input
                     type="text"
                     id="street"
                     name="street"
                     placeholder="STREET NAME"
-                    className="address-field"
+                    className={`address-field ${errors.street ? "error" : ""}`}
                     value={formData.street}
                     onChange={handleChange}
                   />
+                  {errors.street && <p className="error-message">{errors.street}</p>}
                   <span className="address-separator">/</span>
                   <input
                     type="text"
                     id="subdivision"
                     name="subdivision"
                     placeholder="NAME OF SUBDIVISION, SITIO OR PUROK"
-                    className="address-field"
+                    className={`address-field ${errors.subdivision ? "error" : ""}`}
                     value={formData.subdivision}
                     onChange={handleChange}
                   />
+                   {errors.subdivision && <p className="error-message">{errors.subdivision}</p>}
                 </div>
               </div>
 
@@ -237,12 +245,13 @@ const RequestForm = ({
                     type="number"
                     id="copyAmount"
                     name="number_of_copies"
-                    className="reqFormCopyAmount"
+                    className={`reqFormCopyAmount ${errors.number_of_copies ? "error" : ""}`}
                     min="1"
                     placeholder="Number of Copies"
                     value={formData.number_of_copies}
                     onChange={handleChange}
                   />
+                  {errors.number_of_copies && <p className="error-message">{errors.number_of_copies}</p>}
                 </div>
               </div>
             </div>

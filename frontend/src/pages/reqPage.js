@@ -29,20 +29,52 @@ function reqPage() {
   const [activeSection, setActiveSection] = useState("info") // "info" or "form"
 
   const handleChange = (e) => {
-    let { name, value } = e.target
+    let { name, value } = e.target;
     if (["last_name", "first_name", "middle_name"].includes(name)) {
       value = value
-        .toLowerCase() // Convert to lowercase first
-        .replace(/\b\w/g, (char) => char.toUpperCase()) // Capitalize first letter of each word
+        .toLowerCase()
+        .replace(/\b\w/g, (char) => char.toUpperCase());
     }
-    setFormData({ ...formData, [name]: value })
-  }
+    setFormData({ ...formData, [name]: value });
+
+    setErrors((prev) => ({ ...prev, [name]: false }));
+  };
+
+  
 
   const getReq = () => {
-    if (Object.values(formData).some((value) => value.trim() === "")) {
-      alert("Please fill in all the required fields in the request form.")
-      return
+    const newErrors = {};
+    let formValid = true;
+
+    const requiredFields = [
+      "last_name", "first_name", "middle_name", "unit_no", "street", "subdivision", 
+      "barangay", "village", "city", "contact_no", "email","number_of_copies"
+    ];
+
+    requiredFields.forEach((field) => {
+      if (formData[field]?.trim() === "") {
+        newErrors[field] = "This field cannot be empty";
+        formValid = false; 
+      }
+    });
+
+    Object.keys(formData).forEach((key) => {
+      if (formData[key].trim() === "") {
+        newErrors[key] = "This field cannot be empty";
+        formValid = false;
+      }
+    });
+
+    if (!formValid) {
+      setErrors(newErrors);
+      return;
     }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+  
 
     if (!document.getElementById("terms").checked) {
       alert("Please verify with our terms by clicking the checkbox.")
@@ -57,6 +89,17 @@ function reqPage() {
       return
     }
 
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors); 
+      return;
+    }
+
+    const numberOfCopies = formData.number_of_copies;
+  if (isNaN(numberOfCopies) || numberOfCopies <= 0) {
+    newErrors.number_of_copies = "Please enter a valid number of copies";
+    formValid = false;
+  }
+  
     const fullAddress = `${formData.unit_no}, ${formData.street}, ${formData.barangay}, ${formData.village}, ${formData.city}`
 
     const requestData = {
@@ -64,7 +107,7 @@ function reqPage() {
       address: fullAddress,
       number_of_copies: Number(formData.number_of_copies),
     }
-  
+    
     console.log("Sending request data:", requestData);
 
     axios
@@ -92,6 +135,7 @@ function reqPage() {
           number_of_copies: "",
         })
         document.getElementById("terms").checked = false
+        setErrors({}); 
       })
       .catch((error) => {
         console.error("❌ Error details:", {
