@@ -27,6 +27,7 @@ function RBIRegistration() {
     civil_status: "",
     citizenship: "",
     occupation: "",
+    email: "",
   })
   const [errors, setErrors] = useState({})
 
@@ -48,6 +49,11 @@ function RBIRegistration() {
         newErrors[key] = "This field is required"
       }
     })
+
+    // Add email validation
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address"
+    }
 
     if (!document.getElementById("terms").checked) {
       alert("Please verify with our terms by clicking the checkbox.")
@@ -79,6 +85,7 @@ function RBIRegistration() {
         civil_status: "",
         citizenship: "",
         occupation: "",
+        email: "",
       })
       document.getElementById("terms").checked = false
     } catch (error) {
@@ -397,6 +404,20 @@ function RBIRegistration() {
                         required
                       />
                       {errors.occupation && <p className="error-message">*{errors.occupation}</p>}
+                    </div>
+
+                    <div className="form-row">
+                      <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="EMAIL ADDRESS"
+                        className={`rbi-form-input ${errors.email ? "input-error" : ""}`}
+                        value={formData.email}
+                        onChange={handleChange}
+                        required
+                      />
+                      {errors.email && <p className="error-message">*{errors.email}</p>}
                     </div>
                   </div>
                 </div>
