@@ -398,6 +398,37 @@
   border: 2px solid #ff4444 !important;
 }
 
+.address-box {
+  display: flex;
+  align-items: center;
+  background: #fffefe;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 0 10px;
+}
+
+.address-field {
+  flex: 1;
+  height: 48px;
+  border: none;
+  background: transparent;
+  font-family: "Manrope";
+  font-size: 14px;
+  padding: 0 10px;
+  color: #000000;
+  min-width: 0;
+}
+
+.address-field::placeholder {
+  color: #a6a6a6;
+}
+
+.address-separator {
+  color: #666;
+  font-weight: bold;
+  padding: 0 5px;
+}
+
 @media screen and (max-width: 1200px) {
   .req-container {
     gap: 20px;
@@ -450,7 +481,6 @@
   }
 
   .reqTitle {
-
     font-size: 1.8rem;
   }
 
@@ -487,6 +517,44 @@
   .reqContact img {
     width: 20px;
     height: 20px;
+  }
+
+  .reqFormTermsLabel {
+    font-size: 0.75rem;
+  }
+
+  .reqFormSubmit {
+    height: 40px;
+    font-size: 0.9rem;
+  }
+
+  .contact-methods {
+    gap: 10px;
+  }
+
+  .error-message {
+    font-size: 0.7rem;
+    bottom: -18px;
+  }
+
+  .address-box {
+    flex-direction: column;
+    padding: 10px;
+    gap: 5px;
+  }
+
+  .address-field {
+    width: 100%;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 5px;
+  }
+
+  .address-field:last-child {
+    border-bottom: none;
+  }
+
+  .address-separator {
+    display: none;
   }
 }
 
@@ -568,4 +636,3 @@
     bottom: -18px;
   }
 }
-

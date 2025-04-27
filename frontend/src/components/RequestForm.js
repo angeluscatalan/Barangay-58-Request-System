@@ -146,43 +146,58 @@ const RequestForm = ({
                   </div>
                 </div>
                 <label htmlFor="address" className="form-label">
-                      ADDRESS
-                    </label>
-                <div className="form-row">
-                
+                  ADDRESS
+                </label>
+                <div className="form-row address-box">
                   <input
                     type="text"
-                    id="address"
-                    name="address_street"
-                    placeholder="STREET/PUROK"
-                    className="reqFormAddress"
-                    value={formData.address_street}
+                    id="unitNo"
+                    name="unit_no"
+                    placeholder="UNIT NO."
+                    className="address-field"
+                    value={formData.unit_no}
                     onChange={handleChange}
                   />
-                    <input
-                      type="text"
-                      name="address_barangay"
-                      placeholder="BARANGAY"
-                      className="reqFormAddress"
-                      value={formData.address_barangay}
-                      onChange={handleChange}
+                  <span className="address-separator">/</span>
+                  <input
+                    type="text"
+                    id="street"
+                    name="street"
+                    placeholder="STREET"
+                    className="address-field"
+                    value={formData.street}
+                    onChange={handleChange}
                   />
-                     <input
-                        type="text"
-                        name="address_city"
-                        placeholder="CITY/MUNICIPALITY"
-                        className="reqFormAddress"
-                        value={formData.address_city}
-                        onChange={handleChange}
-                      />
-                      <input
-                        type="text"
-                        name="address_province"
-                        placeholder="PROVINCE"
-                        className="reqFormAddress"
-                        value={formData.address_province}
-                         onChange={handleChange}
-                      />
+                  <span className="address-separator">/</span>
+                  <input
+                    type="text"
+                    id="barangay"
+                    name="barangay"
+                    placeholder="BARANGAY"
+                    className="address-field"
+                    value={formData.barangay}
+                    onChange={handleChange}
+                  />
+                  <span className="address-separator">/</span>
+                  <input
+                    type="text"
+                    id="village"
+                    name="village"
+                    placeholder="VILLAGE"
+                    className="address-field"
+                    value={formData.village}
+                    onChange={handleChange}
+                  />
+                  <span className="address-separator">/</span>
+                  <input
+                    type="text"
+                    id="city"
+                    name="city"
+                    placeholder="CITY"
+                    className="address-field"
+                    value={formData.city}
+                    onChange={handleChange}
+                  />
                 </div>
               </div>
 
@@ -249,7 +264,7 @@ const RequestForm = ({
               </button>
             </div>
 
-            {}
+            { }
             <div className="back-button-container">
               <button className="mobile-back-button" onClick={() => toggleSection("info")}>
                 Back to Information
