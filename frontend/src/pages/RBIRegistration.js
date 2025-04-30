@@ -9,6 +9,8 @@ import step3 from "../assets/step3.png"
 import numberIcon from "../assets/numberIcon.png"
 import facebookIcon from "../assets/facebookIcon.png"
 import emailIcon from "../assets/emailIcon.png"
+import axios from "axios"
+
 
 function RBIRegistration() {
   const [activeSection, setActiveSection] = useState("info")
@@ -18,22 +20,22 @@ function RBIRegistration() {
     first_name: "",
     middle_name: "",
     suffix: "",
-    house_no: "",
+    house_unit_no: "",
     street_name: "",
     subdivision: "",
-    place_of_birth: "",
-    date_of_birth: "",
+    birth_place: "",
+    birth_date: "",
     sex: "",
     civil_status: "",
     citizenship: "",
     occupation: "",
-    email: "",
+    email_address: "",
   })
   const [errors, setErrors] = useState({})
 
   const handleChange = (e) => {
     let { name, value } = e.target
-    if (["last_name", "first_name", "middle_name", "place_of_birth"].includes(name)) {
+    if (["last_name", "first_name", "middle_name", "birth_place"].includes(name)) {
       value = value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase())
     }
     setFormData({ ...formData, [name]: value })
@@ -41,7 +43,7 @@ function RBIRegistration() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-
+  
     // Basic validation
     const newErrors = {}
     Object.keys(formData).forEach((key) => {
@@ -49,50 +51,61 @@ function RBIRegistration() {
         newErrors[key] = "This field is required"
       }
     })
-
+  
     // Add email validation
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address"
+    if (formData.email_address && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email_address)) {
+      newErrors.email_address = "Please enter a valid email address"
     }
-
+  
     if (!document.getElementById("terms").checked) {
       alert("Please verify with our terms by clicking the checkbox.")
       return
     }
-
+  
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors)
       alert("Please fill in all required fields.")
       return
     }
-
+  
     try {
-      // This would be replaced with your actual API endpoint
-      // const response = await axios.post("http://localhost:5000/rbi-registration", formData)
-      // For now, we'll just simulate a successful submission
-      alert("✅ RBI Registration successfully submitted!")
-      setFormData({
-        last_name: "",
-        first_name: "",
-        middle_name: "",
-        suffix: "",
-        house_no: "",
-        street_name: "",
-        subdivision: "",
-        place_of_birth: "",
-        date_of_birth: "",
-        sex: "",
-        civil_status: "",
-        citizenship: "",
-        occupation: "",
-        email: "",
-      })
-      document.getElementById("terms").checked = false
+      const formattedData = {
+        ...formData,
+        birth_date: new Date(formData.birth_date).toISOString().split('T')[0] // 'YYYY-MM-DD'
+      }
+
+      const response = await axios.post("http://localhost:5000/rbi", formattedData)
+  
+      if (response.status === 200 || response.status === 201) {
+        alert("✅ RBI Registration successfully submitted!")
+  
+        // Reset form
+        setFormData({
+          last_name: "",
+          first_name: "",
+          middle_name: "",
+          suffix: "",
+          house_unit_no: "",
+          street_name: "",
+          subdivision: "",
+          birth_place: "",
+          birth_date: "",
+          sex: "",
+          civil_status: "",
+          citizenship: "",
+          occupation: "",
+          email_address: "",
+        })
+        document.getElementById("terms").checked = false
+      } else {
+        alert("Submission failed. Please try again later.")
+      }
     } catch (error) {
       console.error("Error submitting RBI registration:", error)
-      alert(`Error: ${error.message || "Failed to submit registration"}`)
+      alert(`Error: ${error.response?.data?.message || error.message || "Failed to submit registration"}`)
     }
   }
+  
 
   // For mobile view navigation
   const toggleSection = (section) => {
@@ -269,14 +282,14 @@ function RBIRegistration() {
                       <input
                         type="text"
                         id="house_no"
-                        name="house_no"
+                        name="house_unit_no"
                         placeholder="HOUSE/UNIT NO."
-                        className={`rbi-form-input ${errors.house_no ? "input-error" : ""}`}
-                        value={formData.house_no}
+                        className={`rbi-form-input ${errors.house_unit_no ? "input-error" : ""}`}
+                        value={formData.house_unit_no}
                         onChange={handleChange}
                         required
                       />
-                      {errors.house_no && <p className="error-message">*{errors.house_no}</p>}
+                      {errors.house_unit_no && <p className="error-message">*{errors.house_unit_no}</p>}
                     </div>
 
                     <div className="form-row">
@@ -315,28 +328,28 @@ function RBIRegistration() {
                       <input
                         type="text"
                         id="place_of_birth"
-                        name="place_of_birth"
+                        name="birth_place"
                         placeholder="PLACE OF BIRTH"
-                        className={`rbi-form-input ${errors.place_of_birth ? "input-error" : ""}`}
-                        value={formData.place_of_birth}
+                        className={`rbi-form-input ${errors.birth_place ? "input-error" : ""}`}
+                        value={formData.birth_place}
                         onChange={handleChange}
                         required
                       />
-                      {errors.place_of_birth && <p className="error-message">*{errors.place_of_birth}</p>}
+                      {errors.birth_place && <p className="error-message">*{errors.birth_place}</p>}
                     </div>
 
                     <div className="form-row">
                       <div className="birthdate-container">
-                        <label htmlFor="date_of_birth" className="form-label">
+                        <label htmlFor="birth_date" className="form-label">
                           DATE OF BIRTH
                         </label>
                         <BirthdatePicker
                           ref={birthdateRef}
-                          selectedDate={formData.date_of_birth}
-                          onChange={(date) => setFormData({ ...formData, date_of_birth: date })}
+                          selectedDate={formData.birth_date}
+                          onChange={(date) => setFormData({ ...formData, birth_date: date })}
                         />
                       </div>
-                      {errors.date_of_birth && <p className="error-message">*{errors.date_of_birth}</p>}
+                      {errors.birth_date && <p className="error-message">*{errors.birth_date}</p>}
                     </div>
 
                     <div className="form-row">
@@ -410,14 +423,14 @@ function RBIRegistration() {
                       <input
                         type="email"
                         id="email"
-                        name="email"
+                        name="email_address"
                         placeholder="EMAIL ADDRESS"
-                        className={`rbi-form-input ${errors.email ? "input-error" : ""}`}
-                        value={formData.email}
+                        className={`rbi-form-input ${errors.email_address ? "input-error" : ""}`}
+                        value={formData.email_address}
                         onChange={handleChange}
                         required
                       />
-                      {errors.email && <p className="error-message">*{errors.email}</p>}
+                      {errors.email_address && <p className="error-message">*{errors.email_address}</p>}
                     </div>
                   </div>
                 </div>

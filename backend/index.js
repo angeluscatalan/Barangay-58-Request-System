@@ -4,6 +4,7 @@ const cookieParser = require("cookie-parser");
 require("dotenv").config();
 
 // Route imports
+const rbiRoutes = require("./routes/rbiRoutes")
 const eventRoutes = require("./routes/eventRoutes");
 const authRoutes = require("./routes/authRoutes");
 const requestRoutes = require("./routes/requestRoutes");
@@ -24,6 +25,7 @@ app.use(cors({
 }));
 
 // Routes
+app.use('/rbi', rbiRoutes);
 app.use("/requests", requestRoutes);
 app.use('/events', eventRoutes);
 app.use("/api/auth", authRoutes);
