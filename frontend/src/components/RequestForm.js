@@ -131,24 +131,31 @@ const RequestForm = ({
                 </div>
 
 
-                <div className="form-row form-row-split">
-                  <div className="input-container">
-                    <input
-                      type="number"
-                      id="contactNum"
-                      name="contact_no"
-                      placeholder="CONTACT NO."
-                      className={`reqFormNum ${errors.contact_no ? "input-error" : ""}`}
-                      value={formData.contact_no}
-                      onChange={(e) => {
-                        handleChange(e)
-                        validatorNum()
-                        
-                      }}
-                      onBlur={validatorNum}
-                    />
-                    {errors.contact_no && <p className="error-message">*Invalid Phone Number</p>}
-                  </div>
+                <div className="input-container">
+  <div className="contact-number-flex">
+    <input
+      type="text"
+      name="country_code"
+      placeholder="+63"
+      className="country-code-input"
+      value={formData.country_code || ""}
+      onChange={(e) => setFormData({ ...formData, country_code: e.target.value })}
+    />
+    <input
+      type="tel"
+      name="contact_no"
+      placeholder="9XXXXXXXXX"
+      className={`reqFormNum ${errors.contact_no ? "input-error" : ""}`}
+      value={formData.contact_no}
+      onChange={(e) => {
+        handleChange(e);
+        validatorNum();
+      }}
+      onBlur={validatorNum}
+    />
+  </div>
+  {errors.contact_no && <p className="error-message">*Invalid Phone Number</p>}
+</div>
 
                   <div className="input-container">
                     <input
@@ -279,8 +286,8 @@ const RequestForm = ({
           </div>
         </div>
       </div>
-    </div>
   )
 }
+
 export default RequestForm
 

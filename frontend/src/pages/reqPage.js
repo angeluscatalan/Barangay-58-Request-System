@@ -15,6 +15,7 @@ function reqPage() {
     sex: "",
     birthday: "",
     contact_no: "",
+    country_code: "+63",
     email: "",
     unit_no: "",
     street: "",
@@ -43,6 +44,7 @@ function reqPage() {
   
 
   const getReq = () => {
+    const fullNumber = `${formData.country_code}${formData.contact_no}`;
     const newErrors = {};
     let formValid = true;
 
@@ -126,6 +128,7 @@ function reqPage() {
           sex: "",
           birthday: "",
           contact_no: "",
+          country_code: "+63",
           email: "",
           unit_no: "",
           street: "",

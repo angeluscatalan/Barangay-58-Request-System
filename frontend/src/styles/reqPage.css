@@ -243,6 +243,7 @@
   flex: 1;
   position: relative;
   margin-bottom: 20px;
+  /* Remove flex-direction: column; */
 }
 
 .form-label {
@@ -429,6 +430,48 @@
   padding: 0 5px;
 }
 
+
+.phone-input-container {
+  display: flex !important;;
+  align-items: center !important;
+  width: 100% !important;
+  border: 1px solid #ddd !important;
+  border-radius: 5px !important;
+  padding: 0 1rem !important;
+  height: 42px !important;  /* Same height as the input fields */
+}
+
+.phone-prefix {
+  margin-right: 0.5rem !important;
+  font-size: 1rem !important;
+  color: #666   !important;
+
+}
+
+.reqFormNum {
+  flex: 1;
+  height: 48px;
+}
+
+.contact-number-flex {
+  display: flex;
+align-items: center;
+gap: 10px;
+width: 100%;
+}
+
+.country-code-input {
+  width: 80px !important;
+min-width: 80px;
+height: 48px;
+padding: 0 10px;
+background: #fffefe;
+border: 1px solid #ddd;
+border-radius: 5px;
+font-family: "Manrope";
+font-size: 14px;
+color: #000000;
+}
 @media screen and (max-width: 1200px) {
   .req-container {
     gap: 20px;
@@ -556,6 +599,18 @@
   .address-separator {
     display: none;
   }
+
+  .contact-number-flex {
+    display: flex !important;
+    flex-direction: row !important; 
+    align-items: center !important;
+    gap: 10px !important;
+  }
+
+  .country-code-input, 
+  .reqFormNum {
+    height: 42px;
+  }
 }
 
 @media screen and (max-width: 576px) {
@@ -647,26 +702,46 @@
   }
 
   .phone-input-container {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    padding: 0 1rem;
-    height: 48px;
+    display: flex !important;;
+    align-items: center !important;
+    width: 100% !important;
+    border: 1px solid #ddd !important;
+    border-radius: 5px !important;
+    padding: 0 1rem !important;
+    height: 42px !important;  /* Same height as the input fields */
   }
   
   .phone-prefix {
-    margin-right: 0.5rem;
-    font-size: 1rem;
-    color: #666;
+    margin-right: 0.5rem !important;
+    font-size: 1rem !important;
+    color: #666   !important;
+
   }
   
   .reqFormNum {
     flex: 1;
-    border: none;
-    outline: none;
-    font-size: 1rem;
+    height: 48px;
   }
+
+  .contact-number-flex {
+    display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  }
+  
+  .country-code-input {
+    width: 80px !important;
+  min-width: 80px;
+  height: 48px;
+  padding: 0 10px;
+  background: #fffefe;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-family: "Manrope";
+  font-size: 14px;
+  color: #000000;
+  }
+  
   
 }
