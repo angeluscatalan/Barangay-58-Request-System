@@ -7,6 +7,7 @@ import { useRequests } from "../components/requestContext"
 import "../styles/Admin.css"
 import brgyLoginPageLogo from "../assets/brgyLoginPageLogo.png"
 import EventsManager from "../components/EventsManager"
+import RBI_Request_Manager from "../components/RBI_Request_Manager"
 import Request_Manager from "../components/Request_Manager"
 import Account_Manager from "../components/Account_Manager"
 
@@ -176,6 +177,9 @@ function Admin() {
               >
                 {sidebarVisible ? "Requests Manager" : <i className="fas fa-tasks"></i>}
               </li>
+              <li className={activeSection === "rbi_manager" ? "active" : ""} onClick={() => handleSectionChange("rbi_manager")}>
+                {sidebarVisible ? "RBI Requests" : <i className="fas fa-id-card"></i>}
+              </li>           
               {userAccessLevel === 2 && (
                 <li
                   className={activeSection === "acc_manager" ? "active" : ""}
@@ -343,7 +347,10 @@ function Admin() {
             <EventsManager />
           ) : activeSection === "req_manager" ? (
             <Request_Manager />
-          ) : activeSection === "acc_manager" ? (
+          ) : activeSection === "rbi_manager" ? (
+            <RBI_Request_Manager />
+          )
+           : activeSection === "acc_manager" ? (
             userAccessLevel === 2 ? (
               <Account_Manager />
             ) : (

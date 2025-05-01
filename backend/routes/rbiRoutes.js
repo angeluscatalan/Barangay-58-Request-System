@@ -20,5 +20,13 @@ const validateRBI = [
   check('email_address').isEmail().normalizeEmail()
 ];
 
+
+router.get('/test', (req, res) => {
+  res.send('RBI Routes are working!');
+});
+
 router.post('/', validateRBI, rbiController.createRBIRegistration);
+router.get('/', rbiController.getRBIRegistrations); // optional
+router.get('/:id', rbiController.getRBIRegistrationById); // optional
+router.put('/:id', rbiController.updateRBIStatus);
 module.exports = router;

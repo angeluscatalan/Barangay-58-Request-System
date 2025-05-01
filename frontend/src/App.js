@@ -11,10 +11,12 @@ import Admin from "./pages/Admin.js"
 import Forgot_Password from "./pages/Forgot_Password.js"
 import ProtectedRoute from "./components/ProtectedRoute.js"
 import { RequestsProvider } from "./components/requestContext"
+import { RequestProvider } from "./components/RBI_Request_Context.js"
 
 function App() {
   return (
     <RequestsProvider>
+      <RequestProvider>
       <Router>
         <Routes>
           <Route
@@ -53,6 +55,8 @@ function App() {
           />
         </Routes>
       </Router>
+              
+      </RequestProvider>
     </RequestsProvider>
   )
 }
