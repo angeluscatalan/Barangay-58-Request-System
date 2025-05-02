@@ -14,13 +14,18 @@ export const RequestProvider = ({ children }) => {
     try {
       setLoading(true);
       const response = await axios.get("http://localhost:5000/rbi");
-      setRbiRequests(response.data);  // <-- fix here
+      const allRequests = response.data;
+      const filtered = status 
+        ? allRequests.filter(r => r.status?.toLowerCase() === status.toLowerCase()) 
+        : allRequests;
+      setRbiRequests(filtered);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch requests');
     } finally {
       setLoading(false);
     }
-  }, []); // <-- this was missing!
+  }, []);
+   // <-- this was missing!
     // Empty dependency array, since the fetch function doesn't depend on anything
 
   const updateRbiStatus = useCallback(async (id, newStatus) => {

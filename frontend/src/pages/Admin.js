@@ -10,6 +10,8 @@ import EventsManager from "../components/EventsManager"
 import RBI_Request_Manager from "../components/RBI_Request_Manager"
 import Request_Manager from "../components/Request_Manager"
 import Account_Manager from "../components/Account_Manager"
+import Verified_RBI_List from "../components/Verified_RBI_List";
+
 
 function Admin() {
   const navigate = useNavigate()
@@ -236,7 +238,7 @@ function Admin() {
             <div className="dashboard">
               <div className="dashboard-header">
                 <div className="header-top">
-                  <h1>Requests ({filteredRequests.length})</h1>
+                {typeFilter !== "VerifiedRBI" && <h1>Requests ({filteredRequests.length})</h1>}
                 </div>
                 <div className="filters">
                   <input
@@ -270,78 +272,91 @@ function Admin() {
               </div>
               <div className="dashboard-content" style={{ height: zoomLevel !== 100 ? `calc(100vh - 200px)` : "auto" }}>
                 <div className="filter-tabs">
-                  {["All", "ClearanceCert", "IDApp", "IndigencyCert", "JobseekerCert", "BrgyCert"].map((type) => (
-                    <button
-                      key={type}
-                      className={`tab-button ${typeFilter === type ? "active-tab" : ""}`}
-                      onClick={() => setTypeFilter(type)}
-                    >
-                      {type === "All" ? "All Types" : type}{" "}
-                    </button>
-                  ))}
-                </div>
-                <div
-                  className="table-container"
-                  style={{
-                    transform: `scale(${zoomLevel / 100})`,
-                    transformOrigin: "top left",
-                    width: zoomLevel < 100 ? `${100 / (zoomLevel / 100)}%` : "100%",
-                    height: zoomLevel < 100 ? `${100 / (zoomLevel / 100)}%` : "100%",
-                    overflow: "auto",
-                  }}
-                >
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>DATE REQUESTED</th>
-                        <th>NAME</th>
-                        <th>SUFFIX</th>
-                        <th>SEX</th>
-                        <th>BIRTHDAY</th>
-                        <th>AGE</th>
-                        <th>ADDRESS</th>
-                        <th>CONTACT NO.</th>
-                        <th>EMAIL</th>
-                        <th>TYPE OF REQUEST</th>
-                        <th>PURPOSE</th>
-                        <th>NO. OF COPIES</th>
-                        <th>STATUS</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredRequests.map((request, index) => (
-                        <tr key={index}>
-                          <td>{request.created_at}</td>
-                          <td>{`${request.last_name}, ${request.first_name} ${request.middle_name || ""}`}</td>
-                          <td>{request.suffix}</td>
-                          <td>{request.sex}</td>
-                          <td>{request.birthday ? request.birthday.split("T")[0] : ""}</td>
-                          <td>{calculateAge(request.birthday)}</td>
-                          <td>{request.address}</td>
-                          <td>{request.contact_no}</td>
-                          <td>{request.email}</td>
-                          <td>{request.type_of_certificate}</td>
-                          <td>{request.purpose_of_request}</td>
-                          <td>{request.number_of_copies}</td>
-                          <td>
+  {["VerifiedRBI", "All", "ClearanceCert", "IDApp", "IndigencyCert", "JobseekerCert", "BrgyCert"].map((type) => (
+    <button
+      key={type}
+      className={`tab-button ${typeFilter === type ? "active-tab" : ""}`}
+      onClick={() => setTypeFilter(type)}
+    >
+      {type === "All"
+        ? "All Types"
+        : type === "VerifiedRBI"
+        ? "Verified RBI List"
+        : type}
+    </button>
+  ))}
+</div>
+
+
+  
+  <div> 
+  {typeFilter === "VerifiedRBI" ? (
+    <Verified_RBI_List />
+) : (
+    <div
+        className="table-container"
+        style={{
+            transform: `scale(${zoomLevel / 100})`,
+            transformOrigin: "top left",
+            width: zoomLevel < 100 ? `${100 / (zoomLevel / 100)}%` : "100%",
+            height: zoomLevel < 100 ? `${100 / (zoomLevel / 100)}%` : "100%",
+            overflow: "auto",
+        }}
+    >
+        <table>
+            <thead>
+                <tr>
+                    <th>DATE REQUESTED</th>
+                    <th>NAME</th>
+                    <th>SUFFIX</th>
+                    <th>SEX</th>
+                    <th>BIRTHDAY</th>
+                    <th>AGE</th>
+                    <th>ADDRESS</th>
+                    <th>CONTACT NO.</th>
+                    <th>EMAIL</th>
+                    <th>TYPE OF REQUEST</th>
+                    <th>PURPOSE</th>
+                    <th>NO. OF COPIES</th>
+                    <th>STATUS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {filteredRequests.map((request, index) => (
+                    <tr key={index}>
+                        <td>{request.created_at}</td>
+                        <td>{`${request.last_name}, ${request.first_name} ${request.middle_name || ""}`}</td>
+                        <td>{request.suffix}</td>
+                        <td>{request.sex}</td>
+                        <td>{request.birthday ? request.birthday.split("T")[0] : ""}</td>
+                        <td>{calculateAge(request.birthday)}</td>
+                        <td>{request.address}</td>
+                        <td>{request.contact_no}</td>
+                        <td>{request.email}</td>
+                        <td>{request.type_of_certificate}</td>
+                        <td>{request.purpose_of_request}</td>
+                        <td>{request.number_of_copies}</td>
+                        <td>
                             <span className={`status-badge ${getStatusClass(request.status)}`}>{request.status}</span>
                             <select
-                              value={request.status}
-                              onChange={(e) => updateStatus(request.id, e.target.value)}
-                              className={getStatusClass(request.status)}
+                                value={request.status}
+                                onChange={(e) => updateStatus(request.id, e.target.value)}
+                                className={getStatusClass(request.status)}
                             >
-                              <option value="pending">Pending</option>
-                              <option value="approved">Approved</option>
-                              <option value="rejected">Rejected</option>
-                              <option value="for pickup">For Pickup</option>
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                                <option value="for pickup">For Pickup</option>
                             </select>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+                        </td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+    </div>
+)}                      
+              </div>             
+            </div>
             </div>
           ) : activeSection === "events" ? (
             <EventsManager />
@@ -349,8 +364,7 @@ function Admin() {
             <Request_Manager />
           ) : activeSection === "rbi_manager" ? (
             <RBI_Request_Manager />
-          )
-           : activeSection === "acc_manager" ? (
+          ) : activeSection === "acc_manager" ? (
             userAccessLevel === 2 ? (
               <Account_Manager />
             ) : (
