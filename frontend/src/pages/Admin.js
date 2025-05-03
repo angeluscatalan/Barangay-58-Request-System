@@ -22,10 +22,27 @@ function Admin() {
   const [searchQuery, setSearchQuery] = useState("")
   const [zoomLevel, setZoomLevel] = useState(100)
   const [userAccessLevel, setUserAccessLevel] = useState(null)
-  // Add a new state for sidebar visibility
+  const [selectedRequests, setSelectedRequests] = useState([])
   const [sidebarVisible, setSidebarVisible] = useState(true)
 
   const { requests, loading: requestsLoading, error: requestsError, fetchRequests, updateRequestStatus } = useRequests()
+
+  // Add delete function
+  const handleDeleteRequest = async (id) => {
+    if (window.confirm('Are you sure you want to delete this request? This action cannot be undone.')) {
+      try {
+        const token = localStorage.getItem("token")
+        await axios.delete(`http://localhost:5000/requests/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        await fetchRequests() // Refresh the requests list
+        alert('Request successfully deleted!')
+      } catch (error) {
+        console.error("Error deleting request:", error)
+        alert("Failed to delete request")
+      }
+    }
+  }
 
   // Memoize fetchUserData with no dependencies
   const fetchUserData = useCallback(async () => {
@@ -149,6 +166,52 @@ function Admin() {
     return age;
   };
 
+  // Add master select function
+  const handleMasterSelect = (e) => {
+    if (e.target.checked) {
+      setSelectedRequests(filteredRequests.map(request => request.id))
+    } else {
+      setSelectedRequests([])
+    }
+  }
+
+  // Add individual select function
+  const handleSelectRequest = (id) => {
+    setSelectedRequests(prev => {
+      if (prev.includes(id)) {
+        return prev.filter(requestId => requestId !== id)
+      } else {
+        return [...prev, id]
+      }
+    })
+  }
+
+  // Add bulk delete function
+  const handleBulkDelete = async () => {
+    if (selectedRequests.length === 0) {
+      alert('Please select at least one request to delete')
+      return
+    }
+
+    const confirmMessage = `Are you sure you want to delete ${selectedRequests.length} selected request(s)? This action cannot be undone.`
+    if (window.confirm(confirmMessage)) {
+      try {
+        const token = localStorage.getItem("token")
+        await Promise.all(selectedRequests.map(id =>
+          axios.delete(`http://localhost:5000/requests/${id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        ))
+        await fetchRequests()
+        setSelectedRequests([])
+        alert(`${selectedRequests.length} request(s) successfully deleted!`)
+      } catch (error) {
+        console.error("Error deleting requests:", error)
+        alert("Failed to delete selected requests")
+      }
+    }
+  }
+
   if (requestsLoading) return <div className="loading">Loading...</div>
   if (requestsError) return <div className="error">Error: {requestsError}</div>
 
@@ -255,7 +318,6 @@ function Admin() {
                     <option value="rejected">Rejected</option>
                     <option value="for pickup">For Pickup</option>
                   </select>
-                  {/* Update the zoom controls with proper icons */}
                   <div className="zoom-controls">
                     <button className="zoom-btn" onClick={() => handleZoom("out")} title="Zoom Out">
                       <i className="fas fa-search-minus"></i>
@@ -269,6 +331,13 @@ function Admin() {
                     </button>
                   </div>
                 </div>
+                {selectedRequests.length > 0 && (
+                  <div className="bulk-actions">
+                    <button className="bulk-delete-btn" onClick={handleBulkDelete}>
+                      <i className="fas fa-trash-alt"></i> Delete Selected ({selectedRequests.length})
+                    </button>
+                  </div>
+                )}
               </div>
               <div className="dashboard-content" style={{ height: zoomLevel !== 100 ? `calc(100vh - 200px)` : "auto" }}>
                 <div className="filter-tabs">
@@ -287,8 +356,6 @@ function Admin() {
                   ))}
                 </div>
 
-
-
                 <div>
                   {typeFilter === "VerifiedRBI" ? (
                     <Verified_RBI_List />
@@ -306,6 +373,13 @@ function Admin() {
                       <table>
                         <thead>
                           <tr>
+                            <th>
+                              <input
+                                type="checkbox"
+                                checked={selectedRequests.length === filteredRequests.length}
+                                onChange={handleMasterSelect}
+                              />
+                            </th>
                             <th>DATE REQUESTED</th>
                             <th>NAME</th>
                             <th>SUFFIX</th>
@@ -324,6 +398,13 @@ function Admin() {
                         <tbody>
                           {filteredRequests.map((request, index) => (
                             <tr key={index}>
+                              <td>
+                                <input
+                                  type="checkbox"
+                                  checked={selectedRequests.includes(request.id)}
+                                  onChange={() => handleSelectRequest(request.id)}
+                                />
+                              </td>
                               <td>{request.created_at}</td>
                               <td>{`${request.last_name}, ${request.first_name} ${request.middle_name || ""}`}</td>
                               <td>{request.suffix}</td>
@@ -348,6 +429,13 @@ function Admin() {
                                   <option value="rejected">Rejected</option>
                                   <option value="for pickup">For Pickup</option>
                                 </select>
+                                <button
+                                  className="delete-btn"
+                                  onClick={() => handleDeleteRequest(request.id)}
+                                  title="Delete Request"
+                                >
+                                  <i className="fas fa-trash-alt"></i>
+                                </button>
                               </td>
                             </tr>
                           ))}

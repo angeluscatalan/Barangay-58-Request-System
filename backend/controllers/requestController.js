@@ -56,13 +56,6 @@ exports.createRequest = async (req, res) => {
             ]
         );
 
-        await backupRequest({
-            last_name, first_name, middle_name, suffix, sex, birthday,
-            contact_no, email, address, type_of_certificate,
-            purpose_of_request, number_of_copies,
-            id: result.insertId
-        });
-
         res.status(201).json({
             success: true,
             requestId: result.insertId
@@ -157,5 +150,51 @@ exports.updateRequestStatus = async (req, res) => {
             error: 'Database operation failed',
             details: error.message
         });
+    }
+};
+
+exports.deleteRequest = async (req, res) => {
+    const { id } = req.params;
+    const connection = await pool.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        // First get the request data for backup
+        const [request] = await connection.execute(
+            "SELECT * FROM requests WHERE id = ?",
+            [id]
+        );
+
+        if (request.length === 0) {
+            await connection.rollback();
+            return res.status(404).json({ error: 'Request not found' });
+        }
+
+        // Create backup before deleting
+        await backupRequest(request[0]);
+
+        // Delete from main table
+        const [result] = await connection.execute(
+            "DELETE FROM requests WHERE id = ?",
+            [id]
+        );
+
+        if (result.affectedRows === 0) {
+            await connection.rollback();
+            return res.status(404).json({ error: 'Request not found' });
+        }
+
+        await connection.commit();
+        res.json({ success: true, message: 'Request deleted successfully' });
+    } catch (error) {
+        await connection.rollback();
+        console.error('Database error:', error);
+        res.status(500).json({
+            error: 'Database operation failed',
+            details: error.message
+        });
+    } finally {
+        connection.release();
     }
 };

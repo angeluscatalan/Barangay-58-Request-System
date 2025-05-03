@@ -20,5 +20,6 @@ router.post('/', validateRequest, requestController.createRequest);
 router.get('/', requestController.getRequests);
 router.get('/:id', requestController.getRequestById);
 router.put('/:id', requestController.updateRequestStatus);
+router.delete('/:id', requestController.deleteRequest);
 
 module.exports = router;
