@@ -39,9 +39,9 @@ exports.createRequest = async (req, res) => {
     }
 
     try {
-        const { last_name, first_name, middle_name, suffix, sex, birthday, 
-                contact_no, email, address, type_of_certificate, 
-                purpose_of_request, number_of_copies } = req.body;
+        const { last_name, first_name, middle_name, suffix, sex, birthday,
+            contact_no, email, address, type_of_certificate,
+            purpose_of_request, number_of_copies } = req.body;
 
         const [result] = await pool.execute(
             `INSERT INTO requests 
@@ -63,13 +63,13 @@ exports.createRequest = async (req, res) => {
             id: result.insertId
         });
 
-        res.status(201).json({ 
+        res.status(201).json({
             success: true,
             requestId: result.insertId
         });
     } catch (error) {
         console.error('Error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             error: 'Request processing failed',
             details: error.message
         });
@@ -78,38 +78,38 @@ exports.createRequest = async (req, res) => {
 
 exports.getRequests = async (req, res) => {
     try {
-      const { status } = req.query;
-      let query = `
+        const { status } = req.query;
+        let query = `
         SELECT id, last_name, first_name, middle_name, suffix,
                sex, DATE_FORMAT(birthday, '%Y-%m-%d') as birthday,
                contact_no, email, address, type_of_certificate,
                purpose_of_request, number_of_copies, status,
-               DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at
+               DATE_FORMAT(CONVERT_TZ(created_at, 'UTC', 'Asia/Manila'), '%Y-%m-%d %H:%i:%s') as created_at
         FROM requests
       `;
-      
-      const params = [];
-      
-      if (status) {
-        query += ` WHERE LOWER(status) = LOWER(?)`;
-        params.push(status);
-      }
-      
-      query += ` ORDER BY created_at DESC`;
-      
-      const [rows] = await pool.query(query, params);
-      res.status(200).json(rows);
+
+        const params = [];
+
+        if (status) {
+            query += ` WHERE LOWER(status) = LOWER(?)`;
+            params.push(status);
+        }
+
+        query += ` ORDER BY created_at DESC`;
+
+        const [rows] = await pool.query(query, params);
+        res.status(200).json(rows);
     } catch (error) {
-      console.error("Database error:", error);
-      res.status(500).json({ message: "Failed to fetch requests", error: error.message });
+        console.error("Database error:", error);
+        res.status(500).json({ message: "Failed to fetch requests", error: error.message });
     }
-  };
+};
 
 exports.getRequestById = async (req, res) => {
     const { id } = req.params;
     try {
         const [rows] = await pool.query(
-            `SELECT * FROM requests WHERE id = ?`, 
+            `SELECT * FROM requests WHERE id = ?`,
             [id]
         );
 
@@ -120,7 +120,7 @@ exports.getRequestById = async (req, res) => {
         res.json(rows[0]);
     } catch (error) {
         console.error('Database error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             error: 'Database operation failed',
             details: error.message
         });
@@ -133,7 +133,7 @@ exports.updateRequestStatus = async (req, res) => {
 
     const statusLower = status.toLowerCase();
     const validStatuses = ['pending', 'approved', 'rejected', 'for pickup'];
-    
+
     if (!validStatuses.includes(statusLower)) {
         return res.status(400).json({ error: 'Invalid status value' });
     }
@@ -142,7 +142,7 @@ exports.updateRequestStatus = async (req, res) => {
 
     try {
         const [result] = await pool.query(
-            `UPDATE requests SET status = ? WHERE id = ?`, 
+            `UPDATE requests SET status = ? WHERE id = ?`,
             [formattedStatus, id]
         );
 
@@ -153,7 +153,7 @@ exports.updateRequestStatus = async (req, res) => {
         res.json({ success: true, message: 'Status updated successfully' });
     } catch (error) {
         console.error('Database error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             error: 'Database operation failed',
             details: error.message
         });
