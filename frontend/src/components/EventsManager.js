@@ -77,12 +77,24 @@ function EventsManager() {
     const options = {
       year: "numeric",
       month: "long",
+      day: "numeric"
+    }
+    return date.toLocaleDateString(undefined, options)
+  }
+
+  const formatDateTime = (dateString) => {
+    if (!dateString) return ""
+    const date = new Date(dateString)
+    const options = {
+      year: "numeric",
+      month: "long",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-      hour12: true
+      hour12: true,
+      timeZone: "Asia/Manila"
     }
-    return date.toLocaleDateString(undefined, options)
+    return date.toLocaleString(undefined, options)
   }
 
   const calendarEvents = events.map((event) => ({
@@ -178,7 +190,7 @@ function EventsManager() {
                         </div>
                       )}
                     </td>
-                    <td>{formatDate(event.created_at)}</td>
+                    <td>{formatDateTime(event.created_at)}</td>
                     <td>{event.event_name || "No name"}</td>
                     <td>{formatDate(event.event_date)}</td>
                     <td>

@@ -17,21 +17,21 @@ const uploadImageToS3 = async (file) => {
     try {
         const fileContent = fs.readFileSync(file.path);
         const fileName = `events/${Date.now()}-${file.originalname}`;
-        
+
         await s3.send(new PutObjectCommand({
             Bucket: process.env.AWS_BUCKET_NAME,
             Key: fileName,
             Body: fileContent,
             ContentType: file.mimetype
         }));
-        
+
         const imageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
         return imageUrl;
     } catch (error) {
         console.error("S3 upload failed:", error);
-        throw error; 
+        throw error;
     } finally {
-        fs.unlinkSync(file.path); 
+        fs.unlinkSync(file.path);
     }
 };
 
@@ -110,16 +110,16 @@ exports.createEvent = async (req, res) => {
             imageUrl
         }, 'create');
 
-        res.status(201).json({ 
-            message: 'Event created successfully', 
-            id: result.insertId, 
-            imageUrl 
+        res.status(201).json({
+            message: 'Event created successfully',
+            id: result.insertId,
+            imageUrl
         });
     } catch (error) {
         console.error('Error creating event:', error);
-        res.status(500).json({ 
-            message: 'Failed to create event', 
-            error: error.message 
+        res.status(500).json({
+            message: 'Failed to create event',
+            error: error.message
         });
     }
 };
@@ -136,16 +136,16 @@ exports.getEvents = async (req, res) => {
                 venue, 
                 description, 
                 image_url, 
-                created_at
+                CONVERT_TZ(created_at, 'UTC', 'Asia/Manila') as created_at
             FROM archive_events
             ORDER BY created_at DESC
         `);
         res.status(200).json(rows);
     } catch (error) {
         console.error('Error fetching events:', error);
-        res.status(500).json({ 
-            message: 'Failed to fetch events', 
-            error: error.message 
+        res.status(500).json({
+            message: 'Failed to fetch events',
+            error: error.message
         });
     }
 };
@@ -158,15 +158,15 @@ exports.deleteEvent = async (req, res) => {
 
         // First get the full event data for backup
         const [event] = await connection.execute(
-            "SELECT * FROM archive_events WHERE id = ?", 
+            "SELECT * FROM archive_events WHERE id = ?",
             [id]
         );
-        
+
         if (event.length === 0) {
             await connection.rollback();
-            return res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
-                message: "Event not found" 
+                message: "Event not found"
             });
         }
 
@@ -207,30 +207,30 @@ exports.deleteEvent = async (req, res) => {
 
         // Delete from main table
         const [result] = await connection.execute(
-            "DELETE FROM archive_events WHERE id = ?", 
+            "DELETE FROM archive_events WHERE id = ?",
             [id]
         );
 
         if (result.affectedRows === 0) {
             await connection.rollback();
-            return res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
-                message: "Event not found" 
+                message: "Event not found"
             });
         }
 
         await connection.commit();
-        res.status(200).json({ 
+        res.status(200).json({
             success: true,
-            message: "Event deleted and backed up successfully" 
+            message: "Event deleted and backed up successfully"
         });
     } catch (error) {
         await connection.rollback();
         console.error("Error deleting event:", error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
             message: "Failed to delete event",
-            error: error.message 
+            error: error.message
         });
     } finally {
         connection.release();
@@ -248,15 +248,15 @@ exports.updateEvent = async (req, res) => {
         );
 
         if (existingEvent.length === 0) {
-            return res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
-                message: 'Event not found' 
+                message: 'Event not found'
             });
         }
 
         if (req.file) {
             imageUrl = await uploadImageToS3(req.file);
-            
+
             if (existingEvent[0]?.image_url) {
                 await deleteImageFromS3(existingEvent[0].image_url);
             }
@@ -271,7 +271,7 @@ exports.updateEvent = async (req, res) => {
             time_end = ?,
             venue = ?,
             description = ?`;
-        
+
         const queryParams = [
             req.body.name,
             req.body.date,
@@ -292,9 +292,9 @@ exports.updateEvent = async (req, res) => {
         const [result] = await pool.execute(updateQuery, queryParams);
 
         if (result.affectedRows === 0) {
-            return res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
-                message: 'Event not updated' 
+                message: 'Event not updated'
             });
         }
 
@@ -314,17 +314,17 @@ exports.updateEvent = async (req, res) => {
             ]
         );
 
-        res.status(200).json({ 
+        res.status(200).json({
             success: true,
             message: 'Event updated and backed up successfully',
             imageUrl: imageUrl || null
         });
     } catch (error) {
         console.error('Error updating event:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
             message: 'Failed to update event',
-            error: error.message 
+            error: error.message
         });
     }
 };
