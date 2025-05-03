@@ -73,8 +73,16 @@ function EventsManager() {
 
   const formatDate = (dateString) => {
     if (!dateString) return ""
-    const options = { year: "numeric", month: "long", day: "numeric" }
-    return new Date(dateString).toLocaleDateString(undefined, options)
+    const date = new Date(dateString)
+    const options = {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true
+    }
+    return date.toLocaleDateString(undefined, options)
   }
 
   const calendarEvents = events.map((event) => ({
@@ -125,11 +133,12 @@ function EventsManager() {
               <thead>
                 <tr>
                   <th style={{ width: "5%" }}>NO.</th>
-                  <th style={{ width: "20%" }}>IMAGE</th>
-                  <th style={{ width: "20%" }}>EVENT NAME</th>
-                  <th style={{ width: "15%" }}>DATE</th>
-                  <th style={{ width: "20%" }}>TIME</th>
-                  <th style={{ width: "20%" }}>VENUE</th>
+                  <th style={{ width: "15%" }}>IMAGE</th>
+                  <th style={{ width: "13%" }}>CREATED AT</th>
+                  <th style={{ width: "15%" }}>EVENT NAME</th>
+                  <th style={{ width: "12%" }}>DATE</th>
+                  <th style={{ width: "15%" }}>TIME</th>
+                  <th style={{ width: "15%" }}>VENUE</th>
                   <th style={{ width: "10%" }}>ACTIONS</th>
                 </tr>
               </thead>
@@ -169,13 +178,13 @@ function EventsManager() {
                         </div>
                       )}
                     </td>
+                    <td>{formatDate(event.created_at)}</td>
                     <td>{event.event_name || "No name"}</td>
                     <td>{formatDate(event.event_date)}</td>
                     <td>
                       {event.time_start} - {event.time_end}
                     </td>
                     <td>{event.venue}</td>
-
                     <td>
                       <div className="action-buttons">
                         <button className="action-btn edit" onClick={() => handleEdit(event)}>
