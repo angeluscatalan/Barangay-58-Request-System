@@ -38,7 +38,7 @@ body {
   letter-spacing: 3px;
   line-height: 1.2;
   margin: 0 auto;
-  max-width: 100%; 
+  max-width: 100%;
 }
 
 .events-header p {
@@ -63,7 +63,7 @@ body {
 .scroll-down {
   margin-bottom: 5px;
   margin-top: -5rem;
-  font-size: clamp(0.8rem, 2vw, 1.3rem); 
+  font-size: clamp(0.8rem, 2vw, 1.3rem);
   text-transform: uppercase;
   font-weight: bold;
   color: black;
@@ -102,6 +102,7 @@ body {
   padding: 50px 0;
   background-color: #ffd2dd;
   text-align: center;
+  margin-bottom: 40px; /* Add margin at the bottom */
 }
 
 .events-content-section h2 {
@@ -115,7 +116,7 @@ body {
   background: linear-gradient(135deg, #ffc0cb, #ffb6c1);
   border-radius: 20px;
   padding: 20px;
-  width: 90%; 
+  width: 90%;
   max-width: 900px;
   margin: 20px auto;
   text-align: center;
@@ -194,7 +195,6 @@ body {
   align-items: center;
   margin-top: 40px;
 }
-
 
 .event-cards-container {
   position: relative;
@@ -416,7 +416,6 @@ p.event-modal-overlay {
   font-size: 1rem;
 }
 
-
 .modal-description {
   max-height: 300px;
   overflow-y: auto;
@@ -541,4 +540,3 @@ p.event-modal-overlay {
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
-

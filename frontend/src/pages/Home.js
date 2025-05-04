@@ -4,6 +4,7 @@ import { Link } from "react-router-dom"
 import brgyLogo from "../assets/brgylogo.png"
 import Kap_NoBg from "../assets/Kap_NoBg.png"
 import "../styles/Home.css"
+import Footer from "../components/Footer"
 
 function Home() {
   // Sample project data - replace with actual data from your backend
@@ -158,6 +159,8 @@ function Home() {
           ))}
         </div>
       </div>
+
+      <Footer />
     </div>
   )
 }

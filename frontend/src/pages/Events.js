@@ -7,6 +7,7 @@ import Announcement from "../assets/Announce.png"
 import EventCard from "../components/event-card"
 import EventModal from "../components/event-modal"
 import { EventsProvider, EventsContext } from "../components/events-context"
+import Footer from "../components/Footer"
 
 // Main component wrapper with context
 const Events = () => {
@@ -80,9 +81,7 @@ const EventsContent = () => {
                 <p>No events available at the moment. Check back soon!</p>
               </div>
             ) : (
-              publishedEvents.map((event) => (
-                <EventCard key={event.id} event={event} defaultImage={Announcement} />
-              ))
+              publishedEvents.map((event) => <EventCard key={event.id} event={event} defaultImage={Announcement} />)
             )}
           </div>
         </section>
@@ -90,9 +89,10 @@ const EventsContent = () => {
 
       {/* Event Modal - completely separate from the cards */}
       <EventModal defaultImage={Announcement} />
+
+      <Footer />
     </>
   )
 }
 
 export default Events
-

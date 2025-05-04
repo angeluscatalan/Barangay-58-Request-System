@@ -1,10 +1,11 @@
 "use client"
 
-import { useState} from "react"
+import { useState } from "react"
 import axios from "axios"
 import RequestTitlesandSteps from "../components/RequestTitlesandSteps"
 import RequestForm from "../components/RequestForm"
 import "../styles/reqPage.css"
+import Footer from "../components/Footer"
 
 function reqPage() {
   const [formData, setFormData] = useState({
@@ -24,59 +25,63 @@ function reqPage() {
     purpose_of_request: "",
     number_of_copies: "",
   })
-  
 
   const [errors, setErrors] = useState({ contact_no: false, email: false })
   const [activeSection, setActiveSection] = useState("info") // "info" or "form"
 
   const handleChange = (e) => {
-    let { name, value } = e.target;
+    let { name, value } = e.target
     if (["last_name", "first_name", "middle_name"].includes(name)) {
-      value = value
-        .toLowerCase()
-        .replace(/\b\w/g, (char) => char.toUpperCase());
+      value = value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase())
     }
-    setFormData({ ...formData, [name]: value });
+    setFormData({ ...formData, [name]: value })
 
-    setErrors((prev) => ({ ...prev, [name]: false }));
-  };
-
-  
+    setErrors((prev) => ({ ...prev, [name]: false }))
+  }
 
   const getReq = () => {
-    const fullNumber = `${formData.country_code}${formData.contact_no}`;
-    const newErrors = {};
-    let formValid = true;
+    const fullNumber = `${formData.country_code}${formData.contact_no}`
+    const newErrors = {}
+    let formValid = true
 
     const requiredFields = [
-      "last_name", "first_name", "middle_name", "unit_no", "street", "subdivision", 
-      "barangay", "village", "city", "contact_no", "email","number_of_copies"
-    ];
+      "last_name",
+      "first_name",
+      "middle_name",
+      "unit_no",
+      "street",
+      "subdivision",
+      "barangay",
+      "village",
+      "city",
+      "contact_no",
+      "email",
+      "number_of_copies",
+    ]
 
     requiredFields.forEach((field) => {
       if (formData[field]?.trim() === "") {
-        newErrors[field] = "This field cannot be empty";
-        formValid = false; 
+        newErrors[field] = "This field cannot be empty"
+        formValid = false
       }
-    });
+    })
 
     Object.keys(formData).forEach((key) => {
       if (formData[key].trim() === "") {
-        newErrors[key] = "This field cannot be empty";
-        formValid = false;
+        newErrors[key] = "This field cannot be empty"
+        formValid = false
       }
-    });
+    })
 
     if (!formValid) {
-      setErrors(newErrors);
-      return;
+      setErrors(newErrors)
+      return
     }
 
     if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
+      setErrors(newErrors)
+      return
     }
-  
 
     if (!document.getElementById("terms").checked) {
       alert("Please verify with our terms by clicking the checkbox.")
@@ -92,16 +97,16 @@ function reqPage() {
     }
 
     if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors); 
-      return;
+      setErrors(newErrors)
+      return
     }
 
-    const numberOfCopies = formData.number_of_copies;
-  if (isNaN(numberOfCopies) || numberOfCopies <= 0) {
-    newErrors.number_of_copies = "Please enter a valid number of copies";
-    formValid = false;
-  }
-  
+    const numberOfCopies = formData.number_of_copies
+    if (isNaN(numberOfCopies) || numberOfCopies <= 0) {
+      newErrors.number_of_copies = "Please enter a valid number of copies"
+      formValid = false
+    }
+
     const fullAddress = `${formData.unit_no}, ${formData.street}, ${formData.barangay}, ${formData.village}, ${formData.city}`
 
     const requestData = {
@@ -109,8 +114,8 @@ function reqPage() {
       address: fullAddress,
       number_of_copies: Number(formData.number_of_copies),
     }
-    
-    console.log("Sending request data:", requestData);
+
+    console.log("Sending request data:", requestData)
 
     axios
       .post("http://localhost:5000/requests", requestData, {
@@ -138,7 +143,7 @@ function reqPage() {
           number_of_copies: "",
         })
         document.getElementById("terms").checked = false
-        setErrors({}); 
+        setErrors({})
       })
       .catch((error) => {
         console.error("❌ Error details:", {
@@ -215,9 +220,10 @@ function reqPage() {
           />
         </div>
       </div>
+
+      <Footer />
     </div>
   )
 }
 
 export default reqPage
-

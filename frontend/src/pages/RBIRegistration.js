@@ -10,7 +10,7 @@ import numberIcon from "../assets/numberIcon.png"
 import facebookIcon from "../assets/facebookIcon.png"
 import emailIcon from "../assets/emailIcon.png"
 import axios from "axios"
-
+import Footer from "../components/Footer"
 
 function RBIRegistration() {
   const [activeSection, setActiveSection] = useState("info")
@@ -43,7 +43,7 @@ function RBIRegistration() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-  
+
     // Basic validation
     const newErrors = {}
     Object.keys(formData).forEach((key) => {
@@ -51,34 +51,34 @@ function RBIRegistration() {
         newErrors[key] = "This field is required"
       }
     })
-  
+
     // Add email validation
     if (formData.email_address && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email_address)) {
       newErrors.email_address = "Please enter a valid email address"
     }
-  
+
     if (!document.getElementById("terms").checked) {
       alert("Please verify with our terms by clicking the checkbox.")
       return
     }
-  
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors)
       alert("Please fill in all required fields.")
       return
     }
-  
+
     try {
       const formattedData = {
         ...formData,
-        birth_date: new Date(formData.birth_date).toISOString().split('T')[0] // 'YYYY-MM-DD'
+        birth_date: new Date(formData.birth_date).toISOString().split("T")[0], // 'YYYY-MM-DD'
       }
 
       const response = await axios.post("http://localhost:5000/rbi", formattedData)
-  
+
       if (response.status === 200 || response.status === 201) {
         alert("✅ RBI Registration successfully submitted!")
-  
+
         // Reset form
         setFormData({
           last_name: "",
@@ -105,7 +105,6 @@ function RBIRegistration() {
       alert(`Error: ${error.response?.data?.message || error.message || "Failed to submit registration"}`)
     }
   }
-  
 
   // For mobile view navigation
   const toggleSection = (section) => {
@@ -459,6 +458,8 @@ function RBIRegistration() {
           </div>
         </div>
       </div>
+
+      <Footer />
     </div>
   )
 }
