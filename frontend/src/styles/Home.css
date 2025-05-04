@@ -12,6 +12,7 @@
   min-height: 100vh;
   width: 100%;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   background: url("../assets/teamPage_BG.png") no-repeat center center;
@@ -27,7 +28,9 @@
   justify-content: center;
   max-width: 1200px;
   width: 100%;
+  min-height: 100vh;
   padding: 2rem 1rem;
+  position: relative;
 }
 
 .logo-container {
@@ -42,6 +45,56 @@
   width: 200px;
   height: 200px;
   object-fit: contain;
+}
+
+.scroll-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 2rem;
+  cursor: pointer;
+  position: absolute;
+  bottom: 30px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+}
+
+.scroll-down {
+  font-size: clamp(0.8rem, 2vw, 1.3rem);
+  text-transform: uppercase;
+  font-weight: bold;
+  color: black;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: "Manrope";
+  font-weight: 300;
+  letter-spacing: 5px;
+  text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  margin-bottom: 5px;
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(10px);
+  }
+}
+
+.scroll-down-icon {
+  font-size: 24px;
+  color: #da1c6f;
+  animation: bounce 1.5s infinite ease-in-out;
+  cursor: pointer;
+}
+
+.scroll-down-icon:hover {
+  transform: scale(1.1);
 }
 
 .home-text {
@@ -83,7 +136,23 @@
   text-align: center;
 }
 
+.home-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 500px;
+}
+
+@media (min-width: 576px) {
+  .home-buttons {
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
 .request-button {
+  width: 100%;
   display: inline-block;
   padding: 0.8em 1.5em;
   background: #da1c6f;
@@ -97,22 +166,410 @@
   cursor: pointer;
   transition: all 0.3s ease;
   text-align: center;
+  flex: 1;
 }
 
-.request-button:hover{
-        border-radius: 5px;
-        border: 1px solid #da1c6f;
-        color: #da1c6f;
-        background-color: transparent;
+.request-button:hover {
+  border-radius: 5px;
+  border: 1px solid #da1c6f;
+  color: #da1c6f;
+  background-color: transparent;
 }
 
-button:hover{
-    border-radius: 5px;
-    border: 1px solid #da1c6f;
-    color: #da1c6f;
-    background-color: transparent;
+.rbi-button {
+  background-color: transparent;
+  border: 1px solid #da1c6f;
+  color: #da1c6f;
 }
 
+.rbi-button:hover {
+  border: 1px solid #000000;
+  color: #000000;
+}
+
+button:hover {
+  border-radius: 5px;
+  border: 1px solid #da1c6f;
+  color: #da1c6f;
+  background-color: transparent;
+}
+
+.welcome-message-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.welcome-message {
+  border-radius: 23.521px;
+  background: linear-gradient(
+    180deg,
+    rgba(218, 28, 111, 0.58) 0%,
+    rgba(218, 28, 111, 0.66) 39.22%,
+    rgba(218, 28, 111, 0.77) 69.74%,
+    #da1c6f 100%
+  );
+  padding: 2rem;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .welcome-message {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 3rem;
+  }
+}
+
+.welcome-text {
+  flex: 1;
+  z-index: 2;
+  max-width: 600px;
+}
+
+.welcome-heading {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 800;
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
+  margin-bottom: 1rem;
+}
+
+.welcome-text p {
+  width: 40vw;
+  max-width: 50vw;
+  font-family: "Manrope", sans-serif;
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.captain-info {
+  margin-top: 2rem;
+  font-family: "Manrope", sans-serif;
+}
+
+.captain-info p {
+  margin-bottom: 0.2rem;
+  font-weight: 700;
+}
+
+.captain-title {
+  font-style: italic;
+  font-weight: 400 !important;
+}
+
+.captain-image-container {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+  border-top-right-radius: 23.521px;
+  border-bottom-right-radius: 23.521px;
+}
+
+.logo-background {
+  transform: translateX(100px);
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0.3;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.background-logo {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: contain;
+  opacity: 0.5;
+}
+
+/* Adjust background logo size for different screen sizes */
+@media (max-width: 767px) {
+  .logo-background {
+    justify-content: center;
+    align-items: center;
+  }
+
+  .background-logo {
+    width: 80%;
+    height: 80%;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .background-logo {
+    width: 90%;
+    height: 90%;
+  }
+}
+
+.captain-image {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.captain-image img {
+  max-height: 100%;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Service Cards Section */
+.services-section {
+  width: 100%;
+  max-width: 1200px;
+  margin: 3rem auto;
+  padding: 0 1rem;
+}
+
+.section-title {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 800;
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  color: #da1c6f;
+  text-align: center;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.section-title:after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background-color: #da1c6f;
+  border-radius: 2px;
+}
+
+.service-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  width: 100%;
+}
+
+.service-card {
+  background: white;
+  border-radius: 15px;
+  padding: 2rem;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  text-decoration: none;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.service-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(218, 28, 111, 0.2);
+}
+
+.service-icon {
+  width: 80px;
+  height: 80px;
+  background: rgba(218, 28, 111, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.service-icon i {
+  font-size: 2rem;
+  color: #da1c6f;
+}
+
+.service-card h3 {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.service-card p {
+  font-family: "Manrope", sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+  color: #666;
+}
+
+.service-link {
+  font-family: "Manrope", sans-serif;
+  font-weight: 700;
+  color: #da1c6f;
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border: 2px solid #da1c6f;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+  margin-top: auto;
+}
+
+.service-card:hover .service-link {
+  background-color: #da1c6f;
+  color: white;
+}
+
+/* Projects Section */
+.projects-section {
+  width: 100%;
+  max-width: 1200px;
+  margin: 3rem auto 5rem;
+  padding: 0 1rem;
+}
+
+.project-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  width: 100%;
+}
+
+.project-card {
+  background: white;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.project-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.project-image {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+}
+
+.project-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.project-card:hover .project-image img {
+  transform: scale(1.1);
+}
+
+.project-details {
+  padding: 1.5rem;
+}
+
+.project-name {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.project-date {
+  font-family: "Manrope", sans-serif;
+  font-size: 0.9rem;
+  color: #da1c6f;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.project-description {
+  font-family: "Manrope", sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #666;
+}
+
+@media (max-width: 767px) {
+  .welcome-text {
+    margin-bottom: 200px; /* Make space for the captain image */
+    width: 100%;
+    max-width: 80vw;
+  }
+
+  .welcome-text p {
+    width: 100%;
+  }
+
+  .captain-image-container {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    height: 200px;
+    width: 100%;
+  }
+
+  .captain-image {
+    right: 0;
+    bottom: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  .captain-image img {
+    max-height: 200px;
+    object-fit: contain;
+  }
+
+  .logo-background {
+    transform: translateX(20px);
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  .scroll-container {
+    bottom: 20px;
+  }
+}
+
+@media (min-width: 768px) {
+  .welcome-text {
+    padding-right: 40%;
+  }
+}
+
+@media (min-width: 992px) {
+  .captain-image img {
+    max-height: 400px;
+  }
+}
 
 @media (min-width: 768px) and (max-width: 1023px) {
   .home-content {
@@ -161,6 +618,14 @@ button:hover{
     width: 300px;
     height: 300px;
   }
+
+  .home-buttons {
+    align-items: flex-start;
+  }
+
+  .captain-image {
+    margin-top: 0;
+  }
 }
 
 @media (max-height: 500px) and (min-width: 568px) {
@@ -178,3 +643,64 @@ button:hover{
   }
 }
 
+/* Fix scroll container for very small screens */
+@media (max-height: 600px) {
+  .scroll-container {
+    position: relative;
+    bottom: auto;
+    margin-top: 2rem;
+  }
+}
+
+/* Improve service cards on small screens */
+@media (max-width: 480px) {
+  .service-card {
+    padding: 1.5rem;
+  }
+
+  .service-icon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 1rem;
+  }
+
+  .service-icon i {
+    font-size: 1.5rem;
+  }
+
+  .service-card h3 {
+    font-size: 1.1rem;
+  }
+
+  .service-card p {
+    font-size: 0.85rem;
+  }
+
+  .service-link {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* Fix project cards on small screens */
+@media (max-width: 480px) {
+  .project-image {
+    height: 160px;
+  }
+
+  .project-details {
+    padding: 1rem;
+  }
+
+  .project-name {
+    font-size: 1.1rem;
+  }
+
+  .project-date {
+    font-size: 0.8rem;
+  }
+
+  .project-description {
+    font-size: 0.85rem;
+  }
+}
