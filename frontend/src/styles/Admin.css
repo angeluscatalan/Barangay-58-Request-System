@@ -1,5 +1,22 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap");
 
+/* Add a more professional color palette */
+:root {
+  --primary: #da1c6f; /* Restore pink color as primary */
+  --primary-light: #e63c87; /* Lighter version for hover states */
+  --secondary: #3498db; /* Blue for secondary elements and highlights */
+  --accent: #e74c3c; /* Red for important actions/alerts */
+  --success: #2ecc71; /* Green for success states */
+  --warning: #f39c12; /* Orange for warnings */
+  --danger: #e74c3c; /* Red for dangerous actions */
+  --light-bg: #f8f9fa; /* Light background for cards */
+  --border: #dee2e6; /* Border color */
+  --text-primary: #2c3e50; /* Primary text color */
+  --text-secondary: #7f8c8d; /* Secondary text color */
+  --text-light: #ecf0f1; /* Light text color for dark backgrounds */
+  --shadow: rgba(0, 0, 0, 0.1); /* Shadow color */
+}
+
 .admin-container {
   display: flex;
   flex-direction: row;
@@ -10,23 +27,33 @@
   width: 100%;
 }
 
+/* Adjust the top-line to be above the header */
 .top-line {
   width: 100%;
   height: 3px;
   background-color: black;
-  position: absolute;
-  top: 90px;
+  position: fixed;
+  top: 0;
   left: 0;
-  z-index: 1;
+  z-index: 101;
 }
 
 /* Add styles for the collapsible sidebar */
+/* Update the sidebar to have a fixed position */
 .sidebar {
   width: 250px;
   display: flex;
   flex-direction: column;
   transition: all 0.3s ease;
   flex-shrink: 0;
+  background-color: var(--primary); /* Restored pink color */
+  color: var(--text-light);
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  z-index: 100;
+  overflow-y: auto;
 }
 
 .sidebar.collapsed {
@@ -42,6 +69,8 @@
   height: 90px;
   box-sizing: border-box;
   overflow: hidden;
+  background-color: var(--primary-light); /* Restored pink color */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .sidebar.collapsed .sidebar-header {
@@ -74,7 +103,7 @@
 }
 
 .sidebar nav {
-  background-color: #da1c6f;
+  background-color: #da1c6f; /* Restored pink color */
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -108,11 +137,12 @@
 .sidebar-footer {
   flex-shrink: 0;
   padding: 15px 20px;
-  background-color: #da1c6f;
+  background-color: #da1c6f; /* Restored pink color */
   position: sticky;
   bottom: 0;
   width: 100%;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .sidebar nav ul {
@@ -135,20 +165,29 @@
 .sidebar nav li.active {
   background-color: rgba(255, 255, 255, 0.2);
   color: white;
+  background-color: #e63c87; /* Lighter pink for active state */
 }
 
+/* Update the main content to have proper margin to account for fixed sidebar */
 .main-content {
   flex: 1;
-  background-color: #ffe3e2;
+  background-color: #ffe3e2; /* Restored light pink background */
   padding: 20px;
   overflow-x: auto;
   transition: margin-left 0.3s ease;
   position: relative;
+  margin-left: 250px; /* Match sidebar width */
 }
 
+/* Add this to ensure content doesn't flow under the header */
+.main-content {
+  padding-top: 20px;
+}
+
+/* Update the main content when sidebar is collapsed */
 .main-content.expanded {
-  margin-left: 0;
-  width: calc(100% - 70px);
+  margin-left: 70px; /* Match collapsed sidebar width */
+  width: auto;
 }
 
 .sidebar-toggle {
@@ -157,7 +196,7 @@
   left: 20px;
   width: 36px;
   height: 36px;
-  background-color: #da1c6f;
+  background-color: #da1c6f; /* Restored pink color */
   color: white;
   border-radius: 50%;
   display: flex;
@@ -170,7 +209,7 @@
 }
 
 .sidebar-toggle:hover {
-  background-color: #c01860;
+  background-color: #c01860; /* Darker pink for hover */
 }
 
 /* Adjust header positioning to account for sidebar toggle */
@@ -180,8 +219,16 @@ header {
   padding: 20px;
   height: 90px;
   box-sizing: border-box;
-  position: relative;
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 99;
+  background-color: #ffe3e2; /* Match main content background */
   margin-left: 30px;
+  width: calc(100% - 30px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
 }
 
 .sidebar-header {
@@ -200,7 +247,7 @@ header {
 }
 
 .sidebar-header h1 {
-  color: black;
+  color: white; /* Changed to white for better contrast on pink */
   font-size: 22px;
   margin: 0;
   font-weight: bold;
@@ -334,7 +381,7 @@ header {
 }
 
 .add-request-btn {
-  background-color: #da1c6f;
+  background-color: #da1c6f; /* Restored pink color */
   color: white;
   border: none;
   padding: 8px 15px;
@@ -471,6 +518,11 @@ tr:hover {
 
   .main-content {
     padding: 15px;
+    margin-left: 220px;
+  }
+
+  .main-content.expanded {
+    margin-left: 70px;
   }
 
   .table-container {
@@ -490,6 +542,11 @@ tr:hover {
 
   .main-content {
     padding: 25px;
+    margin-left: 280px;
+  }
+
+  .main-content.expanded {
+    margin-left: 70px;
   }
 
   .dashboard {
@@ -554,11 +611,11 @@ tr:hover {
 }
 
 .tab-button:hover {
-  background-color: #f5b6d1;
+  background-color: #f5b6d1; /* Light pink for hover */
 }
 
 .active-tab {
-  background-color: #da1c6f;
+  background-color: #da1c6f; /* Pink for active tab */
   color: white;
   border-color: #da1c6f;
 }
@@ -570,6 +627,11 @@ tr:hover {
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  margin-top: 20px;
 }
 
 /* --- FullCalendar specific tweaks --- */
@@ -586,7 +648,7 @@ tr:hover {
 }
 
 .fc-button {
-  background-color: #da1c6f;
+  background-color: #da1c6f; /* Restored pink color */
   border: none;
   border-radius: 6px;
   padding: 6px 12px;
@@ -597,7 +659,7 @@ tr:hover {
 }
 
 .fc-button:hover {
-  background-color: #da1c6f;
+  background-color: #c01860; /* Darker pink for hover */
 }
 
 /* Disable unwanted calendar buttons (since you hid them) */
@@ -628,7 +690,7 @@ tr:hover {
 }
 
 .view-buttons button.active {
-  background-color: #da1c6f;
+  background-color: #da1c6f; /* Restored pink color */
   color: #fff;
 }
 
@@ -708,7 +770,7 @@ select.status-pickup {
 /* Add these styles for the sidebar footer and logout button */
 .sidebar-footer {
   padding: 20px;
-  background-color: #da1c6f;
+  background-color: #da1c6f; /* Restored pink color */
   margin-top: auto;
 }
 
@@ -799,4 +861,249 @@ input[type="checkbox"] {
 
 .bulk-delete-btn i {
   font-size: 14px;
+}
+
+/* Apply the new color scheme */
+
+/* Main content area */
+
+/* Dashboard cards */
+.dashboard,
+.events-section,
+.request-manager,
+.account-manager {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+/* Card headers */
+.dashboard-header,
+.table-header {
+  border-bottom: 1px solid var(--border);
+  padding: 20px 24px;
+}
+
+.dashboard-header h1,
+.events-section h1,
+.request-manager h1,
+.account-manager h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* Buttons */
+.add-request-btn,
+.add-account-btn {
+  background-color: #da1c6f; /* Restored pink color */
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.add-request-btn:hover,
+.add-account-btn:hover {
+  background-color: #c01860; /* Darker pink for hover */
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Action buttons */
+.approve-btn {
+  background-color: var(--success);
+}
+
+.reject-btn {
+  background-color: var(--danger);
+}
+
+.view-btn {
+  background-color: #da1c6f; /* Restored pink color */
+}
+
+/* Table styling */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 0;
+}
+
+th {
+  background-color: #3498db; /* Restored blue color for table headers */
+  color: white; /* White text for better contrast on blue */
+  font-weight: 600;
+  padding: 14px 16px;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--border);
+}
+
+td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+}
+
+tr:hover {
+  background-color: rgba(218, 28, 111, 0.05); /* Very light pink for hover */
+}
+
+/* Status badges */
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: inline-block;
+  text-align: center;
+}
+
+.status-pending {
+  background-color: #fff8e1;
+  color: #f57c00;
+}
+
+.status-approved {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-rejected {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.status-pickup {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+/* Filters and search */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.filters select,
+.search-bar {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background-color: white;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.filters select:focus,
+.search-bar:focus {
+  border-color: #da1c6f; /* Restored pink color */
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(218, 28, 111, 0.2); /* Pink shadow */
+}
+
+/* Sidebar toggle */
+
+/* Modal styling */
+.modal-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
+}
+
+.modal,
+.add-event-container {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+}
+
+.modal h2,
+.add-event-header h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+/* Form elements */
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #da1c6f; /* Restored pink color */
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(218, 28, 111, 0.2); /* Pink shadow */
+}
+
+/* Calendar styling */
+
+/* View buttons */
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .dashboard-header,
+  .table-header {
+    padding: 16px;
+  }
+
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  th,
+  td {
+    padding: 10px 12px;
+    font-size: 0.8125rem;
+  }
+
+  .actions {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .approve-btn,
+  .reject-btn,
+  .view-btn {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+  }
+}
+.sidebar-logout-button {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-logout-button:hover {
+  background-color: #e63c87; /* Lighter pink for hover */
 }

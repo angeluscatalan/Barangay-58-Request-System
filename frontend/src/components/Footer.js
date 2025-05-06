@@ -105,7 +105,6 @@ const Footer = () => {
       </div>
 
       <div className="footer-bottom">
-        <p>© 2023 Barangay 58. All rights reserved.</p>
         <p className="footer-note">Donated By: Adamson University Students</p>
       </div>
     </footer>

@@ -10,13 +10,13 @@ import EventsManager from "../components/EventsManager"
 import RBI_Request_Manager from "../components/RBI_Request_Manager"
 import Request_Manager from "../components/Request_Manager"
 import Account_Manager from "../components/Account_Manager"
-import Verified_RBI_List from "../components/Verified_RBI_List";
-
+import Verified_RBI_List from "../components/Verified_RBI_List"
+import AdminDashboard from "../components/AdminDashboard"
 
 function Admin() {
   const navigate = useNavigate()
   const [showProfileMenu, setShowProfileMenu] = useState(false)
-  const [activeSection, setActiveSection] = useState("requests")
+  const [activeSection, setActiveSection] = useState("dashboard")
   const [typeFilter, setTypeFilter] = useState("All")
   const [statusFilter, setStatusFilter] = useState("All")
   const [searchQuery, setSearchQuery] = useState("")
@@ -29,14 +29,14 @@ function Admin() {
 
   // Add delete function
   const handleDeleteRequest = async (id) => {
-    if (window.confirm('Are you sure you want to delete this request? This action cannot be undone.')) {
+    if (window.confirm("Are you sure you want to delete this request? This action cannot be undone.")) {
       try {
         const token = localStorage.getItem("token")
         await axios.delete(`http://localhost:5000/requests/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         })
         await fetchRequests() // Refresh the requests list
-        alert('Request successfully deleted!')
+        alert("Request successfully deleted!")
       } catch (error) {
         console.error("Error deleting request:", error)
         alert("Failed to delete request")
@@ -153,23 +153,23 @@ function Admin() {
   }
 
   const calculateAge = (birthday) => {
-    if (!birthday) return "";
-    const birthDate = new Date(birthday);
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (!birthday) return ""
+    const birthDate = new Date(birthday)
+    const today = new Date()
+    let age = today.getFullYear() - birthDate.getFullYear()
+    const monthDiff = today.getMonth() - birthDate.getMonth()
 
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
+      age--
     }
 
-    return age;
-  };
+    return age
+  }
 
   // Add master select function
   const handleMasterSelect = (e) => {
     if (e.target.checked) {
-      setSelectedRequests(filteredRequests.map(request => request.id))
+      setSelectedRequests(filteredRequests.map((request) => request.id))
     } else {
       setSelectedRequests([])
     }
@@ -177,9 +177,9 @@ function Admin() {
 
   // Add individual select function
   const handleSelectRequest = (id) => {
-    setSelectedRequests(prev => {
+    setSelectedRequests((prev) => {
       if (prev.includes(id)) {
-        return prev.filter(requestId => requestId !== id)
+        return prev.filter((requestId) => requestId !== id)
       } else {
         return [...prev, id]
       }
@@ -189,7 +189,7 @@ function Admin() {
   // Add bulk delete function
   const handleBulkDelete = async () => {
     if (selectedRequests.length === 0) {
-      alert('Please select at least one request to delete')
+      alert("Please select at least one request to delete")
       return
     }
 
@@ -197,11 +197,13 @@ function Admin() {
     if (window.confirm(confirmMessage)) {
       try {
         const token = localStorage.getItem("token")
-        await Promise.all(selectedRequests.map(id =>
-          axios.delete(`http://localhost:5000/requests/${id}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          })
-        ))
+        await Promise.all(
+          selectedRequests.map((id) =>
+            axios.delete(`http://localhost:5000/requests/${id}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+          ),
+        )
         await fetchRequests()
         setSelectedRequests([])
         alert(`${selectedRequests.length} request(s) successfully deleted!`)
@@ -228,6 +230,12 @@ function Admin() {
           <nav>
             <ul>
               <li
+                className={activeSection === "dashboard" ? "active" : ""}
+                onClick={() => handleSectionChange("dashboard")}
+              >
+                {sidebarVisible ? "Dashboard" : <i className="fas fa-tachometer-alt"></i>}
+              </li>
+              <li
                 className={activeSection === "requests" ? "active" : ""}
                 onClick={() => handleSectionChange("requests")}
               >
@@ -242,7 +250,10 @@ function Admin() {
               >
                 {sidebarVisible ? "Requests Manager" : <i className="fas fa-tasks"></i>}
               </li>
-              <li className={activeSection === "rbi_manager" ? "active" : ""} onClick={() => handleSectionChange("rbi_manager")}>
+              <li
+                className={activeSection === "rbi_manager" ? "active" : ""}
+                onClick={() => handleSectionChange("rbi_manager")}
+              >
                 {sidebarVisible ? "RBI Requests" : <i className="fas fa-id-card"></i>}
               </li>
               {userAccessLevel === 2 && (
@@ -297,171 +308,178 @@ function Admin() {
               )}
             </div>
           </header>
-          {activeSection === "requests" ? (
-            <div className="dashboard">
-              <div className="dashboard-header">
-                <div className="header-top">
-                  {typeFilter !== "VerifiedRBI" && <h1>Requests ({filteredRequests.length})</h1>}
-                </div>
-                <div className="filters">
-                  <input
-                    type="text"
-                    placeholder="Search by name..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="search-bar"
-                  />
-                  <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-                    <option value="All">All Status</option>
-                    <option value="pending">Pending</option>
-                    <option value="approved">Approved</option>
-                    <option value="rejected">Rejected</option>
-                    <option value="for pickup">For Pickup</option>
-                  </select>
-                  <div className="zoom-controls">
-                    <button className="zoom-btn" onClick={() => handleZoom("out")} title="Zoom Out">
-                      <i className="fas fa-search-minus"></i>
-                    </button>
-                    <span className="zoom-level">{zoomLevel}%</span>
-                    <button className="zoom-btn" onClick={() => handleZoom("in")} title="Zoom In">
-                      <i className="fas fa-search-plus"></i>
-                    </button>
-                    <button className="zoom-btn" onClick={() => handleZoom("reset")} title="Reset Zoom">
-                      <i className="fas fa-redo-alt"></i>
-                    </button>
+          <div className="content-wrapper">
+            {activeSection === "dashboard" ? (
+              <AdminDashboard />
+            ) : activeSection === "requests" ? (
+              <div className="dashboard">
+                <div className="dashboard-header">
+                  <div className="header-top">
+                    {typeFilter !== "VerifiedRBI" && <h1>Requests ({filteredRequests.length})</h1>}
                   </div>
-                </div>
-                {selectedRequests.length > 0 && (
-                  <div className="bulk-actions">
-                    <button className="bulk-delete-btn" onClick={handleBulkDelete}>
-                      <i className="fas fa-trash-alt"></i> Delete Selected ({selectedRequests.length})
-                    </button>
+                  <div className="filters">
+                    <input
+                      type="text"
+                      placeholder="Search by name..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="search-bar"
+                    />
+                    <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+                      <option value="All">All Status</option>
+                      <option value="pending">Pending</option>
+                      <option value="approved">Approved</option>
+                      <option value="rejected">Rejected</option>
+                      <option value="for pickup">For Pickup</option>
+                    </select>
+                    <div className="zoom-controls">
+                      <button className="zoom-btn" onClick={() => handleZoom("out")} title="Zoom Out">
+                        <i className="fas fa-search-minus"></i>
+                      </button>
+                      <span className="zoom-level">{zoomLevel}%</span>
+                      <button className="zoom-btn" onClick={() => handleZoom("in")} title="Zoom In">
+                        <i className="fas fa-search-plus"></i>
+                      </button>
+                      <button className="zoom-btn" onClick={() => handleZoom("reset")} title="Reset Zoom">
+                        <i className="fas fa-redo-alt"></i>
+                      </button>
+                    </div>
                   </div>
-                )}
-              </div>
-              <div className="dashboard-content" style={{ height: zoomLevel !== 100 ? `calc(100vh - 200px)` : "auto" }}>
-                <div className="filter-tabs">
-                  {["VerifiedRBI", "All", "ClearanceCert", "IDApp", "IndigencyCert", "JobseekerCert", "BrgyCert"].map((type) => (
-                    <button
-                      key={type}
-                      className={`tab-button ${typeFilter === type ? "active-tab" : ""}`}
-                      onClick={() => setTypeFilter(type)}
-                    >
-                      {type === "All"
-                        ? "All Types"
-                        : type === "VerifiedRBI"
-                          ? "Verified RBI List"
-                          : type}
-                    </button>
-                  ))}
-                </div>
-
-                <div>
-                  {typeFilter === "VerifiedRBI" ? (
-                    <Verified_RBI_List />
-                  ) : (
-                    <div
-                      className="table-container"
-                      style={{
-                        transform: `scale(${zoomLevel / 100})`,
-                        transformOrigin: "top left",
-                        width: zoomLevel < 100 ? `${100 / (zoomLevel / 100)}%` : "100%",
-                        height: zoomLevel < 100 ? `${100 / (zoomLevel / 100)}%` : "100%",
-                        overflow: "auto",
-                      }}
-                    >
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>
-                              <input
-                                type="checkbox"
-                                checked={selectedRequests.length === filteredRequests.length}
-                                onChange={handleMasterSelect}
-                              />
-                            </th>
-                            <th>DATE REQUESTED</th>
-                            <th>NAME</th>
-                            <th>SUFFIX</th>
-                            <th>SEX</th>
-                            <th>BIRTHDAY</th>
-                            <th>AGE</th>
-                            <th>ADDRESS</th>
-                            <th>CONTACT NO.</th>
-                            <th>EMAIL</th>
-                            <th>TYPE OF REQUEST</th>
-                            <th>PURPOSE</th>
-                            <th>NO. OF COPIES</th>
-                            <th>STATUS</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredRequests.map((request, index) => (
-                            <tr key={index}>
-                              <td>
-                                <input
-                                  type="checkbox"
-                                  checked={selectedRequests.includes(request.id)}
-                                  onChange={() => handleSelectRequest(request.id)}
-                                />
-                              </td>
-                              <td>{request.created_at}</td>
-                              <td>{`${request.last_name}, ${request.first_name} ${request.middle_name || ""}`}</td>
-                              <td>{request.suffix}</td>
-                              <td>{request.sex}</td>
-                              <td>{request.birthday ? request.birthday.split("T")[0] : ""}</td>
-                              <td>{calculateAge(request.birthday)}</td>
-                              <td>{request.address}</td>
-                              <td>{request.contact_no}</td>
-                              <td>{request.email}</td>
-                              <td>{request.type_of_certificate}</td>
-                              <td>{request.purpose_of_request}</td>
-                              <td>{request.number_of_copies}</td>
-                              <td>
-                                <span className={`status-badge ${getStatusClass(request.status)}`}>{request.status}</span>
-                                <select
-                                  value={request.status}
-                                  onChange={(e) => updateStatus(request.id, e.target.value)}
-                                  className={getStatusClass(request.status)}
-                                >
-                                  <option value="pending">Pending</option>
-                                  <option value="approved">Approved</option>
-                                  <option value="rejected">Rejected</option>
-                                  <option value="for pickup">For Pickup</option>
-                                </select>
-                                <button
-                                  className="delete-btn"
-                                  onClick={() => handleDeleteRequest(request.id)}
-                                  title="Delete Request"
-                                >
-                                  <i className="fas fa-trash-alt"></i>
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                  {selectedRequests.length > 0 && (
+                    <div className="bulk-actions">
+                      <button className="bulk-delete-btn" onClick={handleBulkDelete}>
+                        <i className="fas fa-trash-alt"></i> Delete Selected ({selectedRequests.length})
+                      </button>
                     </div>
                   )}
                 </div>
+                <div
+                  className="dashboard-content"
+                  style={{ height: zoomLevel !== 100 ? `calc(100vh - 200px)` : "auto" }}
+                >
+                  <div className="filter-tabs">
+                    {["VerifiedRBI", "All", "ClearanceCert", "IDApp", "IndigencyCert", "JobseekerCert", "BrgyCert"].map(
+                      (type) => (
+                        <button
+                          key={type}
+                          className={`tab-button ${typeFilter === type ? "active-tab" : ""}`}
+                          onClick={() => setTypeFilter(type)}
+                        >
+                          {type === "All" ? "All Types" : type === "VerifiedRBI" ? "Verified RBI List" : type}
+                        </button>
+                      ),
+                    )}
+                  </div>
+
+                  <div>
+                    {typeFilter === "VerifiedRBI" ? (
+                      <Verified_RBI_List />
+                    ) : (
+                      <div
+                        className="table-container"
+                        style={{
+                          transform: `scale(${zoomLevel / 100})`,
+                          transformOrigin: "top left",
+                          width: zoomLevel < 100 ? `${100 / (zoomLevel / 100)}%` : "100%",
+                          height: zoomLevel < 100 ? `${100 / (zoomLevel / 100)}%` : "100%",
+                          overflow: "auto",
+                        }}
+                      >
+                        <table>
+                          <thead>
+                            <tr>
+                              <th>
+                                <input
+                                  type="checkbox"
+                                  checked={selectedRequests.length === filteredRequests.length}
+                                  onChange={handleMasterSelect}
+                                />
+                              </th>
+                              <th>DATE REQUESTED</th>
+                              <th>NAME</th>
+                              <th>SUFFIX</th>
+                              <th>SEX</th>
+                              <th>BIRTHDAY</th>
+                              <th>AGE</th>
+                              <th>ADDRESS</th>
+                              <th>CONTACT NO.</th>
+                              <th>EMAIL</th>
+                              <th>TYPE OF REQUEST</th>
+                              <th>PURPOSE</th>
+                              <th>NO. OF COPIES</th>
+                              <th>STATUS</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {filteredRequests.map((request, index) => (
+                              <tr key={index}>
+                                <td>
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedRequests.includes(request.id)}
+                                    onChange={() => handleSelectRequest(request.id)}
+                                  />
+                                </td>
+                                <td>{request.created_at}</td>
+                                <td>{`${request.last_name}, ${request.first_name} ${request.middle_name || ""}`}</td>
+                                <td>{request.suffix}</td>
+                                <td>{request.sex}</td>
+                                <td>{request.birthday ? request.birthday.split("T")[0] : ""}</td>
+                                <td>{calculateAge(request.birthday)}</td>
+                                <td>{request.address}</td>
+                                <td>{request.contact_no}</td>
+                                <td>{request.email}</td>
+                                <td>{request.type_of_certificate}</td>
+                                <td>{request.purpose_of_request}</td>
+                                <td>{request.number_of_copies}</td>
+                                <td>
+                                  <span className={`status-badge ${getStatusClass(request.status)}`}>
+                                    {request.status}
+                                  </span>
+                                  <select
+                                    value={request.status}
+                                    onChange={(e) => updateStatus(request.id, e.target.value)}
+                                    className={getStatusClass(request.status)}
+                                  >
+                                    <option value="pending">Pending</option>
+                                    <option value="approved">Approved</option>
+                                    <option value="rejected">Rejected</option>
+                                    <option value="for pickup">For Pickup</option>
+                                  </select>
+                                  <button
+                                    className="delete-btn"
+                                    onClick={() => handleDeleteRequest(request.id)}
+                                    title="Delete Request"
+                                  >
+                                    <i className="fas fa-trash-alt"></i>
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-          ) : activeSection === "events" ? (
-            <EventsManager />
-          ) : activeSection === "req_manager" ? (
-            <Request_Manager />
-          ) : activeSection === "rbi_manager" ? (
-            <RBI_Request_Manager />
-          ) : activeSection === "acc_manager" ? (
-            userAccessLevel === 2 ? (
-              <Account_Manager />
-            ) : (
-              <div className="unauthorized-message">
-                <h2>Access Denied</h2>
-                <p>You don't have permission to view this section.</p>
-              </div>
-            )
-          ) : null}
+            ) : activeSection === "events" ? (
+              <EventsManager />
+            ) : activeSection === "req_manager" ? (
+              <Request_Manager />
+            ) : activeSection === "rbi_manager" ? (
+              <RBI_Request_Manager />
+            ) : activeSection === "acc_manager" ? (
+              userAccessLevel === 2 ? (
+                <Account_Manager />
+              ) : (
+                <div className="unauthorized-message">
+                  <h2>Access Denied</h2>
+                  <p>You don't have permission to view this section.</p>
+                </div>
+              )
+            ) : null}
+          </div>
         </div>
       </div>
     </>

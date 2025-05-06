@@ -67,7 +67,7 @@ const EventsContent = () => {
           </div>
         </div>
 
-        <h2 className="upcoming-events-title">Upcoming Events</h2>
+        <h2 className="upcoming-events-title">Events</h2>
 
         <section className="events-section">
           <div className={`event-cards-container ${expandedEvent ? "has-expanded-event" : ""}`}>
