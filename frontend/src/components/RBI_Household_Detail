@@ -1,0 +1,158 @@
+_import React, { useEffect, useState } from 'react';
+import { useRequests } from './RBI_Request_Context';
+import '../styles/Household_Detail.css';
+
+function RBI_Household_Detail({ householdId, onClose }) {
+  const { getHouseholdWithMembers, updateRbiStatus, loading, error } = useRequests();
+  const [householdData, setHouseholdData] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await getHouseholdWithMembers(householdId);
+      if (data) {
+        setHouseholdData(data);
+      }
+    };
+
+    if (householdId) {
+      fetchData();
+    }
+  }, [householdId, getHouseholdWithMembers]);
+
+  const handleStatusChange = async (newStatus) => {
+    const success = await updateRbiStatus(householdId, newStatus);
+    if (success && householdData) {
+      // Update local state to reflect the change
+      setHouseholdData({
+        ...householdData,
+        household: {
+          ...householdData.household,
+          status: newStatus
+        }
+      });
+    }
+  };
+
+  if (loading) return <div className="loading">Loading household details...</div>;
+  if (error) return <div className="error">Error: {error}</div>;
+  if (!householdData) return null;
+
+  const { household, members } = householdData;
+
+  return (
+    <div className="household-detail-modal">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h2>Household Details</h2>
+          <button className="close-btn" onClick={onClose}>&times;</button>
+        </div>
+
+        <div className="modal-body">
+          <div className="status-badge" data-status={household.status}>
+            Status: {household.status}
+          </div>
+
+          <div className="section">
+            <h3>Head of Household</h3>
+            <div className="info-grid">
+              <div className="info-item">
+                <label>Full Name:</label>
+                <span>{`${household.head_last_name}, ${household.head_first_name} ${household.head_middle_name || ""} ${household.head_suffix || ""}`}</span>
+              </div>
+              <div className="info-item">
+                <label>Sex:</label>
+                <span>{household.sex}</span>
+              </div>
+              <div className="info-item">
+                <label>Birth Date:</label>
+                <span>{new Date(household.birth_date).toLocaleDateString()}</span>
+              </div>
+              <div className="info-item">
+                <label>Birth Place:</label>
+                <span>{household.birth_place}</span>
+              </div>
+              <div className="info-item">
+                <label>Civil Status:</label>
+                <span>{household.civil_status}</span>
+              </div>
+              <div className="info-item">
+                <label>Citizenship:</label>
+                <span>{household.citizenship}</span>
+              </div>
+              <div className="info-item">
+                <label>Occupation:</label>
+                <span>{household.occupation}</span>
+              </div>
+              <div className="info-item">
+                <label>Email:</label>
+                <span>{household.email_address}</span>
+              </div>
+              <div className="info-item">
+                <label>Address:</label>
+                <span>{`${household.house_unit_no || ""} ${household.street_name || ""}, ${household.subdivision || ""}`}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="section">
+            <h3>Household Members ({members.length})</h3>
+            {members.length === 0 ? (
+              <p>No additional household members registered</p>
+            ) : (
+              <table className="members-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Sex</th>
+                    <th>Birth Date</th>
+                    <th>Civil Status</th>
+                    <th>Occupation</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {members.map(member => (
+                    <tr key={member.id}>
+                      <td>{`${member.last_name}, ${member.first_name} ${member.middle_name || ""} ${member.suffix || ""}`}</td>
+                      <td>{member.sex}</td>
+                      <td>{new Date(member.birth_date).toLocaleDateString()}</td>
+                      <td>{member.civil_status}</td>
+                      <td>{member.occupation}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          <div className="action-buttons">
+            {household.status === 'pending' && (
+              <>
+                <button 
+                  className="action-btn approve" 
+                  onClick={() => handleStatusChange('approved')}
+                >
+                  Approve Household
+                </button>
+                <button 
+                  className="action-btn reject" 
+                  onClick={() => handleStatusChange('rejected')}
+                >
+                  Reject Household
+                </button>
+                <button 
+                  className="action-btn interview" 
+                  onClick={() => handleStatusChange('for interview')}
+                >
+                  Schedule Interview
+                </button>
+              </>
+            )}
+            <button className="action-btn cancel" onClick={onClose}>Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default RBI_Household_Detail;

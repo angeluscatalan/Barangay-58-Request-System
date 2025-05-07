@@ -98,55 +98,45 @@ exports.getAllHouseholds = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
     const search = req.query.search || '';
+    const status = req.query.status || null;
 
-    let query = `SELECT * FROM households WHERE 1=1`;
-    const params = [];
+    // Build conditions and parameters separately
+    let conditions = [];
+    let params = [];
 
+    // Add search condition if search parameter exists
     if (search) {
-      query += ` AND (
+      conditions.push(`(
         head_last_name LIKE ? OR 
         head_first_name LIKE ? OR 
         head_middle_name LIKE ? OR
         house_unit_no LIKE ? OR
         street_name LIKE ? OR
         subdivision LIKE ?
-      )`;
+      )`);
       const searchParam = `%${search}%`;
-      params.push(searchParam, searchParam, searchParam, searchParam, searchParam, searchParam);
+      // Add search parameter 6 times (once for each field)
+      params.push(...Array(6).fill(searchParam));
     }
 
     // Add status filter if provided
-    if (req.query.status) {
-      query += ` AND status = ?`;
-      params.push(req.query.status);
+    if (status) {
+      conditions.push(`status = ?`);
+      params.push(status);
     }
 
+    // Combine all conditions with AND
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
     // Count total matching records
-    const [countResult] = await pool.execute(
-      `SELECT COUNT(*) as total FROM households WHERE 1=1${
-        search ? ` AND (
-          head_last_name LIKE ? OR 
-          head_first_name LIKE ? OR 
-          head_middle_name LIKE ? OR
-          house_unit_no LIKE ? OR
-          street_name LIKE ? OR
-          subdivision LIKE ?
-        )` : ''
-      }${req.query.status ? ` AND status = ?` : ''}`,
-      [...(search ? [
-        `%${search}%`, `%${search}%`, `%${search}%`, 
-        `%${search}%`, `%${search}%`, `%${search}%`
-      ] : []), 
-      ...(req.query.status ? [req.query.status] : [])]
-    );
-    
+    const countQuery = `SELECT COUNT(*) as total FROM households ${whereClause}`;
+    const [countResult] = await pool.execute(countQuery, params);
     const totalRecords = countResult[0].total;
 
     // Get paginated results
-    query += ` ORDER BY created_at DESC LIMIT ? OFFSET ?`;
-    params.push(limit, offset);
-
-    const [rows] = await pool.execute(query, params);
+    const dataQuery = `SELECT * FROM households ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`;
+    const dataParams = [...params, limit, offset];
+    const [rows] = await pool.execute(dataQuery, dataParams);
 
     res.status(200).json({
       records: rows,

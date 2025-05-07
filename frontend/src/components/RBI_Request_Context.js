@@ -6,45 +6,90 @@ const RequestContext = createContext();
 export const useRequests = () => useContext(RequestContext);
 
 export const RequestProvider = ({ children }) => {
-  const [rbiRequests, setRbiRequests] = useState([]);
+  const [rbiRequests, setRbiRequests] = useState({ records: [], totalRecords: 0, currentPage: 1, totalPages: 1 });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchRbiRequests = useCallback(async (status = null) => {
+  const fetchRbiRequests = useCallback(async (status = null, page = 1, limit = 10, search = '') => {
     try {
       setLoading(true);
-      const response = await axios.get("http://localhost:5000/rbi");
-      const allRequests = response.data;
-      const filtered = status 
-        ? allRequests.filter(r => r.status?.toLowerCase() === status.toLowerCase()) 
-        : allRequests;
-      setRbiRequests(filtered);
+      setError(null);
+      
+      // Build query params
+      const params = new URLSearchParams();
+      params.append('page', page);
+      params.append('limit', limit);
+      
+      if (status) {
+        params.append('status', status);
+      }
+      
+      if (search) {
+        params.append('search', search);
+      }
+      
+      const response = await axios.get(`http://localhost:5000/households?${params.toString()}`);
+      setRbiRequests(response.data);
     } catch (err) {
+      console.error("Error fetching RBI requests:", err);
       setError(err.response?.data?.message || 'Failed to fetch requests');
     } finally {
       setLoading(false);
     }
   }, []);
-   // <-- this was missing!
-    // Empty dependency array, since the fetch function doesn't depend on anything
+
+  const getHouseholdWithMembers = useCallback(async (householdId) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.get(`http://localhost:5000/households/${householdId}`);
+      return response.data;
+    } catch (err) {
+      console.error("Error fetching household details:", err);
+      setError(err.response?.data?.message || 'Failed to fetch household details');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const updateRbiStatus = useCallback(async (id, newStatus) => {
     try {
-      await axios.put(`http://localhost:5000/rbi/${id}`, { status: newStatus });
-      setRbiRequests(prev => prev.map(req => 
-        req.id === id ? { ...req, status: newStatus } : req
-      ));
+      setLoading(true);
+      setError(null);
+      // Fixed the URL from housho to households
+      await axios.put(`http://localhost:5000/households/${id}/status`, { status: newStatus });
+      
+      // Update local state to reflect the change
+      setRbiRequests(prev => {
+        const updatedRecords = prev.records.map(req => 
+          req.id === id ? { ...req, status: newStatus } : req
+        );
+        return { ...prev, records: updatedRecords };
+      });
+      
       return true;
     } catch (error) {
-      setError('Failed to update request status');
       console.error('Error updating status:', error);
+      setError(error.response?.data?.message || 'Failed to update request status');
       return false;
+    } finally {
+      setLoading(false);
     }
-  }, []);  // Empty dependency array for `updateRbiStatus` since no external dependencies
+  }, []);
 
   return (
-    <RequestContext.Provider value={{ rbiRequests, loading, error, fetchRbiRequests, updateRbiStatus }}>
+    <RequestContext.Provider value={{ 
+      rbiRequests, 
+      loading, 
+      error, 
+      fetchRbiRequests,
+      getHouseholdWithMembers,
+      updateRbiStatus 
+    }}>
       {children}
     </RequestContext.Provider>
   );
 };
+
+export default RequestProvider;

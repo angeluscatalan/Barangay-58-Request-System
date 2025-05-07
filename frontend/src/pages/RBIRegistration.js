@@ -21,7 +21,6 @@ function RBIRegistration() {
     household: {},
     members: []
   })
-  const [memberBirthdateRefs, setMemberBirthdateRefs] = useState([])
 
 
   // Household head information
@@ -75,21 +74,15 @@ function RBIRegistration() {
   }
 
   const handleMemberDateChange = (index, date) => {
-    // Create a copy of the members array
-    const updatedMembers = [...members]
-    
-    // Update the date for the specific member
-    updatedMembers[index] = {
-      ...updatedMembers[index],
-      birth_date: date
-    }
-    
-    // Update the state with the new array
-    setMembers(updatedMembers)
-    
-    // Optional: Log to confirm date is being set
-    console.log(`Member ${index} birth date set to:`, date)
-  }
+    setMembers(prevMembers => {
+        const updatedMembers = [...prevMembers];
+        updatedMembers[index] = {
+            ...updatedMembers[index],
+            birth_date: date ? date.toISOString().split('T')[0] : ''
+        };
+        return updatedMembers;
+    });
+};
 
   const addMember = () => {
     if (members.length < 10) {
