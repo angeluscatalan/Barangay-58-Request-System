@@ -134,7 +134,7 @@ exports.getAllHouseholds = async (req, res) => {
     const totalRecords = countResult[0].total;
 
     // Get paginated results
-    const dataQuery = `SELECT * FROM households ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`;
+    const dataQuery = `SELECT * FROM households ORDER BY created_at`;
     const dataParams = [...params, limit, offset];
     const [rows] = await pool.execute(dataQuery, dataParams);
 
