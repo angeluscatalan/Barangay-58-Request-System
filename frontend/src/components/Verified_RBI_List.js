@@ -11,7 +11,7 @@ function Verified_RBI_List() {
   } = useRequests();
 
   useEffect(() => {
-    fetchRbiRequests("approved"); // Only fetch approved ones
+    fetchRbiRequests("approved");
   }, [fetchRbiRequests]);
 
   if (loading) return <div className="loading">Loading approved registrations...</div>;
@@ -24,34 +24,66 @@ function Verified_RBI_List() {
         <table>
           <thead>
             <tr>
+              <th colSpan={16} style={{ textAlign: "center", background: "#003591" }}>Household Representative (Head)</th>
+            </tr>
+            <tr>
               <th>ID</th>
-              <th>Full Name</th>
+              <th>Last Name</th>
+              <th>First Name</th>
+              <th>Middle Name</th>
               <th>Suffix</th>
               <th>Sex</th>
-              <th>Birthday</th>
-              <th>Birthplace</th>
+              <th>Date of Birth</th>
+              <th>Birth Place</th>
               <th>Civil Status</th>
               <th>Citizenship</th>
               <th>Occupation</th>
               <th>Email</th>
-              <th>Address</th>
+              <th>House/Unit No.</th>
+              <th>Street Name</th>
+              <th>Subdivision / Sitio / Purok</th>
+              <th># of Members</th>
             </tr>
           </thead>
           <tbody>
-            {(rbiRequests || []).map((reg) => (
-              <tr key={reg.id}>
-                <td>{reg.id}</td>
-                <td>{`${reg.last_name}, ${reg.first_name} ${reg.middle_name || ""}`}</td>
-                <td>{reg.suffix || "N/A"}</td>
-                <td>{reg.sex || "N/A"}</td>
-                <td>{new Date(reg.birth_date).toLocaleDateString() || "N/A"}</td>
-                <td>{reg.birth_place || "N/A"}</td>
-                <td>{reg.civil_status || "N/A"}</td>
-                <td>{reg.citizenship || "N/A"}</td>
-                <td>{reg.occupation || "N/A"}</td>
-                <td>{reg.email_address || "N/A"}</td>
-                <td>{`${reg.house_unit_no || ""} ${reg.street_name || ""} ${reg.subdivision || ""}` || "N/A"}</td>
-              </tr>
+            {(rbiRequests.records || []).map((household) => (
+              <React.Fragment key={household.id}>
+                {/* HEAD ROW */}
+                <tr className="head-row" style={{ background: "#e6f7ff" }}>
+                  <td>{household.id}</td>
+                  <td>{household.head_last_name}</td>
+                  <td>{household.head_first_name}</td>
+                  <td>{household.head_middle_name || "N/A"}</td>
+                  <td>{household.head_suffix || "N/A"}</td>
+                  <td>{household.sex || "N/A"}</td>
+                  <td>{new Date(household.birth_date).toLocaleDateString()}</td>
+                  <td>{household.birth_place || "N/A"}</td>
+                  <td>{household.civil_status || "N/A"}</td>
+                  <td>{household.citizenship || "N/A"}</td>
+                  <td>{household.occupation || "N/A"}</td>
+                  <td>{household.email_address || "N/A"}</td>
+                  <td>{household.house_unit_no || "N/A"}</td>
+                  <td>{household.street_name || "N/A"}</td>
+                  <td>{household.subdivision || "N/A"}</td>
+                  <td>{household.members?.length || 0}</td>
+                </tr>
+
+                {/* MEMBER ROWS */}
+                {(household.members || []).map((member) => (
+                  <tr key={member.id} className="member-row">
+                    <td colSpan={2}>Household #{household.id}</td>
+                    <td colSpan={3}>Head: {household.head_first_name} {household.head_last_name}</td>
+                    <td>{member.sex || "N/A"}</td>
+                    <td>{new Date(member.birth_date).toLocaleDateString()}</td>
+                    <td>{member.birth_place || "N/A"}</td>
+                    <td>{member.civil_status || "N/A"}</td>
+                    <td>{member.citizenship || "N/A"}</td>
+                    <td>{member.occupation || "N/A"}</td>
+                    <td>{member.email_address || "N/A"}</td>
+                    <td colSpan={4}>Member: {member.first_name} {member.middle_name || ""} {member.last_name}</td>
+                  </tr>
+                ))}
+              </React.Fragment>
             ))}
           </tbody>
         </table>
