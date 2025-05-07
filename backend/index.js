@@ -1,7 +1,8 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-require("dotenv").config();
+
 
 // Route imports
 const rbiRoutes = require("./routes/rbiRoutes")
