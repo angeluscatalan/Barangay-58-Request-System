@@ -26,7 +26,7 @@ app.use(cors({
 }));
 
 // Routes
-app.use('/rbi', rbiRoutes);
+app.use('/households', rbiRoutes);
 app.use("/requests", requestRoutes);
 app.use('/events', eventRoutes);
 app.use("/api/auth", authRoutes);

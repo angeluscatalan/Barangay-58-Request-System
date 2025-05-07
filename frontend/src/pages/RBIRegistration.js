@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react"
 import BirthdatePicker from "../components/BirthdatePicker"
+import BirthdateMembers from "../components/BirthdateMembers"
 import "../styles/RBIRegistration.css"
 import step1 from "../assets/step1.png"
 import step2 from "../assets/step2.png"
@@ -15,8 +16,16 @@ import Footer from "../components/Footer"
 function RBIRegistration() {
   const [activeSection, setActiveSection] = useState("info")
   const birthdateRef = useRef(null)
-  const [memberForms, setMemberForms] = useState([])
-  const [formData, setFormData] = useState({
+  const [memberCount, setMemberCount] = useState(0)
+  const [errors, setErrors] = useState({
+    household: {},
+    members: []
+  })
+  const [memberBirthdateRefs, setMemberBirthdateRefs] = useState([])
+
+
+  // Household head information
+  const [householdData, setHouseholdData] = useState({
     head_last_name: "",
     head_first_name: "",
     head_middle_name: "",
@@ -24,95 +33,144 @@ function RBIRegistration() {
     house_unit_no: "",
     street_name: "",
     subdivision: "",
-    email_address: "",
-  })
-  const [errors, setErrors] = useState({})
-
-  // Initialize empty member form
-  const emptyMemberForm = {
-    last_name: "",
-    first_name: "",
-    middle_name: "",
-    suffix: "",
     birth_place: "",
     birth_date: "",
     sex: "",
     civil_status: "",
     citizenship: "",
     occupation: "",
+    email_address: "",
+  })
+
+  // State for household members
+  const [members, setMembers] = useState([])
+
+  const handleHouseholdChange = (e) => {
+    let { name, value } = e.target
+    if (["head_last_name", "head_first_name", "head_middle_name", "birth_place"].includes(name)) {
+      value = value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase())
+    }
+    setHouseholdData({ ...householdData, [name]: value })
   }
 
-  // Add a new member form
-  const addMemberForm = () => {
-    if (memberForms.length < 10) {
-      setMemberForms([...memberForms, { ...emptyMemberForm, id: Date.now() }])
+  const handleHouseholdDateChange = (date) => {
+    setHouseholdData({ ...householdData, birth_date: date })
+  }
+
+  const handleMemberChange = (index, e) => {
+    const { name, value } = e.target
+    const updatedMembers = [...members]
+    let processedValue = value
+    
+    if (["last_name", "first_name", "middle_name", "birth_place"].includes(name)) {
+      processedValue = value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase())
+    }
+    
+    updatedMembers[index] = {
+      ...updatedMembers[index],
+      [name]: processedValue
+    }
+    
+    setMembers(updatedMembers)
+  }
+
+  const handleMemberDateChange = (index, date) => {
+    // Create a copy of the members array
+    const updatedMembers = [...members]
+    
+    // Update the date for the specific member
+    updatedMembers[index] = {
+      ...updatedMembers[index],
+      birth_date: date
+    }
+    
+    // Update the state with the new array
+    setMembers(updatedMembers)
+    
+    // Optional: Log to confirm date is being set
+    console.log(`Member ${index} birth date set to:`, date)
+  }
+
+  const addMember = () => {
+    if (members.length < 10) {
+      setMembers([
+        ...members,
+        {
+          last_name: "",
+          first_name: "",
+          middle_name: "",
+          suffix: "",
+          birth_place: "",
+          birth_date: "",
+          sex: "",
+          civil_status: "",
+          citizenship: "",
+          occupation: ""
+        }
+      ])
+      setMemberCount(memberCount + 1)
+      setErrors({
+        ...errors,
+        members: [...errors.members, {}]
+      })
     } else {
       alert("Maximum of 10 household members allowed.")
     }
   }
 
-  // Remove a member form
-  const removeMemberForm = (id) => {
-    setMemberForms(memberForms.filter(member => member.id !== id))
-  }
-
-  // Handle changes in household head form
-  const handleChange = (e) => {
-    let { name, value } = e.target
-    if (["head_last_name", "head_first_name", "head_middle_name"].includes(name)) {
-      value = value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase())
-    }
-    setFormData({ ...formData, [name]: value })
-  }
-
-  // Handle changes in member forms
-  const handleMemberChange = (id, e) => {
-    let { name, value } = e.target
+  const removeMember = (index) => {
+    const updatedMembers = [...members]
+    updatedMembers.splice(index, 1)
+    setMembers(updatedMembers)
     
-    if (["last_name", "first_name", "middle_name", "birth_place"].includes(name)) {
-      value = value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase())
-    }
+    const updatedErrors = {...errors}
+    updatedErrors.members.splice(index, 1)
+    setErrors(updatedErrors)
     
-    setMemberForms(memberForms.map(member => 
-      member.id === id ? { ...member, [name]: value } : member
-    ))
+    setMemberCount(memberCount - 1)
   }
 
-  // Handle member date change
-  const handleMemberDateChange = (id, date) => {
-    setMemberForms(memberForms.map(member => 
-      member.id === id ? { ...member, birth_date: date } : member
-    ))
+  const validateForm = () => {
+    let isValid = true
+    const newErrors = {
+      household: {},
+      members: members.map(() => ({}))
+    }
+
+    // Validate household head data
+    Object.keys(householdData).forEach((key) => {
+      if (householdData[key].trim() === "" && key !== "head_suffix") {
+        newErrors.household[key] = "This field is required"
+        isValid = false
+      }
+    })
+
+    // Add email validation
+    if (householdData.email_address && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(householdData.email_address)) {
+      newErrors.household.email_address = "Please enter a valid email address"
+      isValid = false
+    }
+
+    // Validate members data if there are any
+    members.forEach((member, index) => {
+      Object.keys(member).forEach((key) => {
+        if (member[key].trim() === "" && key !== "suffix") {
+          newErrors.members[index][key] = "This field is required"
+          isValid = false
+        }
+      })
+    })
+
+    setErrors(newErrors)
+    return isValid
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    // Basic validation for household head
-    const newErrors = {}
-    Object.keys(formData).forEach((key) => {
-      if (formData[key].trim() === "" && key !== "head_suffix") {
-        newErrors[key] = "This field is required"
-      }
-    })
-
-    // Add email validation
-    if (formData.email_address && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email_address)) {
-      newErrors.email_address = "Please enter a valid email address"
-    }
-
-    // Validate member forms if any exist
-    let memberErrors = false
-    if (memberForms.length > 0) {
-      memberForms.forEach((member, index) => {
-        Object.keys(member).forEach(key => {
-          if (key !== 'id' && key !== 'suffix' && !member[key]) {
-            memberErrors = true
-            alert(`Please fill in all required fields for Member ${index + 1}`)
-            return
-          }
-        })
-      })
+    if (!validateForm()) {
+      alert("Please fill in all required fields.")
+      return
     }
 
     if (!document.getElementById("terms").checked) {
@@ -120,34 +178,33 @@ function RBIRegistration() {
       return
     }
 
-    if (Object.keys(newErrors).length > 0 || memberErrors) {
-      setErrors(newErrors)
-      alert("Please fill in all required fields.")
-      return
-    }
-
     try {
-      // Create household first
-      const householdResponse = await axios.post("http://localhost:5000/households", formData)
+      // Format dates
+      const formattedHouseholdData = {
+        ...householdData,
+        birth_date: householdData.birth_date 
+          ? new Date(householdData.birth_date).toISOString().split("T")[0] 
+          : null,
+      }
 
-      if (householdResponse.status === 200 || householdResponse.status === 201) {
-        const householdId = householdResponse.data.householdId
+      const formattedMembers = members.map(member => ({
+        ...member,
+        birth_date: member.birth_date 
+          ? new Date(member.birth_date).toISOString().split("T")[0] 
+          : null,
+      }))
 
-        // If we have members, submit them
-        if (memberForms.length > 0) {
-          const membersData = memberForms.map(member => ({
-            ...member,
-            household_id: householdId,
-            birth_date: new Date(member.birth_date).toISOString().split("T")[0]
-          }))
+      // Submit data to API
+      const response = await axios.post("http://localhost:5000/households", {
+        household: formattedHouseholdData,
+        members: formattedMembers
+      })
 
-          await axios.post("http://localhost:5000/household-members", { members: membersData })
-        }
-
+      if (response.status === 200 || response.status === 201) {
         alert("✅ RBI Registration successfully submitted!")
 
         // Reset form
-        setFormData({
+        setHouseholdData({
           head_last_name: "",
           head_first_name: "",
           head_middle_name: "",
@@ -155,9 +212,16 @@ function RBIRegistration() {
           house_unit_no: "",
           street_name: "",
           subdivision: "",
+          birth_place: "",
+          birth_date: "",
+          sex: "",
+          civil_status: "",
+          citizenship: "",
+          occupation: "",
           email_address: "",
         })
-        setMemberForms([])
+        setMembers([])
+        setMemberCount(0)
         document.getElementById("terms").checked = false
       } else {
         alert("Submission failed. Please try again later.")
@@ -267,178 +331,277 @@ function RBIRegistration() {
               <h1 className="fill-up-title">Complete the Form to Register Your Household</h1>
 
               <form className="rbi-form-content" onSubmit={handleSubmit}>
-                <div className="form-sections">
-                  <div className="rbi-form-personal">
-                    <h1 className="rbi-form-section-title">HOUSEHOLD HEAD INFORMATION</h1>
-
-                    <div className="form-row">
-                      <input
-                        type="text"
-                        id="head_last_name"
-                        name="head_last_name"
-                        placeholder="LAST NAME"
-                        className={`rbi-form-input ${errors.head_last_name ? "input-error" : ""}`}
-                        value={formData.head_last_name}
-                        onChange={handleChange}
-                        required
-                      />
-                      {errors.head_last_name && <p className="error-message">*{errors.head_last_name}</p>}
-                    </div>
-
-                    <div className="form-row">
-                      <input
-                        type="text"
-                        id="head_first_name"
-                        name="head_first_name"
-                        placeholder="FIRST NAME"
-                        className={`rbi-form-input ${errors.head_first_name ? "input-error" : ""}`}
-                        value={formData.head_first_name}
-                        onChange={handleChange}
-                        required
-                      />
-                      {errors.head_first_name && <p className="error-message">*{errors.head_first_name}</p>}
-                    </div>
-
-                    <div className="form-row">
-                      <input
-                        type="text"
-                        id="head_middle_name"
-                        name="head_middle_name"
-                        placeholder="MIDDLE NAME"
-                        className={`rbi-form-input ${errors.head_middle_name ? "input-error" : ""}`}
-                        value={formData.head_middle_name}
-                        onChange={handleChange}
-                        required
-                      />
-                      {errors.head_middle_name && <p className="error-message">*{errors.head_middle_name}</p>}
-                    </div>
-
-                    <div className="form-row">
-                      <select
-                        id="head_suffix"
-                        name="head_suffix"
-                        className="rbi-form-select"
-                        value={formData.head_suffix}
-                        onChange={handleChange}
-                      >
-                        <option value="" disabled selected>
-                          SUFFIX
-                        </option>
-                        <option value="None">None</option>
-                        <option value="Jr.">Jr.</option>
-                        <option value="Sr.">Sr.</option>
-                        <option value="I">I</option>
-                        <option value="II">II</option>
-                        <option value="III">III</option>
-                        <option value="IV">IV</option>
-                        <option value="V">V</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="rbi-form-address">
-                    <h1 className="rbi-form-section-title">ADDRESS</h1>
-
-                    <div className="form-row">
-                      <input
-                        type="text"
-                        id="house_unit_no"
-                        name="house_unit_no"
-                        placeholder="HOUSE/UNIT NO."
-                        className={`rbi-form-input ${errors.house_unit_no ? "input-error" : ""}`}
-                        value={formData.house_unit_no}
-                        onChange={handleChange}
-                        required
-                      />
-                      {errors.house_unit_no && <p className="error-message">*{errors.house_unit_no}</p>}
-                    </div>
-
-                    <div className="form-row">
-                      <input
-                        type="text"
-                        id="street_name"
-                        name="street_name"
-                        placeholder="STREET NAME"
-                        className={`rbi-form-input ${errors.street_name ? "input-error" : ""}`}
-                        value={formData.street_name}
-                        onChange={handleChange}
-                        required
-                      />
-                      {errors.street_name && <p className="error-message">*{errors.street_name}</p>}
-                    </div>
-
-                    <div className="form-row">
-                      <input
-                        type="text"
-                        id="subdivision"
-                        name="subdivision"
-                        placeholder="NAME OF SUBDIVISION, SITIO OR PUROK"
-                        className={`rbi-form-input ${errors.subdivision ? "input-error" : ""}`}
-                        value={formData.subdivision}
-                        onChange={handleChange}
-                        required
-                      />
-                      {errors.subdivision && <p className="error-message">*{errors.subdivision}</p>}
-                    </div>
-                    
-                    <div className="form-row">
-                      <input
-                        type="email"
-                        id="email"
-                        name="email_address"
-                        placeholder="EMAIL ADDRESS"
-                        className={`rbi-form-input ${errors.email_address ? "input-error" : ""}`}
-                        value={formData.email_address}
-                        onChange={handleChange}
-                        required
-                      />
-                      {errors.email_address && <p className="error-message">*{errors.email_address}</p>}
-                    </div>
-                  </div>
+                {/* Household Head Information */}
+                <div className="rbi-form-section">
+                  <h2 className="rbi-form-section-title">HOUSEHOLD HEAD INFORMATION</h2>
                   
-                  {/* Household Members Section */}
-                  <div className="rbi-form-household-members">
-                    <div className="household-members-header">
-                      <h1 className="rbi-form-section-title">HOUSEHOLD MEMBERS</h1>
+                  <div className="form-sections">
+                    <div className="rbi-form-personal">
+                      <h3 className="rbi-form-subsection-title">PERSONAL INFORMATION</h3>
+
+                      <div className="form-row">
+                        <input
+                          type="text"
+                          id="head_lname"
+                          name="head_last_name"
+                          placeholder="LAST NAME"
+                          className={`rbi-form-input ${errors.household.head_last_name ? "input-error" : ""}`}
+                          value={householdData.head_last_name}
+                          onChange={handleHouseholdChange}
+                          required
+                        />
+                        {errors.household.head_last_name && <p className="error-message">*{errors.household.head_last_name}</p>}
+                      </div>
+
+                      <div className="form-row">
+                        <input
+                          type="text"
+                          id="head_fname"
+                          name="head_first_name"
+                          placeholder="FIRST NAME"
+                          className={`rbi-form-input ${errors.household.head_first_name ? "input-error" : ""}`}
+                          value={householdData.head_first_name}
+                          onChange={handleHouseholdChange}
+                          required
+                        />
+                        {errors.household.head_first_name && <p className="error-message">*{errors.household.head_first_name}</p>}
+                      </div>
+
+                      <div className="form-row">
+                        <input
+                          type="text"
+                          id="head_mname"
+                          name="head_middle_name"
+                          placeholder="MIDDLE NAME"
+                          className={`rbi-form-input ${errors.household.head_middle_name ? "input-error" : ""}`}
+                          value={householdData.head_middle_name}
+                          onChange={handleHouseholdChange}
+                          required
+                        />
+                        {errors.household.head_middle_name && <p className="error-message">*{errors.household.head_middle_name}</p>}
+                      </div>
+
+                      <div className="form-row">
+                        <select
+                          id="head_suffix"
+                          name="head_suffix"
+                          className="rbi-form-select"
+                          value={householdData.head_suffix}
+                          onChange={handleHouseholdChange}
+                        >
+                          <option value="" disabled selected>
+                            SUFFIX
+                          </option>
+                          <option value="None">None</option>
+                          <option value="Jr.">Jr.</option>
+                          <option value="Sr.">Sr.</option>
+                          <option value="I">I</option>
+                          <option value="II">II</option>
+                          <option value="III">III</option>
+                          <option value="IV">IV</option>
+                          <option value="V">V</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="rbi-form-address">
+                      <h3 className="rbi-form-subsection-title">ADDRESS</h3>
+
+                      <div className="form-row">
+                        <input
+                          type="text"
+                          id="house_no"
+                          name="house_unit_no"
+                          placeholder="HOUSE/UNIT NO."
+                          className={`rbi-form-input ${errors.household.house_unit_no ? "input-error" : ""}`}
+                          value={householdData.house_unit_no}
+                          onChange={handleHouseholdChange}
+                          required
+                        />
+                        {errors.household.house_unit_no && <p className="error-message">*{errors.household.house_unit_no}</p>}
+                      </div>
+
+                      <div className="form-row">
+                        <input
+                          type="text"
+                          id="street_name"
+                          name="street_name"
+                          placeholder="STREET NAME"
+                          className={`rbi-form-input ${errors.household.street_name ? "input-error" : ""}`}
+                          value={householdData.street_name}
+                          onChange={handleHouseholdChange}
+                          required
+                        />
+                        {errors.household.street_name && <p className="error-message">*{errors.household.street_name}</p>}
+                      </div>
+
+                      <div className="form-row">
+                        <input
+                          type="text"
+                          id="subdivision"
+                          name="subdivision"
+                          placeholder="NAME OF SUBDIVISION, SITIO OR PUROK"
+                          className={`rbi-form-input ${errors.household.subdivision ? "input-error" : ""}`}
+                          value={householdData.subdivision}
+                          onChange={handleHouseholdChange}
+                          required
+                        />
+                        {errors.household.subdivision && <p className="error-message">*{errors.household.subdivision}</p>}
+                      </div>
+                    </div>
+
+                    <div className="rbi-form-other-info">
+                      <h3 className="rbi-form-subsection-title">OTHER INFORMATION</h3>
+
+                      <div className="form-row">
+                        <input
+                          type="text"
+                          id="head_place_of_birth"
+                          name="birth_place"
+                          placeholder="PLACE OF BIRTH"
+                          className={`rbi-form-input ${errors.household.birth_place ? "input-error" : ""}`}
+                          value={householdData.birth_place}
+                          onChange={handleHouseholdChange}
+                          required
+                        />
+                        {errors.household.birth_place && <p className="error-message">*{errors.household.birth_place}</p>}
+                      </div>
+
+                      <div className="form-row">
+                        <div className="birthdate-container">
+                          <label htmlFor="head_birth_date" className="form-label">
+                            DATE OF BIRTH
+                          </label>
+                          <BirthdatePicker
+                            ref={birthdateRef}
+                            selectedDate={householdData.birth_date}
+                            onChange={handleHouseholdDateChange}
+                          />
+                        </div>
+                        {errors.household.birth_date && <p className="error-message">*{errors.household.birth_date}</p>}
+                      </div>
+
+                      <div className="form-row">
+                        <select
+                          id="head_sex"
+                          name="sex"
+                          className={`rbi-form-select ${errors.household.sex ? "input-error" : ""}`}
+                          value={householdData.sex}
+                          onChange={handleHouseholdChange}
+                          required
+                        >
+                          <option value="" disabled selected>
+                            SEX
+                          </option>
+                          <option value="Male">Male</option>
+                          <option value="Female">Female</option>
+                        </select>
+                        {errors.household.sex && <p className="error-message">*{errors.household.sex}</p>}
+                      </div>
+
+                      <div className="form-row">
+                        <select
+                          id="head_civil_status"
+                          name="civil_status"
+                          className={`rbi-form-select ${errors.household.civil_status ? "input-error" : ""}`}
+                          value={householdData.civil_status}
+                          onChange={handleHouseholdChange}
+                          required
+                        >
+                          <option value="" disabled selected>
+                            CIVIL STATUS
+                          </option>
+                          <option value="Single">Single</option>
+                          <option value="Married">Married</option>
+                          <option value="Widowed">Widowed</option>
+                          <option value="Separated">Separated</option>
+                          <option value="Divorced">Divorced</option>
+                        </select>
+                        {errors.household.civil_status && <p className="error-message">*{errors.household.civil_status}</p>}
+                      </div>
+
+                      <div className="form-row">
+                        <input
+                          type="text"
+                          id="head_citizenship"
+                          name="citizenship"
+                          placeholder="CITIZENSHIP"
+                          className={`rbi-form-input ${errors.household.citizenship ? "input-error" : ""}`}
+                          value={householdData.citizenship}
+                          onChange={handleHouseholdChange}
+                          required
+                        />
+                        {errors.household.citizenship && <p className="error-message">*{errors.household.citizenship}</p>}
+                      </div>
+
+                      <div className="form-row">
+                        <input
+                          type="text"
+                          id="head_occupation"
+                          name="occupation"
+                          placeholder="OCCUPATION"
+                          className={`rbi-form-input ${errors.household.occupation ? "input-error" : ""}`}
+                          value={householdData.occupation}
+                          onChange={handleHouseholdChange}
+                          required
+                        />
+                        {errors.household.occupation && <p className="error-message">*{errors.household.occupation}</p>}
+                      </div>
+
+                      <div className="form-row">
+                        <input
+                          type="email"
+                          id="head_email"
+                          name="email_address"
+                          placeholder="EMAIL ADDRESS"
+                          className={`rbi-form-input ${errors.household.email_address ? "input-error" : ""}`}
+                          value={householdData.email_address}
+                          onChange={handleHouseholdChange}
+                          required
+                        />
+                        {errors.household.email_address && <p className="error-message">*{errors.household.email_address}</p>}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Household Members Section */}
+                <div className="rbi-form-section household-members-section">
+                  <h2 className="rbi-form-section-title">HOUSEHOLD MEMBERS</h2>
+                  <button 
+                    type="button" 
+                    className="add-member-button"
+                    onClick={addMember}
+                  >
+                    + Add Household Member
+                  </button>
+                  <p className="members-count">Number of members: {memberCount} (Max: 10)</p>
+
+                  {members.map((member, index) => (
+                    <div key={index} className="member-form">
+                      <h3 className="member-title">Member {index + 1}</h3>
                       <button 
                         type="button" 
-                        className="add-member-btn"
-                        onClick={addMemberForm}
+                        className="remove-member-button"
+                        onClick={() => removeMember(index)}
                       >
-                        + Add Member
+                        Remove
                       </button>
-                    </div>
-                    
-                    {memberForms.length === 0 && (
-                      <div className="no-members-message">
-                        <p>No household members added. Click "Add Member" to include family members.</p>
-                      </div>
-                    )}
-                    
-                    {memberForms.map((member, index) => (
-                      <div key={member.id} className="member-form">
-                        <div className="member-header">
-                          <h3>Member {index + 1}</h3>
-                          <button 
-                            type="button" 
-                            className="remove-member-btn"
-                            onClick={() => removeMemberForm(member.id)}
-                          >
-                            Remove
-                          </button>
-                        </div>
-                        
-                        <div className="member-form-fields">
+
+                      <div className="form-sections">
+                        <div className="member-personal">
+                          <h3 className="rbi-form-subsection-title">PERSONAL INFORMATION</h3>
                           <div className="form-row">
                             <input
                               type="text"
                               name="last_name"
                               placeholder="LAST NAME"
-                              className="rbi-form-input"
+                              className={`rbi-form-input ${errors.members[index]?.last_name ? "input-error" : ""}`}
                               value={member.last_name}
-                              onChange={(e) => handleMemberChange(member.id, e)}
+                              onChange={(e) => handleMemberChange(index, e)}
                               required
                             />
+                            {errors.members[index]?.last_name && <p className="error-message">*{errors.members[index].last_name}</p>}
                           </div>
 
                           <div className="form-row">
@@ -446,11 +609,12 @@ function RBIRegistration() {
                               type="text"
                               name="first_name"
                               placeholder="FIRST NAME"
-                              className="rbi-form-input"
+                              className={`rbi-form-input ${errors.members[index]?.first_name ? "input-error" : ""}`}
                               value={member.first_name}
-                              onChange={(e) => handleMemberChange(member.id, e)}
+                              onChange={(e) => handleMemberChange(index, e)}
                               required
                             />
+                            {errors.members[index]?.first_name && <p className="error-message">*{errors.members[index].first_name}</p>}
                           </div>
 
                           <div className="form-row">
@@ -458,11 +622,12 @@ function RBIRegistration() {
                               type="text"
                               name="middle_name"
                               placeholder="MIDDLE NAME"
-                              className="rbi-form-input"
+                              className={`rbi-form-input ${errors.members[index]?.middle_name ? "input-error" : ""}`}
                               value={member.middle_name}
-                              onChange={(e) => handleMemberChange(member.id, e)}
+                              onChange={(e) => handleMemberChange(index, e)}
                               required
                             />
+                            {errors.members[index]?.middle_name && <p className="error-message">*{errors.members[index].middle_name}</p>}
                           </div>
 
                           <div className="form-row">
@@ -470,9 +635,11 @@ function RBIRegistration() {
                               name="suffix"
                               className="rbi-form-select"
                               value={member.suffix}
-                              onChange={(e) => handleMemberChange(member.id, e)}
+                              onChange={(e) => handleMemberChange(index, e)}
                             >
-                              <option value="" disabled selected>SUFFIX</option>
+                              <option value="" disabled selected>
+                                SUFFIX
+                              </option>
                               <option value="None">None</option>
                               <option value="Jr.">Jr.</option>
                               <option value="Sr.">Sr.</option>
@@ -483,58 +650,74 @@ function RBIRegistration() {
                               <option value="V">V</option>
                             </select>
                           </div>
+                        </div>
 
+                        <div className="member-other-info">
+                          <h3 className="rbi-form-subsection-title">OTHER INFORMATION</h3>
+                          
                           <div className="form-row">
                             <input
                               type="text"
                               name="birth_place"
                               placeholder="PLACE OF BIRTH"
-                              className="rbi-form-input"
+                              className={`rbi-form-input ${errors.members[index]?.birth_place ? "input-error" : ""}`}
                               value={member.birth_place}
-                              onChange={(e) => handleMemberChange(member.id, e)}
+                              onChange={(e) => handleMemberChange(index, e)}
                               required
                             />
+                            {errors.members[index]?.birth_place && <p className="error-message">*{errors.members[index].birth_place}</p>}
                           </div>
-
                           <div className="form-row">
-                            <div className="birthdate-container">
-                              <label className="form-label">DATE OF BIRTH</label>
-                              <BirthdatePicker
-                                selectedDate={member.birth_date}
-                                onChange={(date) => handleMemberDateChange(member.id, date)}
-                              />
-                            </div>
+                          <div className="form-row">
+    <div className="birthdate-container">
+      <label htmlFor={`member_birth_date_${index}`} className="form-label">
+        DATE OF BIRTH
+      </label>
+      <BirthdateMembers
+        selectedDate={member.birth_date}
+        onChange={(date) => handleMemberDateChange(index, date)}
+        index={index}
+      />
+    </div>
+    {errors.members[index]?.birth_date && <p className="error-message">*{errors.members[index].birth_date}</p>}
+  </div>
+                            {errors.members[index]?.birth_date && <p className="error-message">*{errors.members[index].birth_date}</p>}
                           </div>
-
                           <div className="form-row">
                             <select
                               name="sex"
-                              className="rbi-form-select"
+                              className={`rbi-form-select ${errors.members[index]?.sex ? "input-error" : ""}`}
                               value={member.sex}
-                              onChange={(e) => handleMemberChange(member.id, e)}
+                              onChange={(e) => handleMemberChange(index, e)}
                               required
                             >
-                              <option value="" disabled selected>SEX</option>
+                              <option value="" disabled selected>
+                                SEX
+                              </option>
                               <option value="Male">Male</option>
                               <option value="Female">Female</option>
                             </select>
+                            {errors.members[index]?.sex && <p className="error-message">*{errors.members[index].sex}</p>}
                           </div>
 
                           <div className="form-row">
                             <select
                               name="civil_status"
-                              className="rbi-form-select"
+                              className={`rbi-form-select ${errors.members[index]?.civil_status ? "input-error" : ""}`}
                               value={member.civil_status}
-                              onChange={(e) => handleMemberChange(member.id, e)}
+                              onChange={(e) => handleMemberChange(index, e)}
                               required
                             >
-                              <option value="" disabled selected>CIVIL STATUS</option>
+                              <option value="" disabled selected>
+                                CIVIL STATUS
+                              </option>
                               <option value="Single">Single</option>
                               <option value="Married">Married</option>
                               <option value="Widowed">Widowed</option>
                               <option value="Separated">Separated</option>
                               <option value="Divorced">Divorced</option>
                             </select>
+                            {errors.members[index]?.civil_status && <p className="error-message">*{errors.members[index].civil_status}</p>}
                           </div>
 
                           <div className="form-row">
@@ -542,11 +725,12 @@ function RBIRegistration() {
                               type="text"
                               name="citizenship"
                               placeholder="CITIZENSHIP"
-                              className="rbi-form-input"
+                              className={`rbi-form-input ${errors.members[index]?.citizenship ? "input-error" : ""}`}
                               value={member.citizenship}
-                              onChange={(e) => handleMemberChange(member.id, e)}
+                              onChange={(e) => handleMemberChange(index, e)}
                               required
                             />
+                            {errors.members[index]?.citizenship && <p className="error-message">*{errors.members[index].citizenship}</p>}
                           </div>
 
                           <div className="form-row">
@@ -554,16 +738,17 @@ function RBIRegistration() {
                               type="text"
                               name="occupation"
                               placeholder="OCCUPATION"
-                              className="rbi-form-input"
+                              className={`rbi-form-input ${errors.members[index]?.occupation ? "input-error" : ""}`}
                               value={member.occupation}
-                              onChange={(e) => handleMemberChange(member.id, e)}
+                              onChange={(e) => handleMemberChange(index, e)}
                               required
                             />
+                            {errors.members[index]?.occupation && <p className="error-message">*{errors.members[index].occupation}</p>}
                           </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
 
                 <div className="rbi-form-terms-container">
