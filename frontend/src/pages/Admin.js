@@ -24,6 +24,7 @@ function Admin() {
   const [userAccessLevel, setUserAccessLevel] = useState(null)
   const [selectedRequests, setSelectedRequests] = useState([])
   const [sidebarVisible, setSidebarVisible] = useState(true)
+  const [sortBy, setSortBy] = useState("latest");
 
   const { requests, loading: requestsLoading, error: requestsError, fetchRequests, updateRequestStatus } = useRequests()
 
@@ -97,21 +98,63 @@ function Admin() {
   )
 
   // Filter requests based on type, status, and search query
-  const filteredRequests = useMemo(
-    () =>
-      approvedRequests.filter((request) => {
-        const matchesType = typeFilter === "All" || request.type_of_certificate === typeFilter
-        const matchesStatus = statusFilter === "All" || request.status === statusFilter
-        const matchesSearch =
-          searchQuery === "" ||
-          `${request.last_name}, ${request.first_name} ${request.middle_name || ""}`
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase())
+  const filteredRequests = useMemo(() => {
+  // First filter by type, status, and search
+  const filtered = approvedRequests.filter((request) => {
+    const matchesType = typeFilter === "All" || request.type_of_certificate === typeFilter;
+    const matchesStatus = statusFilter === "All" || request.status === statusFilter;
+    const matchesSearch =
+      searchQuery === "" ||
+      `${request.last_name}, ${request.first_name} ${request.middle_name || ""}`
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
 
-        return matchesType && matchesStatus && matchesSearch
-      }),
-    [approvedRequests, typeFilter, statusFilter, searchQuery],
-  )
+    return matchesType && matchesStatus && matchesSearch;
+  });
+
+  // Then apply sorting
+  return filtered.sort((a, b) => {
+    const dateA = new Date(a.created_at);
+    const dateB = new Date(b.created_at);
+    
+    switch (sortBy) {
+      case "latest":
+        return dateB - dateA; // Newest first
+      case "oldest":
+        return dateA - dateB; // Oldest first
+      case "lastMonth":
+        // Show only requests from the last 30 days
+        const oneMonthAgo = new Date();
+        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+        return dateB - dateA; // Sort by newest first within last month
+      case "lastYear":
+        // Show only requests from the last 365 days
+        const oneYearAgo = new Date();
+        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+        return dateB - dateA; // Sort by newest first within last year
+      default:
+        return dateB - dateA; // Default to latest first
+    }
+  }).filter(request => {
+    // Additional filtering for time-based options
+    const requestDate = new Date(request.created_at);
+    const now = new Date();
+    
+    if (sortBy === "lastMonth") {
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+      return requestDate >= oneMonthAgo;
+    }
+    
+    if (sortBy === "lastYear") {
+      const oneYearAgo = new Date();
+      oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+      return requestDate >= oneYearAgo;
+    }
+    
+    return true; // No additional filtering for other sort options
+  });
+}, [approvedRequests, typeFilter, statusFilter, searchQuery, sortBy]);
 
   // Helper function to get status class
   const getStatusClass = (status) => {
@@ -331,6 +374,12 @@ function Admin() {
                       <option value="approved">Approved</option>
                       <option value="rejected">Rejected</option>
                       <option value="for pickup">For Pickup</option>
+                    </select>
+                    <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                      <option value="latest">Latest</option>
+                      <option value="oldest">Oldest</option>
+                      <option value="lastMonth">Last Month</option>
+                      <option value="lastYear">Last Year</option>
                     </select>
                     <div className="zoom-controls">
                       <button className="zoom-btn" onClick={() => handleZoom("out")} title="Zoom Out">

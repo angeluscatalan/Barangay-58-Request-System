@@ -511,6 +511,23 @@ tr:hover {
   text-align: center;
 }
 
+.filters select {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  margin-right: 10px;
+  background-color: white;
+  font-size: 14px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
 @media (min-width: 1024px) and (max-width: 1439px) {
   .sidebar {
     width: 220px;

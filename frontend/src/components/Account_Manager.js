@@ -116,17 +116,18 @@ if (editMode && response.data.account) {
   };
 
   const openEditModal = (account) => {
-    setCurrentAccount({
-      id: account.id,
-      username: account.username,
-      email: account.email,
-      password: '', // Don't show existing password
-      access_level: account.access_level,
-      archive: account.archive
-    });
-    setEditMode(true);
-    setShowModal(true);
-  };
+    setCurrentAccount({
+      id: account.id,
+      username: account.username,
+      email: account.email,
+      password: '', // Don't show existing password
+      access_level: account.access_level,
+      archive: account.archive,
+      isSuperAdmin: account.access_level === 2 // Add a flag to identify Super Admin
+    });
+    setEditMode(true);
+    setShowModal(true);
+  };
 
   const closeModal = () => {
     setShowModal(false);
@@ -244,31 +245,33 @@ if (editMode && response.data.account) {
                   <option value="1">Admin</option>
                 </select>
               </div>
-              <div className="form-group">
-                <label>Status:</label>
-                <div className="radio-group">
-                  <label>
-                    <input
-                      type="radio"
-                      name="archive"
-                      value="NO"
-                      checked={currentAccount.archive === 'NO'}
-                      onChange={handleInputChange}
-                    />
-                    Active
-                  </label>
-                  <label>
-                    <input
-                      type="radio"
-                      name="archive"
-                      value="YES"
-                      checked={currentAccount.archive === 'YES'}
-                      onChange={handleInputChange}
-                    />
-                    Disabled
-                  </label>
-                </div>
-              </div>
+               <div className="form-group">
+                <label>Status:</label>
+                <div className="radio-group">
+                  <label>
+                    <input
+                      type="radio"
+                      name="archive"
+                      value="NO"
+                      checked={currentAccount.archive === 'NO'}
+                      onChange={handleInputChange}
+                      disabled={currentAccount.isSuperAdmin} // Disable if it's Super Admin
+                    />
+                    Active
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name="archive"
+                      value="YES"
+                      checked={currentAccount.archive === 'YES'}
+                      onChange={handleInputChange}
+                      disabled={currentAccount.isSuperAdmin} // Disable if it's Super Admin
+                    />
+                    Disabled
+                  </label>
+                </div>
+              </div>
               <div className="modal-actions">
                 <button type="button" onClick={closeModal}>Cancel</button>
                 <button type="submit">{editMode ? 'Update' : 'Create'}</button>

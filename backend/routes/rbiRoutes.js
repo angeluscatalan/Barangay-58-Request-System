@@ -98,5 +98,4 @@ router.delete('/:id', rbiController.deleteHousehold);
 router.post('/:id/members', validateMember, rbiController.addHouseholdMember);
 router.put('/:id/members/:memberId', validateMember, rbiController.updateHouseholdMember);
 router.delete('/:id/members/:memberId', rbiController.deleteHouseholdMember);
-
 module.exports = router;

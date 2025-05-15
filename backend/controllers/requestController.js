@@ -39,9 +39,20 @@ exports.createRequest = async (req, res) => {
     }
 
     try {
-        const { last_name, first_name, middle_name, suffix, sex, birthday,
-            contact_no, email, address, type_of_certificate,
-            purpose_of_request, number_of_copies } = req.body;
+        const { 
+            last_name, 
+            first_name, 
+            middle_name, 
+            suffix, 
+            sex, 
+            birthday,
+            contact_no, 
+            email, 
+            address, 
+            type_of_certificate,
+            purpose_of_request, 
+            number_of_copies 
+        } = req.body;
 
         const [result] = await pool.execute(
             `INSERT INTO requests 
@@ -50,9 +61,18 @@ exports.createRequest = async (req, res) => {
               purpose_of_request, number_of_copies, status)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending')`,
             [
-                last_name, first_name, middle_name, suffix, sex, birthday,
-                contact_no, email, address, type_of_certificate,
-                purpose_of_request, number_of_copies
+                last_name, 
+                first_name, 
+                middle_name, 
+                suffix, 
+                sex, 
+                birthday,
+                contact_no, 
+                email, 
+                address, 
+                type_of_certificate,
+                purpose_of_request, 
+                number_of_copies
             ]
         );
 
@@ -61,7 +81,7 @@ exports.createRequest = async (req, res) => {
             requestId: result.insertId
         });
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Error creating request:', error);
         res.status(500).json({
             error: 'Request processing failed',
             details: error.message
@@ -186,7 +206,7 @@ exports.deleteRequest = async (req, res) => {
         }
 
         await connection.commit();
-        res.json({ success: true, message: 'Request deleted successfully' });
+        res.json({ success: true, message: 'Request deleted and archived successfully' });
     } catch (error) {
         await connection.rollback();
         console.error('Database error:', error);
