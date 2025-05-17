@@ -22,11 +22,19 @@ const getTemplatePath = (certificateType) => {
     return path.join(__dirname, '../templates/certificates', templateFile);
 };
 
+// Helper function to format name with proper handling of optional fields
+const formatName = (requestData) => {
+    let name = `${requestData.last_name}, ${requestData.first_name}`;
+    if (requestData.middle_name) name += ` ${requestData.middle_name}`;
+    if (requestData.suffix && requestData.suffix !== 'None') name += ` ${requestData.suffix}`;
+    return name.trim();
+};
+
 // Generate PDF endpoint
 router.post('/generate-pdf', async (req, res) => {
     try {
         const { requestData } = req.body;
-        console.log('Received request data:', requestData); // Log received data
+        console.log('Received request data:', requestData);
 
         // Get the template path
         const templatePath = getTemplatePath(requestData.type_of_certificate);
@@ -45,60 +53,55 @@ router.post('/generate-pdf', async (req, res) => {
 
         // Load the PDF document
         const pdfDoc = await PDFDocument.load(templateBytes);
-
-        // Get the form fields
         const form = pdfDoc.getForm();
 
-        // Log available form fields
+        // Debug: Log all available fields
+        console.log('=== PDF FORM FIELDS ===');
         const fields = form.getFields();
-        console.log('Available form fields:', fields.map(f => f.getName()));
+        fields.forEach(field => {
+            console.log(`- ${field.getName()} (${field.constructor.name})`);
+        });
 
-        // Get current date parts
+        // Get current date
         const currentDate = new Date();
-        const day = currentDate.getDate();
-        const month = currentDate.toLocaleString('default', { month: 'long' });
-        const year = currentDate.getFullYear();
+        const formattedDate = currentDate.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
 
-        // Define fields based on certificate type
-        let fieldsToFill = {};
+        const fieldMappings = {
+            'Text9': formattedDate,                     
+            'Text10': formatName(requestData),          
+            'Text12': cleanAddress(requestData.address),         
+            'Text15': requestData.purpose_of_request,   
+            'Text16': currentDate.getDate().toString(), 
+            'Text17': currentDate.toLocaleString('default', { month: 'long' }), 
+            'Text19': currentDate.getFullYear().toString() 
+        };
 
-        if (requestData.type_of_certificate === 'ClearanceCert') {
-            fieldsToFill = {
-                'date': currentDate.toLocaleDateString(),
-                'name': `${requestData.last_name}, ${requestData.first_name} ${requestData.middle_name || ''} ${requestData.suffix || ''}`.trim(),
-                'street': requestData.address,
-                'purpose': requestData.purpose_of_request,
-                'day': day.toString(),
-                'month': month,
-                'year': year.toString()
-            };
-        } else {
-            // Handle other certificate types here when you have their templates
-            fieldsToFill = {
-                'full_name': `${requestData.last_name}, ${requestData.first_name} ${requestData.middle_name || ''} ${requestData.suffix || ''}`.trim(),
-                'address': requestData.address,
-                'purpose': requestData.purpose_of_request,
-                'date': currentDate.toLocaleDateString()
-            };
-        }
 
-        console.log('Attempting to fill fields:', fieldsToFill); // Log fields we're trying to fill
+        console.log('Attempting to fill fields:', fieldMappings);
 
-        // Fill in the form fields
-        Object.entries(fieldsToFill).forEach(([fieldName, value]) => {
+        // Fill the fields
+        Object.entries(fieldMappings).forEach(([fieldName, value]) => {
             try {
-                console.log(`Attempting to fill field: ${fieldName} with value: ${value}`);
                 const field = form.getTextField(fieldName);
                 if (field) {
                     field.setText(value);
-                    console.log(`Successfully filled field: ${fieldName}`);
+                    console.log(`✓ Filled ${fieldName} with: ${value}`);
                 } else {
-                    console.log(`Field not found: ${fieldName}`);
+                    console.log(`✗ Field not found: ${fieldName}`);
                 }
             } catch (error) {
-                console.error(`Error filling field ${fieldName}:`, error);
+                console.error(`Error filling ${fieldName}:`, error.message);
             }
         });
+
+     
+        form.updateFieldAppearances();
+        form.flatten();
+
 
         // Save the PDF
         const pdfBytes = await pdfDoc.save();
@@ -110,8 +113,35 @@ router.post('/generate-pdf', async (req, res) => {
 
     } catch (error) {
         console.error('Error generating PDF:', error);
-        res.status(500).json({ error: 'Failed to generate PDF' });
+        res.status(500).json({ 
+            error: 'Failed to generate PDF',
+            details: error.message 
+        });
     }
 });
 
-module.exports = router; 
+// Helper function to calculate age
+function calculateAge(birthday) {
+    if (!birthday) return '';
+    const birthDate = new Date(birthday);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    
+    return age;
+}
+
+const cleanAddress = (rawAddress) => {
+    if (!rawAddress) return '';
+    return rawAddress
+        .split(',')
+        .map(part => part.trim())
+        .filter(part => part && part.toLowerCase() !== 'undefined')
+        .join(', ');
+};
+
+module.exports = router;
