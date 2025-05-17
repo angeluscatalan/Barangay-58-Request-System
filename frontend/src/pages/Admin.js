@@ -25,12 +25,13 @@ function Admin() {
   const [selectedRequests, setSelectedRequests] = useState([])
   const [sidebarVisible, setSidebarVisible] = useState(true)
   const [sortBy, setSortBy] = useState("latest");
+  const [isPrinting, setIsPrinting] = useState({});
 
   const { requests, loading: requestsLoading, error: requestsError, fetchRequests, updateRequestStatus } = useRequests()
 
   // Add delete function
   const handleDeleteRequest = async (id) => {
-    if (window.confirm("Are you sure you want to delete this request? This action cannot be undone.")) {
+    if (window.confirm("Are you sure you want to delete this request?")) {
       try {
         const token = localStorage.getItem("token")
         await axios.delete(`http://localhost:5000/requests/${id}`, {
@@ -99,62 +100,62 @@ function Admin() {
 
   // Filter requests based on type, status, and search query
   const filteredRequests = useMemo(() => {
-  // First filter by type, status, and search
-  const filtered = approvedRequests.filter((request) => {
-    const matchesType = typeFilter === "All" || request.type_of_certificate === typeFilter;
-    const matchesStatus = statusFilter === "All" || request.status === statusFilter;
-    const matchesSearch =
-      searchQuery === "" ||
-      `${request.last_name}, ${request.first_name} ${request.middle_name || ""}`
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
+    // First filter by type, status, and search
+    const filtered = approvedRequests.filter((request) => {
+      const matchesType = typeFilter === "All" || request.type_of_certificate === typeFilter;
+      const matchesStatus = statusFilter === "All" || request.status === statusFilter;
+      const matchesSearch =
+        searchQuery === "" ||
+        `${request.last_name}, ${request.first_name} ${request.middle_name || ""}`
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase());
 
-    return matchesType && matchesStatus && matchesSearch;
-  });
+      return matchesType && matchesStatus && matchesSearch;
+    });
 
-  // Then apply sorting
-  return filtered.sort((a, b) => {
-    const dateA = new Date(a.created_at);
-    const dateB = new Date(b.created_at);
-    
-    switch (sortBy) {
-      case "latest":
-        return dateB - dateA; // Newest first
-      case "oldest":
-        return dateA - dateB; // Oldest first
-      case "lastMonth":
-        // Show only requests from the last 30 days
+    // Then apply sorting
+    return filtered.sort((a, b) => {
+      const dateA = new Date(a.created_at);
+      const dateB = new Date(b.created_at);
+
+      switch (sortBy) {
+        case "latest":
+          return dateB - dateA; // Newest first
+        case "oldest":
+          return dateA - dateB; // Oldest first
+        case "lastMonth":
+          // Show only requests from the last 30 days
+          const oneMonthAgo = new Date();
+          oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+          return dateB - dateA; // Sort by newest first within last month
+        case "lastYear":
+          // Show only requests from the last 365 days
+          const oneYearAgo = new Date();
+          oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+          return dateB - dateA; // Sort by newest first within last year
+        default:
+          return dateB - dateA; // Default to latest first
+      }
+    }).filter(request => {
+      // Additional filtering for time-based options
+      const requestDate = new Date(request.created_at);
+      const now = new Date();
+
+      if (sortBy === "lastMonth") {
         const oneMonthAgo = new Date();
         oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-        return dateB - dateA; // Sort by newest first within last month
-      case "lastYear":
-        // Show only requests from the last 365 days
+        return requestDate >= oneMonthAgo;
+      }
+
+      if (sortBy === "lastYear") {
         const oneYearAgo = new Date();
         oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-        return dateB - dateA; // Sort by newest first within last year
-      default:
-        return dateB - dateA; // Default to latest first
-    }
-  }).filter(request => {
-    // Additional filtering for time-based options
-    const requestDate = new Date(request.created_at);
-    const now = new Date();
-    
-    if (sortBy === "lastMonth") {
-      const oneMonthAgo = new Date();
-      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-      return requestDate >= oneMonthAgo;
-    }
-    
-    if (sortBy === "lastYear") {
-      const oneYearAgo = new Date();
-      oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-      return requestDate >= oneYearAgo;
-    }
-    
-    return true; // No additional filtering for other sort options
-  });
-}, [approvedRequests, typeFilter, statusFilter, searchQuery, sortBy]);
+        return requestDate >= oneYearAgo;
+      }
+
+      return true; // No additional filtering for other sort options
+    });
+  }, [approvedRequests, typeFilter, statusFilter, searchQuery, sortBy]);
 
   // Helper function to get status class
   const getStatusClass = (status) => {
@@ -256,6 +257,45 @@ function Admin() {
       }
     }
   }
+
+  const handlePrintRequest = async (request) => {
+    setIsPrinting(prev => ({ ...prev, [request.id]: true }));
+    try {
+      console.log('Sending request data:', request);
+      const response = await axios.post(
+        'http://localhost:5000/certificates/generate-pdf',
+        { requestData: request },
+        {
+          responseType: 'blob',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+
+      // Create a blob from the PDF Stream
+      const file = new Blob([response.data], { type: 'application/pdf' });
+
+      // Create a link element to trigger download
+      const fileURL = URL.createObjectURL(file);
+      const link = document.createElement('a');
+      link.href = fileURL;
+      link.download = `${request.type_of_certificate}_${request.last_name}.pdf`;
+
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Clean up
+      URL.revokeObjectURL(fileURL);
+    } catch (error) {
+      console.error('Error printing certificate:', error);
+      alert('Failed to generate certificate PDF');
+    } finally {
+      setIsPrinting(prev => ({ ...prev, [request.id]: false }));
+    }
+  };
 
   if (requestsLoading) return <div className="loading">Loading...</div>
   if (requestsError) return <div className="error">Error: {requestsError}</div>
@@ -495,6 +535,14 @@ function Admin() {
                                     <option value="rejected">Rejected</option>
                                     <option value="for pickup">For Pickup</option>
                                   </select>
+                                  <button
+                                    className="print-btn"
+                                    onClick={() => handlePrintRequest(request)}
+                                    title="Print Request"
+                                    disabled={isPrinting[request.id]}
+                                  >
+                                    <i className={`fas ${isPrinting[request.id] ? 'fa-spinner fa-spin' : 'fa-print'}`}></i>
+                                  </button>
                                   <button
                                     className="delete-btn"
                                     onClick={() => handleDeleteRequest(request.id)}

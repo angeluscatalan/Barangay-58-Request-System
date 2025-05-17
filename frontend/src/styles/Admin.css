@@ -2,19 +2,32 @@
 
 /* Add a more professional color palette */
 :root {
-  --primary: #da1c6f; /* Restore pink color as primary */
-  --primary-light: #e63c87; /* Lighter version for hover states */
-  --secondary: #3498db; /* Blue for secondary elements and highlights */
-  --accent: #e74c3c; /* Red for important actions/alerts */
-  --success: #2ecc71; /* Green for success states */
-  --warning: #f39c12; /* Orange for warnings */
-  --danger: #e74c3c; /* Red for dangerous actions */
-  --light-bg: #f8f9fa; /* Light background for cards */
-  --border: #dee2e6; /* Border color */
-  --text-primary: #2c3e50; /* Primary text color */
-  --text-secondary: #7f8c8d; /* Secondary text color */
-  --text-light: #ecf0f1; /* Light text color for dark backgrounds */
-  --shadow: rgba(0, 0, 0, 0.1); /* Shadow color */
+  --primary: #da1c6f;
+  /* Restore pink color as primary */
+  --primary-light: #e63c87;
+  /* Lighter version for hover states */
+  --secondary: #3498db;
+  /* Blue for secondary elements and highlights */
+  --accent: #e74c3c;
+  /* Red for important actions/alerts */
+  --success: #2ecc71;
+  /* Green for success states */
+  --warning: #f39c12;
+  /* Orange for warnings */
+  --danger: #e74c3c;
+  /* Red for dangerous actions */
+  --light-bg: #f8f9fa;
+  /* Light background for cards */
+  --border: #dee2e6;
+  /* Border color */
+  --text-primary: #2c3e50;
+  /* Primary text color */
+  --text-secondary: #7f8c8d;
+  /* Secondary text color */
+  --text-light: #ecf0f1;
+  /* Light text color for dark backgrounds */
+  --shadow: rgba(0, 0, 0, 0.1);
+  /* Shadow color */
 }
 
 .admin-container {
@@ -46,7 +59,8 @@
   flex-direction: column;
   transition: all 0.3s ease;
   flex-shrink: 0;
-  background-color: var(--primary); /* Restored pink color */
+  background-color: var(--primary);
+  /* Restored pink color */
   color: var(--text-light);
   position: fixed;
   top: 0;
@@ -69,7 +83,8 @@
   height: 90px;
   box-sizing: border-box;
   overflow: hidden;
-  background-color: var(--primary-light); /* Restored pink color */
+  background-color: var(--primary-light);
+  /* Restored pink color */
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -103,7 +118,8 @@
 }
 
 .sidebar nav {
-  background-color: #da1c6f; /* Restored pink color */
+  background-color: #da1c6f;
+  /* Restored pink color */
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -137,7 +153,8 @@
 .sidebar-footer {
   flex-shrink: 0;
   padding: 15px 20px;
-  background-color: #da1c6f; /* Restored pink color */
+  background-color: #da1c6f;
+  /* Restored pink color */
   position: sticky;
   bottom: 0;
   width: 100%;
@@ -165,18 +182,21 @@
 .sidebar nav li.active {
   background-color: rgba(255, 255, 255, 0.2);
   color: white;
-  background-color: #e63c87; /* Lighter pink for active state */
+  background-color: #e63c87;
+  /* Lighter pink for active state */
 }
 
 /* Update the main content to have proper margin to account for fixed sidebar */
 .main-content {
   flex: 1;
-  background-color: #ffe3e2; /* Restored light pink background */
+  background-color: #ffe3e2;
+  /* Restored light pink background */
   padding: 20px;
   overflow-x: auto;
   transition: margin-left 0.3s ease;
   position: relative;
-  margin-left: 250px; /* Match sidebar width */
+  margin-left: 250px;
+  /* Match sidebar width */
 }
 
 /* Add this to ensure content doesn't flow under the header */
@@ -186,7 +206,8 @@
 
 /* Update the main content when sidebar is collapsed */
 .main-content.expanded {
-  margin-left: 70px; /* Match collapsed sidebar width */
+  margin-left: 70px;
+  /* Match collapsed sidebar width */
   width: auto;
 }
 
@@ -196,7 +217,8 @@
   left: 20px;
   width: 36px;
   height: 36px;
-  background-color: #da1c6f; /* Restored pink color */
+  background-color: #da1c6f;
+  /* Restored pink color */
   color: white;
   border-radius: 50%;
   display: flex;
@@ -209,7 +231,8 @@
 }
 
 .sidebar-toggle:hover {
-  background-color: #c01860; /* Darker pink for hover */
+  background-color: #c01860;
+  /* Darker pink for hover */
 }
 
 /* Adjust header positioning to account for sidebar toggle */
@@ -224,7 +247,8 @@ header {
   left: 0;
   right: 0;
   z-index: 99;
-  background-color: #ffe3e2; /* Match main content background */
+  background-color: #ffe3e2;
+  /* Match main content background */
   margin-left: 30px;
   width: calc(100% - 30px);
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
@@ -247,7 +271,8 @@ header {
 }
 
 .sidebar-header h1 {
-  color: white; /* Changed to white for better contrast on pink */
+  color: white;
+  /* Changed to white for better contrast on pink */
   font-size: 22px;
   margin: 0;
   font-weight: bold;
@@ -381,7 +406,8 @@ header {
 }
 
 .add-request-btn {
-  background-color: #da1c6f; /* Restored pink color */
+  background-color: #da1c6f;
+  /* Restored pink color */
   color: white;
   border: none;
   padding: 8px 15px;
@@ -628,11 +654,13 @@ tr:hover {
 }
 
 .tab-button:hover {
-  background-color: #f5b6d1; /* Light pink for hover */
+  background-color: #f5b6d1;
+  /* Light pink for hover */
 }
 
 .active-tab {
-  background-color: #da1c6f; /* Pink for active tab */
+  background-color: #da1c6f;
+  /* Pink for active tab */
   color: white;
   border-color: #da1c6f;
 }
@@ -665,7 +693,8 @@ tr:hover {
 }
 
 .fc-button {
-  background-color: #da1c6f; /* Restored pink color */
+  background-color: #da1c6f;
+  /* Restored pink color */
   border: none;
   border-radius: 6px;
   padding: 6px 12px;
@@ -676,7 +705,8 @@ tr:hover {
 }
 
 .fc-button:hover {
-  background-color: #c01860; /* Darker pink for hover */
+  background-color: #c01860;
+  /* Darker pink for hover */
 }
 
 /* Disable unwanted calendar buttons (since you hid them) */
@@ -707,7 +737,8 @@ tr:hover {
 }
 
 .view-buttons button.active {
-  background-color: #da1c6f; /* Restored pink color */
+  background-color: #da1c6f;
+  /* Restored pink color */
   color: #fff;
 }
 
@@ -787,7 +818,8 @@ select.status-pickup {
 /* Add these styles for the sidebar footer and logout button */
 .sidebar-footer {
   padding: 20px;
-  background-color: #da1c6f; /* Restored pink color */
+  background-color: #da1c6f;
+  /* Restored pink color */
   margin-top: auto;
 }
 
@@ -828,19 +860,23 @@ select.status-pickup {
 .delete-btn {
   background: none;
   border: none;
-  color: #dc3545;
+  color: #ff4444;
   cursor: pointer;
   padding: 5px;
-  margin-left: 8px;
-  transition: transform 0.2s;
+  margin-left: 5px;
 }
 
-.delete-btn:hover {
-  transform: scale(1.1);
+.print-btn {
+  background: none;
+  border: none;
+  color: #2196F3;
+  cursor: pointer;
+  padding: 5px;
+  margin-left: 5px;
 }
 
-.delete-btn i {
-  font-size: 16px;
+.print-btn:hover {
+  color: #0d47a1;
 }
 
 input[type="checkbox"] {
@@ -915,7 +951,8 @@ input[type="checkbox"] {
 /* Buttons */
 .add-request-btn,
 .add-account-btn {
-  background-color: #da1c6f; /* Restored pink color */
+  background-color: #da1c6f;
+  /* Restored pink color */
   color: white;
   border: none;
   padding: 8px 16px;
@@ -926,7 +963,8 @@ input[type="checkbox"] {
 
 .add-request-btn:hover,
 .add-account-btn:hover {
-  background-color: #c01860; /* Darker pink for hover */
+  background-color: #c01860;
+  /* Darker pink for hover */
   transform: translateY(-1px);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
@@ -941,7 +979,8 @@ input[type="checkbox"] {
 }
 
 .view-btn {
-  background-color: #da1c6f; /* Restored pink color */
+  background-color: #da1c6f;
+  /* Restored pink color */
 }
 
 /* Table styling */
@@ -953,8 +992,10 @@ table {
 }
 
 th {
-  background-color: #3498db; /* Restored blue color for table headers */
-  color: white; /* White text for better contrast on blue */
+  background-color: #3498db;
+  /* Restored blue color for table headers */
+  color: white;
+  /* White text for better contrast on blue */
   font-weight: 600;
   padding: 14px 16px;
   text-transform: uppercase;
@@ -971,7 +1012,8 @@ td {
 }
 
 tr:hover {
-  background-color: rgba(218, 28, 111, 0.05); /* Very light pink for hover */
+  background-color: rgba(218, 28, 111, 0.05);
+  /* Very light pink for hover */
 }
 
 /* Status badges */
@@ -1025,9 +1067,11 @@ tr:hover {
 
 .filters select:focus,
 .search-bar:focus {
-  border-color: #da1c6f; /* Restored pink color */
+  border-color: #da1c6f;
+  /* Restored pink color */
   outline: none;
-  box-shadow: 0 0 0 3px rgba(218, 28, 111, 0.2); /* Pink shadow */
+  box-shadow: 0 0 0 3px rgba(218, 28, 111, 0.2);
+  /* Pink shadow */
 }
 
 /* Sidebar toggle */
@@ -1078,9 +1122,11 @@ tr:hover {
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
-  border-color: #da1c6f; /* Restored pink color */
+  border-color: #da1c6f;
+  /* Restored pink color */
   outline: none;
-  box-shadow: 0 0 0 3px rgba(218, 28, 111, 0.2); /* Pink shadow */
+  box-shadow: 0 0 0 3px rgba(218, 28, 111, 0.2);
+  /* Pink shadow */
 }
 
 /* Calendar styling */
@@ -1089,6 +1135,7 @@ tr:hover {
 
 /* Responsive improvements */
 @media (max-width: 768px) {
+
   .dashboard-header,
   .table-header {
     padding: 16px;
@@ -1117,10 +1164,12 @@ tr:hover {
     font-size: 0.75rem;
   }
 }
+
 .sidebar-logout-button {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
 .sidebar-logout-button:hover {
-  background-color: #e63c87; /* Lighter pink for hover */
+  background-color: #e63c87;
+  /* Lighter pink for hover */
 }

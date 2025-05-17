@@ -10,6 +10,7 @@ const eventRoutes = require("./routes/eventRoutes");
 const authRoutes = require("./routes/authRoutes");
 const requestRoutes = require("./routes/requestRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const certificateRoutes = require("./routes/certificateRoutes")
 
 // Express app setup
 const app = express();
@@ -31,6 +32,7 @@ app.use("/requests", requestRoutes);
 app.use('/events', eventRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/certificates", certificateRoutes)
 
 
 // Server start
