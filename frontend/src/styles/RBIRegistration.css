@@ -3,17 +3,19 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap");
 
 .rbi-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding-bottom: 0;
+  margin-top: auto;
   background-image: url("../assets/reqPage_BG.png");
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
-  min-height: 100vh;
   width: 100%;
-  padding: 100px 20px 40px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 40px; /* Add margin at the bottom */
+  padding-top: 100px;
+  overflow-x: hidden;
 }
 
 .mobile-tabs {
@@ -67,6 +69,7 @@
 .back-button-container {
   margin-top: 20px;
   width: 100%;
+  margin-bottom: 0; /* Ensure no bottom margin */
 }
 
 .rbi-content {
@@ -179,6 +182,7 @@
   justify-content: center;
   font-weight: 400;
   font-family: "Manrope";
+  margin-bottom: 0; /* Ensure no bottom margin */
 }
 
 .fill-up-title {
@@ -378,6 +382,95 @@
   margin: 0;
 }
 
+/* Improved Add Member Button */
+.add-member-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 16px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-bottom: 10px;
+}
+
+.add-member-button:hover {
+  background-color: #1565c0;
+}
+
+.add-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Member Header Styling */
+.member-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+/* Remove Button Styling */
+.remove-member-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #e53935;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.remove-member-button:hover {
+  background-color: #d32f2f;
+}
+
+.remove-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Highlight effect for newly added member */
+@keyframes highlight-pulse {
+  0% {
+    background-color: rgba(25, 118, 210, 0.05);
+  }
+  50% {
+    background-color: rgba(25, 118, 210, 0.2);
+  }
+  100% {
+    background-color: rgba(25, 118, 210, 0.05);
+  }
+}
+
+.highlight-member {
+  animation: highlight-pulse 1.5s ease;
+}
+
+.member-form {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 1px solid #e0e0e0;
+  transition: box-shadow 0.2s;
+}
+
+.member-form:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
 @media screen and (max-width: 1200px) {
   .rbi-content {
     gap: 20px;
@@ -533,5 +626,17 @@
 
   .contact-methods {
     gap: 10px;
+  }
+
+  .add-member-button,
+  .remove-member-button {
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+
+  .add-icon,
+  .remove-icon {
+    width: 14px;
+    height: 14px;
   }
 }

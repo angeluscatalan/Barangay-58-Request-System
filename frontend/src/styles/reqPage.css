@@ -2,18 +2,21 @@
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap");
 
+/* Update the req container to ensure proper footer positioning */
 .req {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding-bottom: 0;
+  margin-top: auto;
   background-image: url("../assets/reqPage_BG.png");
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
-  min-height: 100vh;
   width: 100%;
-  padding: 100px 20px 40px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 40px; /* Add margin at the bottom */
+  padding-top: 100px;
+  overflow-x: hidden;
 }
 
 .mobile-tabs {
@@ -67,6 +70,7 @@
 .back-button-container {
   margin-top: 20px;
   width: 100%;
+  margin-bottom: 0; /* Ensure no bottom margin */
 }
 
 .req-container {
@@ -175,6 +179,7 @@
   max-width: 800px;
 }
 
+/* Ensure the form doesn't add extra space at the bottom */
 .reqContainer2 {
   width: 100%;
   border-radius: 35px;
@@ -186,6 +191,7 @@
   justify-content: center;
   font-weight: 400;
   font-family: "Manrope";
+  margin-bottom: 0; /* Ensure no bottom margin */
 }
 
 .fillUpTitle {
@@ -468,6 +474,7 @@
   font-size: 14px;
   color: #000000;
 }
+
 @media screen and (max-width: 1200px) {
   .req-container {
     gap: 20px;

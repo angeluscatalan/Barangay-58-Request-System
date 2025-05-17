@@ -8,16 +8,17 @@
   box-sizing: border-box;
 }
 
+/* Fix the home container to ensure no spaces around footer */
 .home-container {
-  min-height: 100vh;
-  width: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
+  min-height: 100vh;
+  padding-bottom: 0;
+  margin-top: auto;
   background: url("../assets/teamPage_BG.png") no-repeat center center;
   background-size: cover;
-  padding: 1rem;
+  width: 100%;
   overflow-x: hidden;
 }
 
@@ -341,7 +342,7 @@ button:hover {
 .services-section {
   width: 100%;
   max-width: 1200px;
-  margin: 3rem auto;
+  margin: 3rem auto 0; /* Remove bottom margin */
   padding: 0 1rem;
 }
 
@@ -440,78 +441,6 @@ button:hover {
 .service-card:hover .service-link {
   background-color: #da1c6f;
   color: white;
-}
-
-/* Projects Section */
-.projects-section {
-  width: 100%;
-  max-width: 1200px;
-  margin: 3rem auto 5rem;
-  padding: 0 1rem;
-}
-
-.project-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  width: 100%;
-}
-
-.project-card {
-  background: white;
-  border-radius: 15px;
-  overflow: hidden;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.project-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
-}
-
-.project-image {
-  width: 100%;
-  height: 200px;
-  overflow: hidden;
-}
-
-.project-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.5s ease;
-}
-
-.project-card:hover .project-image img {
-  transform: scale(1.1);
-}
-
-.project-details {
-  padding: 1.5rem;
-}
-
-.project-name {
-  font-family: "Montserrat", sans-serif;
-  font-weight: 700;
-  font-size: 1.2rem;
-  margin-bottom: 0.5rem;
-  color: #333;
-}
-
-.project-date {
-  font-family: "Manrope", sans-serif;
-  font-size: 0.9rem;
-  color: #da1c6f;
-  margin-bottom: 1rem;
-  font-weight: 600;
-}
-
-.project-description {
-  font-family: "Manrope", sans-serif;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  color: #666;
 }
 
 @media (max-width: 767px) {
@@ -678,29 +607,6 @@ button:hover {
 
   .service-link {
     padding: 0.4rem 0.8rem;
-    font-size: 0.85rem;
-  }
-}
-
-/* Fix project cards on small screens */
-@media (max-width: 480px) {
-  .project-image {
-    height: 160px;
-  }
-
-  .project-details {
-    padding: 1rem;
-  }
-
-  .project-name {
-    font-size: 1.1rem;
-  }
-
-  .project-date {
-    font-size: 0.8rem;
-  }
-
-  .project-description {
     font-size: 0.85rem;
   }
 }

@@ -4,10 +4,12 @@ import { useState } from "react"
 import axios from "axios"
 import RequestTitlesandSteps from "../components/RequestTitlesandSteps"
 import RequestForm from "../components/RequestForm"
+import ConfirmationModal from "../components/ConfirmationModal"
 import "../styles/reqPage.css"
 import Footer from "../components/Footer"
 
 function reqPage() {
+  // Form state
   const [formData, setFormData] = useState({
     last_name: "",
     first_name: "",
@@ -26,24 +28,34 @@ function reqPage() {
     number_of_copies: "",
   })
 
-  const [errors, setErrors] = useState({ contact_no: false, email: false })
+  // UI state
+  const [errors, setErrors] = useState({})
   const [activeSection, setActiveSection] = useState("info") // "info" or "form"
+  const [showConfirmation, setShowConfirmation] = useState(false)
 
+  // Handle form field changes
   const handleChange = (e) => {
     let { name, value } = e.target
+
+    // Auto-capitalize names
     if (["last_name", "first_name", "middle_name"].includes(name)) {
       value = value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase())
     }
+
     setFormData({ ...formData, [name]: value })
 
-    setErrors((prev) => ({ ...prev, [name]: false }))
+    // Clear error for this field
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: false }))
+    }
   }
 
-  const getReq = () => {
-    const fullNumber = `${formData.country_code}${formData.contact_no}`
+  // Validate the entire form
+  const validateForm = () => {
     const newErrors = {}
     let formValid = true
 
+    // Define required fields
     const requiredFields = [
       "last_name",
       "first_name",
@@ -51,63 +63,70 @@ function reqPage() {
       "unit_no",
       "street",
       "subdivision",
-      "barangay",
-      "village",
-      "city",
       "contact_no",
       "email",
       "number_of_copies",
+      "type_of_certificate",
     ]
 
+    // Check for empty required fields
     requiredFields.forEach((field) => {
-      if (formData[field]?.trim() === "") {
-        newErrors[field] = "This field cannot be empty"
+      if (!formData[field] || formData[field].trim() === "") {
+        newErrors[field] = true
         formValid = false
       }
     })
 
-    Object.keys(formData).forEach((key) => {
-      if (formData[key].trim() === "") {
-        newErrors[key] = "This field cannot be empty"
-        formValid = false
-      }
-    })
-
-    if (!formValid) {
-      setErrors(newErrors)
-      return
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors)
-      return
-    }
-
-    if (!document.getElementById("terms").checked) {
-      alert("Please verify with our terms by clicking the checkbox.")
-      return
-    }
-
-    const isPhoneValid = /^0\d{10}$/.test(formData.contact_no) || /^[1-9]\d{9}$/.test(formData.contact_no)
-    const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
-
-    if (!isPhoneValid || !isEmailValid) {
-      alert("Please provide a valid phone number and email.")
-      return
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors)
-      return
-    }
-
-    const numberOfCopies = formData.number_of_copies
-    if (isNaN(numberOfCopies) || numberOfCopies <= 0) {
-      newErrors.number_of_copies = "Please enter a valid number of copies"
+    // Validate phone number format
+    if (formData.contact_no && !/^(0\d{10}|[1-9]\d{9})$/.test(formData.contact_no)) {
+      newErrors.contact_no = true
       formValid = false
     }
 
-    const fullAddress = `${formData.unit_no}, ${formData.street}, ${formData.barangay}, ${formData.village}, ${formData.city}`
+    // Validate email format
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = true
+      formValid = false
+    }
+
+    // Validate number of copies
+    const numberOfCopies = formData.number_of_copies
+    if (numberOfCopies && (isNaN(numberOfCopies) || numberOfCopies <= 0)) {
+      newErrors.number_of_copies = true
+      formValid = false
+    }
+
+    // Update state with errors
+    setErrors(newErrors)
+
+    return formValid
+  }
+
+  // Handle form submission
+  const getReq = () => {
+    // Validate form
+    const isValid = validateForm()
+
+    if (!isValid) {
+      // Highlight errors in the form
+      alert("Please fill in all required fields correctly.")
+      return
+    }
+
+    // Check terms checkbox
+    const termsCheckbox = document.getElementById("terms")
+    if (!termsCheckbox || !termsCheckbox.checked) {
+      alert("Please agree to the terms and conditions.")
+      return
+    }
+
+    // If all validations pass, show confirmation modal
+    setShowConfirmation(true)
+  }
+
+  // Handle final submission after confirmation
+  const handleConfirmSubmit = () => {
+    const fullAddress = `${formData.unit_no}, ${formData.street}, ${formData.subdivision}`
 
     const requestData = {
       ...formData,
@@ -123,7 +142,9 @@ function reqPage() {
         timeout: 5000,
       })
       .then((response) => {
+        setShowConfirmation(false)
         alert("✅ Request successfully submitted!")
+
         // Reset form after successful submission
         setFormData({
           last_name: "",
@@ -142,35 +163,43 @@ function reqPage() {
           purpose_of_request: "",
           number_of_copies: "",
         })
-        document.getElementById("terms").checked = false
+
+        // Reset checkbox and errors
+        if (document.getElementById("terms")) {
+          document.getElementById("terms").checked = false
+        }
         setErrors({})
       })
       .catch((error) => {
+        setShowConfirmation(false)
         console.error("❌ Error details:", {
           message: error.message,
           code: error.code,
           config: error.config,
         })
 
+        let errorMessage = "An error occurred while submitting your request."
+
         if (error.code === "ECONNREFUSED") {
-          alert("Could not connect to server. Please ensure the backend is running.")
+          errorMessage = "Could not connect to server. Please ensure the backend is running."
         } else if (error.code === "ERR_NETWORK") {
-          alert("Network error. Please check your internet connection.")
-        } else {
-          alert(`Error: ${error.message}`)
+          errorMessage = "Network error. Please check your internet connection."
+        } else if (error.message) {
+          errorMessage = `Error: ${error.message}`
         }
+
+        alert(`❌ ${errorMessage}`)
       })
   }
 
+  // Field-specific validators
   const validatorNum = () => {
-    const isValid = /^0\d{10}$/.test(formData.contact_no) || /^[1-9]\d{9}$/.test(formData.contact_no)
-    console.log("Phone validation:", isValid)
+    const isValid = /^(0\d{10}|[1-9]\d{9})$/.test(formData.contact_no)
     setErrors((prev) => ({ ...prev, contact_no: !isValid }))
   }
 
   const validatorEmail = () => {
     const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
-    console.log("Email validation:", isValid)
     setErrors((prev) => ({ ...prev, email: !isValid }))
   }
 
@@ -220,6 +249,15 @@ function reqPage() {
           />
         </div>
       </div>
+
+      {/* Confirmation Modal - only shown when all validations pass */}
+      <ConfirmationModal
+        isOpen={showConfirmation}
+        onClose={() => setShowConfirmation(false)}
+        onConfirm={handleConfirmSubmit}
+        formData={formData}
+        formType="request"
+      />
 
       <Footer />
     </div>

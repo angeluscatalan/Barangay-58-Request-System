@@ -141,24 +141,7 @@ function Home() {
         </div>
       </div>
 
-      {/* Barangay Projects Section */}
-      <div className="projects-section">
-        <h2 className="section-title">Barangay Projects</h2>
-        <div className="project-cards">
-          {projects.map((project) => (
-            <div className="project-card" key={project.id}>
-              <div className="project-image">
-                <img src={project.image || "/placeholder.svg"} alt={project.name} />
-              </div>
-              <div className="project-details">
-                <h3 className="project-name">{project.name}</h3>
-                <p className="project-date">Established: {project.date}</p>
-                <p className="project-description">{project.description}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+
 
       <Footer />
     </div>

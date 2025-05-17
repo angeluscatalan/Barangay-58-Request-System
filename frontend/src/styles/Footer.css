@@ -9,6 +9,11 @@
   font-family: "Manrope", sans-serif;
   margin-top: 80px;
   overflow: hidden;
+  /* Add these properties to ensure full width */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  box-sizing: border-box;
 }
 
 /* Wave effect at the top of the footer */

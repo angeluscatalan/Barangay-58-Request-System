@@ -82,11 +82,9 @@ const Footer = () => {
 
         <div className="footer-logos">
           <div className="logo-item">
-            <h4>Mission</h4>
             <img src={alabka || "/placeholder.svg"} alt="Alabka Logo" />
           </div>
           <div className="logo-item">
-            <h4>Vision</h4>
             <img src={bagongph || "/placeholder.svg"} alt="Bagong Pilipinas Logo" />
           </div>
           <div className="logo-item logo-item-large">
@@ -94,11 +92,9 @@ const Footer = () => {
             <img src={brgylogo || "/placeholder.svg"} alt="Barangay 58 Logo" />
           </div>
           <div className="logo-item">
-            <h4>City</h4>
             <img src={City || "/placeholder.svg"} alt="Pasay City Logo" />
           </div>
           <div className="logo-item">
-            <h4>National</h4>
             <img src={President || "/placeholder.svg"} alt="President's Logo" />
           </div>
         </div>

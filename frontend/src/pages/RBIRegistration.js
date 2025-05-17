@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import BirthdatePicker from "../components/BirthdatePicker"
 import BirthdateMembers from "../components/BirthdateMembers"
+import ConfirmationModal from "../components/ConfirmationModal"
 import "../styles/RBIRegistration.css"
 import step1 from "../assets/step1.png"
 import step2 from "../assets/step2.png"
@@ -19,9 +20,10 @@ function RBIRegistration() {
   const [memberCount, setMemberCount] = useState(0)
   const [errors, setErrors] = useState({
     household: {},
-    members: []
+    members: [],
   })
-
+  const [showConfirmation, setShowConfirmation] = useState(false)
+  const memberRefs = useRef([])
 
   // Household head information
   const [householdData, setHouseholdData] = useState({
@@ -44,6 +46,11 @@ function RBIRegistration() {
   // State for household members
   const [members, setMembers] = useState([])
 
+  // Update refs when members change
+  useEffect(() => {
+    memberRefs.current = memberRefs.current.slice(0, members.length)
+  }, [members])
+
   const handleHouseholdChange = (e) => {
     let { name, value } = e.target
     if (["head_last_name", "head_first_name", "head_middle_name", "birth_place"].includes(name)) {
@@ -60,32 +67,47 @@ function RBIRegistration() {
     const { name, value } = e.target
     const updatedMembers = [...members]
     let processedValue = value
-    
+
     if (["last_name", "first_name", "middle_name", "birth_place"].includes(name)) {
       processedValue = value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase())
     }
-    
+
     updatedMembers[index] = {
       ...updatedMembers[index],
-      [name]: processedValue
+      [name]: processedValue,
     }
-    
+
     setMembers(updatedMembers)
   }
 
   const handleMemberDateChange = (index, date) => {
-    setMembers(prevMembers => {
-        const updatedMembers = [...prevMembers];
-        updatedMembers[index] = {
-            ...updatedMembers[index],
-            birth_date: date ? date.toISOString().split('T')[0] : ''
-        };
-        return updatedMembers;
-    });
-};
+    setMembers((prevMembers) => {
+      const updatedMembers = [...prevMembers]
+      updatedMembers[index] = {
+        ...updatedMembers[index],
+        birth_date: date ? date.toISOString().split("T")[0] : "",
+      }
+      return updatedMembers
+    })
+  }
+
+  const scrollToNewMember = (index) => {
+    setTimeout(() => {
+      if (memberRefs.current[index]) {
+        memberRefs.current[index].scrollIntoView({ behavior: "smooth", block: "start" })
+
+        // Add highlight effect
+        memberRefs.current[index].classList.add("highlight-member")
+        setTimeout(() => {
+          memberRefs.current[index].classList.remove("highlight-member")
+        }, 1500)
+      }
+    }, 100)
+  }
 
   const addMember = () => {
     if (members.length < 10) {
+      const newIndex = members.length
       setMembers([
         ...members,
         {
@@ -98,14 +120,17 @@ function RBIRegistration() {
           sex: "",
           civil_status: "",
           citizenship: "",
-          occupation: ""
-        }
+          occupation: "",
+        },
       ])
       setMemberCount(memberCount + 1)
       setErrors({
         ...errors,
-        members: [...errors.members, {}]
+        members: [...errors.members, {}],
       })
+
+      // Scroll to the new member form
+      scrollToNewMember(newIndex)
     } else {
       alert("Maximum of 10 household members allowed.")
     }
@@ -115,11 +140,11 @@ function RBIRegistration() {
     const updatedMembers = [...members]
     updatedMembers.splice(index, 1)
     setMembers(updatedMembers)
-    
-    const updatedErrors = {...errors}
+
+    const updatedErrors = { ...errors }
     updatedErrors.members.splice(index, 1)
     setErrors(updatedErrors)
-    
+
     setMemberCount(memberCount - 1)
   }
 
@@ -127,7 +152,7 @@ function RBIRegistration() {
     let isValid = true
     const newErrors = {
       household: {},
-      members: members.map(() => ({}))
+      members: members.map(() => ({})),
     }
 
     // Validate household head data
@@ -162,7 +187,7 @@ function RBIRegistration() {
     e.preventDefault()
 
     if (!validateForm()) {
-      alert("Please fill in all required fields.")
+      alert("Please fill in all required fields correctly.")
       return
     }
 
@@ -171,29 +196,31 @@ function RBIRegistration() {
       return
     }
 
+    // Show confirmation modal only when all validations pass
+    setShowConfirmation(true)
+  }
+
+  const handleConfirmSubmit = async () => {
     try {
       // Format dates
       const formattedHouseholdData = {
         ...householdData,
-        birth_date: householdData.birth_date 
-          ? new Date(householdData.birth_date).toISOString().split("T")[0] 
-          : null,
+        birth_date: householdData.birth_date ? new Date(householdData.birth_date).toISOString().split("T")[0] : null,
       }
 
-      const formattedMembers = members.map(member => ({
+      const formattedMembers = members.map((member) => ({
         ...member,
-        birth_date: member.birth_date 
-          ? new Date(member.birth_date).toISOString().split("T")[0] 
-          : null,
+        birth_date: member.birth_date ? new Date(member.birth_date).toISOString().split("T")[0] : null,
       }))
 
       // Submit data to API
       const response = await axios.post("http://localhost:5000/households", {
         household: formattedHouseholdData,
-        members: formattedMembers
+        members: formattedMembers,
       })
 
       if (response.status === 200 || response.status === 201) {
+        setShowConfirmation(false)
         alert("✅ RBI Registration successfully submitted!")
 
         // Reset form
@@ -217,11 +244,13 @@ function RBIRegistration() {
         setMemberCount(0)
         document.getElementById("terms").checked = false
       } else {
-        alert("Submission failed. Please try again later.")
+        setShowConfirmation(false)
+        alert("❌ Submission failed. Please try again later.")
       }
     } catch (error) {
+      setShowConfirmation(false)
       console.error("Error submitting RBI registration:", error)
-      alert(`Error: ${error.response?.data?.message || error.message || "Failed to submit registration"}`)
+      alert(`❌ Error: ${error.response?.data?.message || error.message || "Failed to submit registration"}`)
     }
   }
 
@@ -327,7 +356,7 @@ function RBIRegistration() {
                 {/* Household Head Information */}
                 <div className="rbi-form-section">
                   <h2 className="rbi-form-section-title">HOUSEHOLD HEAD INFORMATION</h2>
-                  
+
                   <div className="form-sections">
                     <div className="rbi-form-personal">
                       <h3 className="rbi-form-subsection-title">PERSONAL INFORMATION</h3>
@@ -343,7 +372,9 @@ function RBIRegistration() {
                           onChange={handleHouseholdChange}
                           required
                         />
-                        {errors.household.head_last_name && <p className="error-message">*{errors.household.head_last_name}</p>}
+                        {errors.household.head_last_name && (
+                          <p className="error-message">*{errors.household.head_last_name}</p>
+                        )}
                       </div>
 
                       <div className="form-row">
@@ -357,7 +388,9 @@ function RBIRegistration() {
                           onChange={handleHouseholdChange}
                           required
                         />
-                        {errors.household.head_first_name && <p className="error-message">*{errors.household.head_first_name}</p>}
+                        {errors.household.head_first_name && (
+                          <p className="error-message">*{errors.household.head_first_name}</p>
+                        )}
                       </div>
 
                       <div className="form-row">
@@ -371,7 +404,9 @@ function RBIRegistration() {
                           onChange={handleHouseholdChange}
                           required
                         />
-                        {errors.household.head_middle_name && <p className="error-message">*{errors.household.head_middle_name}</p>}
+                        {errors.household.head_middle_name && (
+                          <p className="error-message">*{errors.household.head_middle_name}</p>
+                        )}
                       </div>
 
                       <div className="form-row">
@@ -411,7 +446,9 @@ function RBIRegistration() {
                           onChange={handleHouseholdChange}
                           required
                         />
-                        {errors.household.house_unit_no && <p className="error-message">*{errors.household.house_unit_no}</p>}
+                        {errors.household.house_unit_no && (
+                          <p className="error-message">*{errors.household.house_unit_no}</p>
+                        )}
                       </div>
 
                       <div className="form-row">
@@ -425,7 +462,9 @@ function RBIRegistration() {
                           onChange={handleHouseholdChange}
                           required
                         />
-                        {errors.household.street_name && <p className="error-message">*{errors.household.street_name}</p>}
+                        {errors.household.street_name && (
+                          <p className="error-message">*{errors.household.street_name}</p>
+                        )}
                       </div>
 
                       <div className="form-row">
@@ -439,7 +478,9 @@ function RBIRegistration() {
                           onChange={handleHouseholdChange}
                           required
                         />
-                        {errors.household.subdivision && <p className="error-message">*{errors.household.subdivision}</p>}
+                        {errors.household.subdivision && (
+                          <p className="error-message">*{errors.household.subdivision}</p>
+                        )}
                       </div>
                     </div>
 
@@ -457,7 +498,9 @@ function RBIRegistration() {
                           onChange={handleHouseholdChange}
                           required
                         />
-                        {errors.household.birth_place && <p className="error-message">*{errors.household.birth_place}</p>}
+                        {errors.household.birth_place && (
+                          <p className="error-message">*{errors.household.birth_place}</p>
+                        )}
                       </div>
 
                       <div className="form-row">
@@ -510,7 +553,9 @@ function RBIRegistration() {
                           <option value="Separated">Separated</option>
                           <option value="Divorced">Divorced</option>
                         </select>
-                        {errors.household.civil_status && <p className="error-message">*{errors.household.civil_status}</p>}
+                        {errors.household.civil_status && (
+                          <p className="error-message">*{errors.household.civil_status}</p>
+                        )}
                       </div>
 
                       <div className="form-row">
@@ -524,7 +569,9 @@ function RBIRegistration() {
                           onChange={handleHouseholdChange}
                           required
                         />
-                        {errors.household.citizenship && <p className="error-message">*{errors.household.citizenship}</p>}
+                        {errors.household.citizenship && (
+                          <p className="error-message">*{errors.household.citizenship}</p>
+                        )}
                       </div>
 
                       <div className="form-row">
@@ -552,7 +599,9 @@ function RBIRegistration() {
                           onChange={handleHouseholdChange}
                           required
                         />
-                        {errors.household.email_address && <p className="error-message">*{errors.household.email_address}</p>}
+                        {errors.household.email_address && (
+                          <p className="error-message">*{errors.household.email_address}</p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -561,25 +610,49 @@ function RBIRegistration() {
                 {/* Household Members Section */}
                 <div className="rbi-form-section household-members-section">
                   <h2 className="rbi-form-section-title">HOUSEHOLD MEMBERS</h2>
-                  <button 
-                    type="button" 
-                    className="add-member-button"
-                    onClick={addMember}
-                  >
-                    + Add Household Member
+                  <button type="button" className="add-member-button" onClick={addMember}>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="add-icon"
+                    >
+                      <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="8.5" cy="7" r="4"></circle>
+                      <line x1="20" y1="8" x2="20" y2="14"></line>
+                      <line x1="23" y1="11" x2="17" y2="11"></line>
+                    </svg>
+                    Add Household Member
                   </button>
                   <p className="members-count">Number of members: {memberCount} (Max: 10)</p>
 
                   {members.map((member, index) => (
-                    <div key={index} className="member-form">
-                      <h3 className="member-title">Member {index + 1}</h3>
-                      <button 
-                        type="button" 
-                        className="remove-member-button"
-                        onClick={() => removeMember(index)}
-                      >
-                        Remove
-                      </button>
+                    <div key={index} className="member-form" ref={(el) => (memberRefs.current[index] = el)}>
+                      <div className="member-header">
+                        <h3 className="member-title">Member {index + 1}</h3>
+                        <button type="button" className="remove-member-button" onClick={() => removeMember(index)}>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="remove-icon"
+                          >
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="8.5" cy="7" r="4"></circle>
+                            <line x1="18" y1="8" x2="23" y2="13"></line>
+                            <line x1="23" y1="8" x2="18" y2="13"></line>
+                          </svg>
+                          Remove
+                        </button>
+                      </div>
 
                       <div className="form-sections">
                         <div className="member-personal">
@@ -594,7 +667,9 @@ function RBIRegistration() {
                               onChange={(e) => handleMemberChange(index, e)}
                               required
                             />
-                            {errors.members[index]?.last_name && <p className="error-message">*{errors.members[index].last_name}</p>}
+                            {errors.members[index]?.last_name && (
+                              <p className="error-message">*{errors.members[index].last_name}</p>
+                            )}
                           </div>
 
                           <div className="form-row">
@@ -607,7 +682,9 @@ function RBIRegistration() {
                               onChange={(e) => handleMemberChange(index, e)}
                               required
                             />
-                            {errors.members[index]?.first_name && <p className="error-message">*{errors.members[index].first_name}</p>}
+                            {errors.members[index]?.first_name && (
+                              <p className="error-message">*{errors.members[index].first_name}</p>
+                            )}
                           </div>
 
                           <div className="form-row">
@@ -620,7 +697,9 @@ function RBIRegistration() {
                               onChange={(e) => handleMemberChange(index, e)}
                               required
                             />
-                            {errors.members[index]?.middle_name && <p className="error-message">*{errors.members[index].middle_name}</p>}
+                            {errors.members[index]?.middle_name && (
+                              <p className="error-message">*{errors.members[index].middle_name}</p>
+                            )}
                           </div>
 
                           <div className="form-row">
@@ -647,7 +726,7 @@ function RBIRegistration() {
 
                         <div className="member-other-info">
                           <h3 className="rbi-form-subsection-title">OTHER INFORMATION</h3>
-                          
+
                           <div className="form-row">
                             <input
                               type="text"
@@ -658,23 +737,29 @@ function RBIRegistration() {
                               onChange={(e) => handleMemberChange(index, e)}
                               required
                             />
-                            {errors.members[index]?.birth_place && <p className="error-message">*{errors.members[index].birth_place}</p>}
+                            {errors.members[index]?.birth_place && (
+                              <p className="error-message">*{errors.members[index].birth_place}</p>
+                            )}
                           </div>
                           <div className="form-row">
-                          <div className="form-row">
-    <div className="birthdate-container">
-      <label htmlFor={`member_birth_date_${index}`} className="form-label">
-        DATE OF BIRTH
-      </label>
-      <BirthdateMembers
-        selectedDate={member.birth_date}
-        onChange={(date) => handleMemberDateChange(index, date)}
-        index={index}
-      />
-    </div>
-    {errors.members[index]?.birth_date && <p className="error-message">*{errors.members[index].birth_date}</p>}
-  </div>
-                            {errors.members[index]?.birth_date && <p className="error-message">*{errors.members[index].birth_date}</p>}
+                            <div className="form-row">
+                              <div className="birthdate-container">
+                                <label htmlFor={`member_birth_date_${index}`} className="form-label">
+                                  DATE OF BIRTH
+                                </label>
+                                <BirthdateMembers
+                                  selectedDate={member.birth_date}
+                                  onChange={(date) => handleMemberDateChange(index, date)}
+                                  index={index}
+                                />
+                              </div>
+                              {errors.members[index]?.birth_date && (
+                                <p className="error-message">*{errors.members[index].birth_date}</p>
+                              )}
+                            </div>
+                            {errors.members[index]?.birth_date && (
+                              <p className="error-message">*{errors.members[index].birth_date}</p>
+                            )}
                           </div>
                           <div className="form-row">
                             <select
@@ -690,7 +775,9 @@ function RBIRegistration() {
                               <option value="Male">Male</option>
                               <option value="Female">Female</option>
                             </select>
-                            {errors.members[index]?.sex && <p className="error-message">*{errors.members[index].sex}</p>}
+                            {errors.members[index]?.sex && (
+                              <p className="error-message">*{errors.members[index].sex}</p>
+                            )}
                           </div>
 
                           <div className="form-row">
@@ -710,7 +797,9 @@ function RBIRegistration() {
                               <option value="Separated">Separated</option>
                               <option value="Divorced">Divorced</option>
                             </select>
-                            {errors.members[index]?.civil_status && <p className="error-message">*{errors.members[index].civil_status}</p>}
+                            {errors.members[index]?.civil_status && (
+                              <p className="error-message">*{errors.members[index].civil_status}</p>
+                            )}
                           </div>
 
                           <div className="form-row">
@@ -723,7 +812,9 @@ function RBIRegistration() {
                               onChange={(e) => handleMemberChange(index, e)}
                               required
                             />
-                            {errors.members[index]?.citizenship && <p className="error-message">*{errors.members[index].citizenship}</p>}
+                            {errors.members[index]?.citizenship && (
+                              <p className="error-message">*{errors.members[index].citizenship}</p>
+                            )}
                           </div>
 
                           <div className="form-row">
@@ -736,7 +827,9 @@ function RBIRegistration() {
                               onChange={(e) => handleMemberChange(index, e)}
                               required
                             />
-                            {errors.members[index]?.occupation && <p className="error-message">*{errors.members[index].occupation}</p>}
+                            {errors.members[index]?.occupation && (
+                              <p className="error-message">*{errors.members[index].occupation}</p>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -768,6 +861,15 @@ function RBIRegistration() {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal - only shown when all validations pass */}
+      <ConfirmationModal
+        isOpen={showConfirmation}
+        onClose={() => setShowConfirmation(false)}
+        onConfirm={handleConfirmSubmit}
+        formData={{ ...householdData, members }}
+        formType="rbi"
+      />
 
       <Footer />
     </div>
