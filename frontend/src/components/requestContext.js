@@ -12,7 +12,7 @@ export function RequestsProvider({ children }) {
   const fetchRequests = useCallback(async (status = null) => {
     try {
       setLoading(true);
-      const url = 'http://localhost:5000/requests'; // Always fetch all
+      const url = 'http://localhost:5000/api/requests'; // Updated with /api prefix
       const response = await axios.get(url);
       setRequests(response.data);
     } catch (err) {
@@ -26,8 +26,8 @@ export function RequestsProvider({ children }) {
   // Memoize updateRequestStatus
   const updateRequestStatus = useCallback(async (id, newStatus) => {
     try {
-      await axios.put(`http://localhost:5000/requests/${id}`, { status: newStatus });
-      setRequests(prev => prev.map(req => 
+      await axios.put(`http://localhost:5000/api/requests/${id}`, { status: newStatus });
+      setRequests(prev => prev.map(req =>
         req.id === id ? { ...req, status: newStatus } : req
       ));
       return true;
@@ -39,13 +39,13 @@ export function RequestsProvider({ children }) {
   }, []);
 
   return (
-    <RequestsContext.Provider 
-      value={{ 
-        requests, 
-        loading, 
-        error, 
-        fetchRequests, 
-        updateRequestStatus 
+    <RequestsContext.Provider
+      value={{
+        requests,
+        loading,
+        error,
+        fetchRequests,
+        updateRequestStatus
       }}
     >
       {children}

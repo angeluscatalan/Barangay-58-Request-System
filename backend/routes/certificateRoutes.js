@@ -81,7 +81,8 @@ router.post('/generate-pdf', async (req, res) => {
                 'day': currentDate.getDate().toString(),
                 'month': currentDate.toLocaleString('default', { month: 'long' }),
                 'year': currentDate.getFullYear().toString(),
-                'full_name': formatName(requestData)
+                'full_name': formatName(requestData),
+                'age': calculateAge(requestData.birthday).toString()
             },
             'JobseekerCert': {
                 'full_name': formatName(requestData),
@@ -91,18 +92,18 @@ router.post('/generate-pdf', async (req, res) => {
                 'age': calculateAge(requestData.birthday).toString()
             },
             'IDApp': {
-        'full_name': formatName(requestData)
-    },
-            
+                'full_name': formatName(requestData)
+            },
+
             // Default mapping (for other certificate types)
             'default': {
-                'Text9': formattedDate,                     
-                'Text10': formatName(requestData),          
-                'Text12': cleanAddress(requestData.address),         
-                'Text15': requestData.purpose_of_request,   
-                'Text16': currentDate.getDate().toString(), 
-                'Text17': currentDate.toLocaleString('default', { month: 'long' }), 
-                'Text19': currentDate.getFullYear().toString() 
+                'Text9': formattedDate,
+                'Text10': formatName(requestData),
+                'Text12': cleanAddress(requestData.address),
+                'Text15': requestData.purpose_of_request,
+                'Text16': currentDate.getDate().toString(),
+                'Text17': currentDate.toLocaleString('default', { month: 'long' }),
+                'Text19': currentDate.getFullYear().toString()
             }
         };
 
@@ -125,13 +126,13 @@ router.post('/generate-pdf', async (req, res) => {
                         widget.dict.delete('BS');
                     }
 
-                    console.log(`✓ Filled ${fieldName} with: ${value} and removed borders`);        
+                    console.log(`✓ Filled ${fieldName} with: ${value} and removed borders`);
                 } else {
                     console.log(`✗ Field not found: ${fieldName}`);
                 }
             } catch (error) {
                 console.error(`Error filling ${fieldName}:`, error.message);
-            }       
+            }
         });
 
         form.updateFieldAppearances();
@@ -141,7 +142,7 @@ router.post('/generate-pdf', async (req, res) => {
         // Handle Jobseeker certificate with undertaking
         if (requestData.type_of_certificate === 'JobseekerCert') {
             const undertakingPath = getTemplatePath('Undertaking');
-            
+
             if (!await fs.exists(undertakingPath)) {
                 console.log('Undertaking template not found at path:', undertakingPath);
                 return res.status(404).json({
@@ -149,30 +150,30 @@ router.post('/generate-pdf', async (req, res) => {
                 });
             }
 
-            
+
             const undertakingBytes = await fs.readFile(undertakingPath);
             const undertakingDoc = await PDFDocument.load(undertakingBytes);
             const undertakingForm = undertakingDoc.getForm();
 
             // Field mappings for undertaking.pdf - adjust based on your template
-             const undertakingFields = {
-        'full_name': formatName(requestData),
-        'address': cleanAddress(requestData.address),
-        'years': calculateAge(requestData.birthday).toString()
-    };
+            const undertakingFields = {
+                'full_name': formatName(requestData),
+                'address': cleanAddress(requestData.address),
+                'years': calculateAge(requestData.birthday).toString()
+            };
 
-           Object.entries(undertakingFields).forEach(([fieldName, value]) => {
-        const field = undertakingForm.getTextField(fieldName);
-        if (field) {
-            field.setText(value);
-            // Remove borders
-            const widget = field.acroField.getWidgets()[0];
-            if (widget) {
-                widget.dict.delete('Border');
-                widget.dict.delete('BS');
-            }
-        }
-    });
+            Object.entries(undertakingFields).forEach(([fieldName, value]) => {
+                const field = undertakingForm.getTextField(fieldName);
+                if (field) {
+                    field.setText(value);
+                    // Remove borders
+                    const widget = field.acroField.getWidgets()[0];
+                    if (widget) {
+                        widget.dict.delete('Border');
+                        widget.dict.delete('BS');
+                    }
+                }
+            });
 
             undertakingForm.updateFieldAppearances();
             undertakingForm.flatten();
@@ -180,15 +181,15 @@ router.post('/generate-pdf', async (req, res) => {
 
             // Create zip with both files
             const zip = new JSZip();
-    zip.file(`${requestData.type_of_certificate}_${requestData.last_name}.pdf`, mainPdfBytes);
-    zip.file(`Undertaking_${requestData.last_name}.pdf`, undertakingPdfBytes);
-    
-    const zipContent = await zip.generateAsync({ type: 'nodebuffer' });
-    
-    res.setHeader('Content-Type', 'application/zip');
-    res.setHeader('Content-Disposition', `attachment; filename=JobseekerDocuments_${requestData.last_name}.zip`);
-    return res.send(zipContent);
-}
+            zip.file(`${requestData.type_of_certificate}_${requestData.last_name}.pdf`, mainPdfBytes);
+            zip.file(`Undertaking_${requestData.last_name}.pdf`, undertakingPdfBytes);
+
+            const zipContent = await zip.generateAsync({ type: 'nodebuffer' });
+
+            res.setHeader('Content-Type', 'application/zip');
+            res.setHeader('Content-Disposition', `attachment; filename=JobseekerDocuments_${requestData.last_name}.zip`);
+            return res.send(zipContent);
+        }
 
         // For non-Jobseeker certificates
         res.setHeader('Content-Type', 'application/pdf');
@@ -197,9 +198,9 @@ router.post('/generate-pdf', async (req, res) => {
 
     } catch (error) {
         console.error('Error generating PDF:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             error: 'Failed to generate PDF',
-            details: error.message 
+            details: error.message
         });
     }
 });
@@ -211,11 +212,11 @@ function calculateAge(birthday) {
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    
+
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
         age--;
     }
-    
+
     return age;
 }
 

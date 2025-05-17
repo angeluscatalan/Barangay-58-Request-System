@@ -26,39 +26,50 @@ function AdminDashboard() {
     const fetchDashboardData = async () => {
       try {
         setLoading(true)
+        setError(null)
+
         const token = localStorage.getItem("token")
+        if (!token) {
+          setError("Authentication token not found. Please login again.")
+          return
+        }
 
-        // Fetch certificate requests
-        const requestsResponse = await axios.get("http://localhost:5000/requests", {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        const headers = {
+          Authorization: `Bearer ${token}`,
+        }
 
-        // Fetch RBI registrations
-        const rbiResponse = await axios.get("http://localhost:5000/rbi", {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        const baseURL = "http://localhost:5000/api"
 
-        // Fetch events
-        const eventsResponse = await axios.get("http://localhost:5000/events")
+        // Use Promise.all to fetch data concurrently
+        const [requestsResponse, rbiResponse, eventsResponse] = await Promise.all([
+          axios.get(`${baseURL}/requests`, { headers }),
+          axios.get(`${baseURL}/rbi`, { headers }),
+          axios.get(`${baseURL}/events`, { headers })
+        ])
 
         // Process certificate requests data
-        const requests = requestsResponse.data
-        const pendingRequests = requests.filter((req) => req.status.toLowerCase() === "pending")
-        const approvedRequests = requests.filter((req) => req.status.toLowerCase() === "approved")
-        const rejectedRequests = requests.filter((req) => req.status.toLowerCase() === "rejected")
+        const requests = Array.isArray(requestsResponse.data) ? requestsResponse.data : []
+        const pendingRequests = requests.filter((req) => req?.status?.toLowerCase() === "pending")
+        const approvedRequests = requests.filter((req) => req?.status?.toLowerCase() === "approved")
+        const rejectedRequests = requests.filter((req) => req?.status?.toLowerCase() === "rejected")
 
-        // Process RBI data
-        const rbiData = rbiResponse.data
-        const pendingRBI = rbiData.filter((rbi) => rbi.status?.toLowerCase() === "pending")
-        const approvedRBI = rbiData.filter((rbi) => rbi.status?.toLowerCase() === "approved")
-        const rejectedRBI = rbiData.filter((rbi) => rbi.status?.toLowerCase() === "rejected")
+        // Process RBI data - ensure we're getting the records array from the response
+        const rbiData = Array.isArray(rbiResponse.data?.records) ? rbiResponse.data.records : []
+        const pendingRBI = rbiData.filter((rbi) => rbi?.status?.toLowerCase() === "pending")
+        const approvedRBI = rbiData.filter((rbi) => rbi?.status?.toLowerCase() === "approved")
+        const rejectedRBI = rbiData.filter((rbi) => rbi?.status?.toLowerCase() === "rejected")
 
         // Get recent requests (last 5)
-        const sortedRequests = [...requests].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5)
+        const sortedRequests = [...requests]
+          .sort((a, b) => new Date(b?.created_at || 0) - new Date(a?.created_at || 0))
+          .slice(0, 5)
 
         // Get recent RBI registrations (last 5)
         const sortedRBI = [...rbiData]
-          .sort((a, b) => new Date(b.created_at || b.submission_date) - new Date(a.created_at || a.submission_date))
+          .sort((a, b) =>
+            new Date(b?.created_at || b?.submission_date || 0) -
+            new Date(a?.created_at || a?.submission_date || 0)
+          )
           .slice(0, 5)
 
         setStats({
@@ -70,7 +81,7 @@ function AdminDashboard() {
           pendingRBI: pendingRBI.length,
           approvedRBI: approvedRBI.length,
           rejectedRBI: rejectedRBI.length,
-          totalEvents: eventsResponse.data.length,
+          totalEvents: Array.isArray(eventsResponse.data) ? eventsResponse.data.length : 0,
         })
 
         setRecentRequests(sortedRequests)
@@ -78,7 +89,21 @@ function AdminDashboard() {
         setError(null)
       } catch (err) {
         console.error("Error fetching dashboard data:", err)
-        setError("Failed to load dashboard data. Please try again later.")
+        setError(err.message || "Failed to load dashboard data. Please try again later.")
+        // Set empty states when there's an error
+        setRecentRequests([])
+        setRecentRBI([])
+        setStats({
+          totalRequests: 0,
+          pendingRequests: 0,
+          approvedRequests: 0,
+          rejectedRequests: 0,
+          totalRBI: 0,
+          pendingRBI: 0,
+          approvedRBI: 0,
+          rejectedRBI: 0,
+          totalEvents: 0,
+        })
       } finally {
         setLoading(false)
       }

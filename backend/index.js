@@ -26,14 +26,13 @@ app.use(cors({
   optionsSuccessStatus: 204,
 }));
 
-// Routes
-app.use('/households', rbiRoutes);
-app.use("/requests", requestRoutes);
-app.use('/events', eventRoutes);
+// API Routes with /api prefix
+app.use("/api/rbi", rbiRoutes);
+app.use("/api/events", eventRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/requests", requestRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/certificates", certificateRoutes)
-
+app.use("/api/certificates", certificateRoutes);
 
 // Server start
 const PORT = process.env.PORT || 5000;

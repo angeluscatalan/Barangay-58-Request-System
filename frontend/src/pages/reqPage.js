@@ -137,7 +137,7 @@ function reqPage() {
     console.log("Sending request data:", requestData)
 
     axios
-      .post("http://localhost:5000/requests", requestData, {
+      .post("http://localhost:5000/api/requests", requestData, {
         headers: { "Content-Type": "application/json" },
         timeout: 5000,
       })

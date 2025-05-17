@@ -21,7 +21,7 @@ export const RequestProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Build query parameters
       const params = new URLSearchParams();
       params.append('page', page);
@@ -30,8 +30,8 @@ export const RequestProvider = ({ children }) => {
       if (search) params.append('search', search);
 
       // Make the request to fetch data
-      const response = await axios.get(`http://localhost:5000/households?${params.toString()}`);
-      
+      const response = await axios.get(`http://localhost:5000/api/rbi?${params.toString()}`);
+
       // Safely update the state with the API response
       setRbiRequests({
         records: response.data?.records || [],
@@ -52,7 +52,7 @@ export const RequestProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`http://localhost:5000/households/${householdId}`);
+      const response = await axios.get(`http://localhost:5000/api/rbi/${householdId}`);
       return response.data;
     } catch (err) {
       console.error("Error fetching household details:", err);
@@ -69,11 +69,11 @@ export const RequestProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       // Make the request to update the status
-      await axios.put(`http://localhost:5000/households/${id}/status`, { status: newStatus });
-      
+      await axios.put(`http://localhost:5000/api/rbi/${id}/status`, { status: newStatus });
+
       // Update local state to reflect the status change
       setRbiRequests((prevState) => {
-        const updatedRecords = prevState.records.map((req) => 
+        const updatedRecords = prevState.records.map((req) =>
           req.id === id ? { ...req, status: newStatus } : req
         );
         return { ...prevState, records: updatedRecords };
@@ -89,13 +89,13 @@ export const RequestProvider = ({ children }) => {
   }, []);
 
   return (
-    <RequestContext.Provider value={{ 
-      rbiRequests, 
-      loading, 
-      error, 
+    <RequestContext.Provider value={{
+      rbiRequests,
+      loading,
+      error,
       fetchRbiRequests,
       getHouseholdWithMembers,
-      updateRbiStatus 
+      updateRbiStatus
     }}>
       {children}
     </RequestContext.Provider>

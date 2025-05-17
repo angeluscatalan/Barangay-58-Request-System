@@ -263,7 +263,7 @@ function Admin() {
     try {
       console.log('Sending request data:', request);
       const response = await axios.post(
-        'http://localhost:5000/certificates/generate-pdf',
+        'http://localhost:5000/api/certificates/generate-pdf',
         { requestData: request },
         {
           responseType: 'blob',
