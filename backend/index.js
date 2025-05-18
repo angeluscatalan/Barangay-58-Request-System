@@ -30,6 +30,7 @@ app.use(cors({
 app.use("/api/rbi", rbiRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/auth", authRoutes);
+app.use('/api/households', rbiRoutes);
 app.use("/api/requests", requestRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/certificates", certificateRoutes);

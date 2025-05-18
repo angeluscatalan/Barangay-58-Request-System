@@ -87,3 +87,37 @@ tr:hover {
   color: #f44336;
   text-align: center;
 }
+
+/* Add these styles */
+.clickable {
+  cursor: pointer;
+}
+
+.clickable:hover {
+  background-color: #e6f7ff !important;
+}
+
+.toggle-icon {
+  margin-left: 8px;
+  font-size: 0.9em;
+}
+
+.head-row {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+.member-row {
+  background-color: #f9f9f9;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Highlight the expanded household */
+.head-row.expanded {
+  background-color: #d4edff !important;
+}

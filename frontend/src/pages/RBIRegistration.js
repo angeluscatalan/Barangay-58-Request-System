@@ -214,7 +214,7 @@ function RBIRegistration() {
       }))
 
       // Submit data to API
-      const response = await axios.post("http://localhost:5000/households", {
+      const response = await axios.post("http://localhost:5000/api/households/", {
         household: formattedHouseholdData,
         members: formattedMembers,
       })

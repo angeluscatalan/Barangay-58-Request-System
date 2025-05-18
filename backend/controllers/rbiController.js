@@ -94,59 +94,53 @@ exports.createCompleteHousehold = async (req, res) => {
 // 📌 Get all households with pagination and search
 exports.getAllHouseholds = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const offset = (page - 1) * limit;
-    const search = req.query.search || '';
-    const status = req.query.status || null;
-
-    // Build conditions and parameters separately
-    let conditions = [];
-    let params = [];
-
-    // Add search condition if search parameter exists
-    if (search) {
-      conditions.push(`(
-        head_last_name LIKE ? OR 
-        head_first_name LIKE ? OR 
-        head_middle_name LIKE ? OR
-        house_unit_no LIKE ? OR
-        street_name LIKE ? OR
-        subdivision LIKE ?
-      )`);
-      const searchParam = `%${search}%`;
-      // Add search parameter 6 times (once for each field)
-      params.push(...Array(6).fill(searchParam));
-    }
-
-    // Add status filter if provided
+    const { status } = req.query;
+    
+    let query = `SELECT * FROM households`;
+    const params = [];
+    
     if (status) {
-      conditions.push(`status = ?`);
+      query += ` WHERE status = ?`;
       params.push(status);
     }
+    
+    query += ` ORDER BY created_at DESC`;
+    
+    const [households] = await pool.execute(query, params);
 
-    // Combine all conditions with AND
-    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    const records = await Promise.all(
+      households.map(async (household) => {
+        const [members] = await pool.execute(
+          `SELECT * FROM household_members WHERE household_id = ?`,
+          [household.id]
+        );
 
-    // Count total matching records
-    const countQuery = `SELECT COUNT(*) as total FROM households ${whereClause}`;
-    const [countResult] = await pool.execute(countQuery, params);
-    const totalRecords = countResult[0].total;
+        return {
+          id: household.id,
+          head_last_name: household.head_last_name,
+          head_first_name: household.head_first_name,
+          head_middle_name: household.head_middle_name,
+          head_suffix: household.head_suffix,
+          sex: household.sex,
+          birth_date: household.birth_date,
+          birth_place: household.birth_place,
+          civil_status: household.civil_status,
+          citizenship: household.citizenship,
+          occupation: household.occupation,
+          email_address: household.email_address,
+          house_unit_no: household.house_unit_no,
+          street_name: household.street_name,
+          subdivision: household.subdivision,
+          status: household.status,
+          members: members
+        };
+      })
+    );
 
-    // Get paginated results
-    const dataQuery = `SELECT * FROM households ORDER BY created_at`;
-    const dataParams = [...params, limit, offset];
-    const [rows] = await pool.execute(dataQuery, dataParams);
-
-    res.status(200).json({
-      records: rows,
-      totalRecords,
-      currentPage: page,
-      totalPages: Math.ceil(totalRecords / limit)
-    });
+    res.status(200).json({ records });
   } catch (error) {
-    console.error("❌ Fetch households error:", error);
-    res.status(500).json({ message: "Failed to fetch households", error: error.message });
+    console.error("Error fetching households:", error);
+    res.status(500).json({ error: "Failed to fetch households" });
   }
 };
 
