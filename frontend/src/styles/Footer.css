@@ -296,3 +296,35 @@
     padding: 1rem;
   }
 }
+
+/* Fix footer spacing on mobile */
+@media (max-width: 768px) {
+  .footer {
+    width: 100vw;
+    margin: 0;
+    padding-bottom: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 0;
+    box-sizing: border-box;
+    position: relative;
+  }
+
+  .footer-content {
+    padding-bottom: 1rem;
+  }
+
+  .footer-bottom {
+    padding-bottom: 1rem;
+  }
+}
+
+/* Fix for extreme edge cases on very small screens */
+@media (max-width: 320px) {
+  .footer {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+}

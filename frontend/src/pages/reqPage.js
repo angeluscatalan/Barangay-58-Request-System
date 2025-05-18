@@ -7,6 +7,8 @@ import RequestForm from "../components/RequestForm"
 import ConfirmationModal from "../components/ConfirmationModal"
 import "../styles/reqPage.css"
 import Footer from "../components/Footer"
+import ValidationErrorPopup from "../components/ValidationErrorPopup"
+import SuccessPopup from "../components/SuccessPopup"
 
 function reqPage() {
   // Form state
@@ -32,6 +34,9 @@ function reqPage() {
   const [errors, setErrors] = useState({})
   const [activeSection, setActiveSection] = useState("info") // "info" or "form"
   const [showConfirmation, setShowConfirmation] = useState(false)
+  const [showValidationError, setShowValidationError] = useState(false)
+  const [missingFields, setMissingFields] = useState([])
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false)
 
   // Handle form field changes
   const handleChange = (e) => {
@@ -54,26 +59,28 @@ function reqPage() {
   const validateForm = () => {
     const newErrors = {}
     let formValid = true
+    const missingFieldsList = []
 
-    // Define required fields
+    // Define required fields with display names
     const requiredFields = [
-      "last_name",
-      "first_name",
-      "middle_name",
-      "unit_no",
-      "street",
-      "subdivision",
-      "contact_no",
-      "email",
-      "number_of_copies",
-      "type_of_certificate",
+      { key: "last_name", display: "Last Name" },
+      { key: "first_name", display: "First Name" },
+      { key: "middle_name", display: "Middle Name" },
+      { key: "unit_no", display: "House/Unit No." },
+      { key: "street", display: "Street Name" },
+      { key: "subdivision", display: "Subdivision/Sitio/Purok" },
+      { key: "contact_no", display: "Contact Number" },
+      { key: "email", display: "Email Address" },
+      { key: "number_of_copies", display: "Number of Copies" },
+      { key: "type_of_certificate", display: "Type of Certificate" },
     ]
 
     // Check for empty required fields
     requiredFields.forEach((field) => {
-      if (!formData[field] || formData[field].trim() === "") {
-        newErrors[field] = true
+      if (!formData[field.key] || formData[field.key].trim() === "") {
+        newErrors[field.key] = true
         formValid = false
+        missingFieldsList.push(field.display)
       }
     })
 
@@ -81,12 +88,18 @@ function reqPage() {
     if (formData.contact_no && !/^(0\d{10}|[1-9]\d{9})$/.test(formData.contact_no)) {
       newErrors.contact_no = true
       formValid = false
+      if (!missingFieldsList.includes("Contact Number")) {
+        missingFieldsList.push("Contact Number (Invalid format)")
+      }
     }
 
     // Validate email format
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = true
       formValid = false
+      if (!missingFieldsList.includes("Email Address")) {
+        missingFieldsList.push("Email Address (Invalid format)")
+      }
     }
 
     // Validate number of copies
@@ -94,10 +107,14 @@ function reqPage() {
     if (numberOfCopies && (isNaN(numberOfCopies) || numberOfCopies <= 0)) {
       newErrors.number_of_copies = true
       formValid = false
+      if (!missingFieldsList.includes("Number of Copies")) {
+        missingFieldsList.push("Number of Copies (Must be greater than 0)")
+      }
     }
 
     // Update state with errors
     setErrors(newErrors)
+    setMissingFields(missingFieldsList)
 
     return formValid
   }
@@ -108,15 +125,16 @@ function reqPage() {
     const isValid = validateForm()
 
     if (!isValid) {
-      // Highlight errors in the form
-      alert("Please fill in all required fields correctly.")
+      // Show validation error popup instead of alert
+      setShowValidationError(true)
       return
     }
 
     // Check terms checkbox
     const termsCheckbox = document.getElementById("terms")
     if (!termsCheckbox || !termsCheckbox.checked) {
-      alert("Please agree to the terms and conditions.")
+      setMissingFields(["Agreement to terms and conditions"])
+      setShowValidationError(true)
       return
     }
 
@@ -143,7 +161,8 @@ function reqPage() {
       })
       .then((response) => {
         setShowConfirmation(false)
-        alert("✅ Request successfully submitted!")
+        // Show success popup instead of alert
+        setShowSuccessPopup(true)
 
         // Reset form after successful submission
         setFormData({
@@ -188,7 +207,8 @@ function reqPage() {
           errorMessage = `Error: ${error.message}`
         }
 
-        alert(`❌ ${errorMessage}`)
+        // Show error popup instead of alert
+        setShowSuccessPopup(false)
       })
   }
 
@@ -257,6 +277,20 @@ function reqPage() {
         onConfirm={handleConfirmSubmit}
         formData={formData}
         formType="request"
+      />
+
+      {/* Validation Error Popup */}
+      <ValidationErrorPopup
+        isOpen={showValidationError}
+        onClose={() => setShowValidationError(false)}
+        missingFields={missingFields}
+      />
+
+      {/* Success Popup */}
+      <SuccessPopup
+        isOpen={showSuccessPopup}
+        onClose={() => setShowSuccessPopup(false)}
+        message="Your certificate request has been successfully submitted! You will be notified when it's ready for pickup."
       />
 
       <Footer />
