@@ -17,7 +17,7 @@ function EventsManager() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch("http://localhost:5000/events")
+        const response = await fetch("http://localhost:5000/api/events")
         if (!response.ok) throw new Error("Network response was not ok")
         const data = await response.json()
         setEvents(data)
@@ -46,7 +46,7 @@ function EventsManager() {
     if (!window.confirm("Are you sure you want to delete this event?")) return
 
     try {
-      const response = await fetch(`http://localhost:5000/events/${id}`, {
+      const response = await fetch(`http://localhost:5000/api/events/${id}`, {
         method: "DELETE",
       })
 

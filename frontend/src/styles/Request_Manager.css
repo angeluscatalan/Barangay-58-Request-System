@@ -44,7 +44,7 @@ th {
 }
 
 tr:hover {
-  background-color: #f5f5f5;
+  background-color: #c01860;
 }
 
 .actions {
@@ -94,7 +94,7 @@ tr:hover {
 }
 
 .clickable:hover {
-  background-color: #e6f7ff !important;
+  background-color: #c01860 !important;
 }
 
 .toggle-icon {
@@ -120,4 +120,80 @@ tr:hover {
 /* Highlight the expanded household */
 .head-row.expanded {
   background-color: #d4edff !important;
+}
+/* Filter Buttons Container */
+.filter-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+/* Filter Buttons */
+.filter-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.filter-buttons button {
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.filter-buttons button:hover {
+  background-color: #c01860;
+  color: white;
+}
+
+.filter-buttons button.active {
+  background-color: #da1c6f;
+  color: white;
+  border-color: #da1c6f;
+}
+
+/* Search Form */
+.search-form {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.search-form input[type="text"] {
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  width: 200px;
+}
+
+.search-form button {
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.search-form button[type="submit"] {
+  background-color: #28a745;
+  color: white;
+}
+
+.search-form button[type="submit"]:hover {
+  background-color: #218838;
+}
+
+.search-form button[type="button"] {
+  background-color: #dc3545;
+  color: white;
+}
+
+.search-form button[type="button"]:hover {
+  background-color: #c82333;
 }
