@@ -13,7 +13,7 @@ const getTemplatePath = (certificateType) => {
         'JobseekerCert': 'jobseeker.pdf',
         'IDApp': 'brgyid.pdf',
         'BrgyCert': 'certificate.pdf',
-        'Undertaking': 'undertaking.pdf' // Add undertaking template
+        'Undertaking': 'undertaking.pdf' 
     };
 
     const templateFile = templateMap[certificateType];
@@ -94,6 +94,16 @@ router.post('/generate-pdf', async (req, res) => {
             'IDApp': {
                 'full_name': formatName(requestData)
             },
+             'BrgyCert': {
+        'full_name': formatName(requestData),
+        'age': calculateAge(requestData.birthday).toString(),
+        'address': cleanAddress(requestData.address),
+        'purpose_of_request': requestData.purpose_of_request,
+        'day': currentDate.getDate().toString(),
+        'month': currentDate.toLocaleString('default', { month: 'long' }),
+        'year': currentDate.getFullYear().toString(),
+        'date': formattedDate
+    },
 
             // Default mapping (for other certificate types)
             'default': {
@@ -105,6 +115,7 @@ router.post('/generate-pdf', async (req, res) => {
                 'Text17': currentDate.toLocaleString('default', { month: 'long' }),
                 'Text19': currentDate.getFullYear().toString()
             }
+            
         };
 
         // Get the appropriate mapping based on certificate type
@@ -142,6 +153,8 @@ router.post('/generate-pdf', async (req, res) => {
         // Handle Jobseeker certificate with undertaking
         if (requestData.type_of_certificate === 'JobseekerCert') {
             const undertakingPath = getTemplatePath('Undertaking');
+            console.log('Undertaking path resolved to:', undertakingPath);
+
 
             if (!await fs.exists(undertakingPath)) {
                 console.log('Undertaking template not found at path:', undertakingPath);
@@ -150,7 +163,7 @@ router.post('/generate-pdf', async (req, res) => {
                 });
             }
 
-
+            console.log('✅ Undertaking template found, reading file...');
             const undertakingBytes = await fs.readFile(undertakingPath);
             const undertakingDoc = await PDFDocument.load(undertakingBytes);
             const undertakingForm = undertakingDoc.getForm();
@@ -179,16 +192,32 @@ router.post('/generate-pdf', async (req, res) => {
             undertakingForm.flatten();
             const undertakingPdfBytes = await undertakingDoc.save();
 
-            // Create zip with both files
+            // ========== ADD DEBUGGING HERE ==========
+            console.log('Main PDF size:', mainPdfBytes.length, 'bytes');
+            console.log('Undertaking PDF size:', undertakingPdfBytes.length, 'bytes');
+            console.log(`Creating ZIP with:
+                - ${requestData.type_of_certificate}_${requestData.last_name}.pdf (${mainPdfBytes.length} bytes)
+                - Undertaking_${requestData.last_name}.pdf (${undertakingPdfBytes.length} bytes)`);
+
             const zip = new JSZip();
             zip.file(`${requestData.type_of_certificate}_${requestData.last_name}.pdf`, mainPdfBytes);
             zip.file(`Undertaking_${requestData.last_name}.pdf`, undertakingPdfBytes);
 
-            const zipContent = await zip.generateAsync({ type: 'nodebuffer' });
-
-            res.setHeader('Content-Type', 'application/zip');
-            res.setHeader('Content-Disposition', `attachment; filename=JobseekerDocuments_${requestData.last_name}.zip`);
-            return res.send(zipContent);
+            try {
+                const zipContent = await zip.generateAsync({ type: 'nodebuffer' });
+                console.log('ZIP file created successfully:', zipContent.length, 'bytes');
+                
+                res.setHeader('Content-Type', 'application/zip');
+                res.setHeader('Content-Disposition', `attachment; filename=JobseekerDocuments_${requestData.last_name}.zip`);
+                return res.send(zipContent);
+            } catch (zipError) {
+                console.error('Error creating ZIP file:', zipError);
+                return res.status(500).json({
+                    error: 'Failed to create ZIP file',
+                    details: zipError.message
+                });
+            }
+            // ========== END DEBUGGING SECTION ==========
         }
 
         // For non-Jobseeker certificates

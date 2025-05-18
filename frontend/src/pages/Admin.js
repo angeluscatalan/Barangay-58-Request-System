@@ -259,43 +259,51 @@ function Admin() {
   }
 
   const handlePrintRequest = async (request) => {
-    setIsPrinting(prev => ({ ...prev, [request.id]: true }));
-    try {
-      console.log('Sending request data:', request);
-      const response = await axios.post(
-        'http://localhost:5000/api/certificates/generate-pdf',
-        { requestData: request },
-        {
-          responseType: 'blob',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
+  setIsPrinting(prev => ({ ...prev, [request.id]: true }));
+  try {
+    console.log('Sending request data:', request);
+    const response = await axios.post(
+      'http://localhost:5000/api/certificates/generate-pdf',
+      { requestData: request },
+      {
+        responseType: 'blob',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
-      );
+      }
+    );
 
-      // Create a blob from the PDF Stream
+    // Check if this is a JobseekerCert to handle ZIP differently
+    if (request.type_of_certificate === 'JobseekerCert') {
+      // Create a blob from the ZIP Stream
+      const file = new Blob([response.data], { type: 'application/zip' });
+      const fileURL = URL.createObjectURL(file);
+      const link = document.createElement('a');
+      link.href = fileURL;
+      link.download = `JobseekerDocuments_${request.last_name}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(fileURL);
+    } else {
+      // Handle regular PDFs as before
       const file = new Blob([response.data], { type: 'application/pdf' });
-
-      // Create a link element to trigger download
       const fileURL = URL.createObjectURL(file);
       const link = document.createElement('a');
       link.href = fileURL;
       link.download = `${request.type_of_certificate}_${request.last_name}.pdf`;
-
-      // Trigger download
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-
-      // Clean up
       URL.revokeObjectURL(fileURL);
-    } catch (error) {
-      console.error('Error printing certificate:', error);
-      alert('Failed to generate certificate PDF');
-    } finally {
-      setIsPrinting(prev => ({ ...prev, [request.id]: false }));
     }
-  };
+  } catch (error) {
+    console.error('Error printing certificate:', error);
+    alert('Failed to generate certificate');
+  } finally {
+    setIsPrinting(prev => ({ ...prev, [request.id]: false }));
+  }
+};
 
   if (requestsLoading) return <div className="loading">Loading...</div>
   if (requestsError) return <div className="error">Error: {requestsError}</div>
