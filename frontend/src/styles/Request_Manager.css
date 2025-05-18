@@ -197,3 +197,67 @@ tr:hover {
 .search-form button[type="button"]:hover {
   background-color: #c82333;
 }
+
+/* Bulk actions bar */
+.bulk-actions {
+  background-color: #f8f9fa;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.bulk-delete-btn {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.bulk-delete-btn:hover {
+  background-color: #c82333;
+}
+
+.bulk-delete-btn:disabled {
+  background-color: #dc354580;
+  cursor: not-allowed;
+}
+
+/* Checkbox styling */
+input[type="checkbox"] {
+  cursor: pointer;
+}
+
+/* Delete button in table */
+.delete-btn {
+  background: none;
+  border: none;
+  color: #dc3545;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.delete-btn:hover {
+  color: #c82333;
+}
+
+.delete-btn:disabled {
+  color: #dc354580;
+  cursor: not-allowed;
+}
+
+/* Spinner animation */
+.fa-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

@@ -1173,3 +1173,78 @@ tr:hover {
   background-color: #e63c87;
   /* Lighter pink for hover */
 }
+
+/* Comparison Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 1200px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.comparison-container {
+  display: flex;
+  gap: 20px;
+}
+
+.request-details, .rbi-results {
+  flex: 1;
+}
+
+.request-details table, .rbi-results table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.request-details th, .rbi-results th {
+  text-align: left;
+  padding: 8px;
+  background-color: #f2f2f2;
+}
+
+.request-details td, .rbi-results td {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+.compare-btn {
+  background: none;
+  border: none;
+  color: #4CAF50;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.compare-btn:hover {
+  color: #3e8e41;
+}

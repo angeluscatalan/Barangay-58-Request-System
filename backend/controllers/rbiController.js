@@ -376,64 +376,259 @@ exports.updateHouseholdMember = async (req, res) => {
   }
 };
 
-// 📌 Delete household member
-exports.deleteHouseholdMember = async (req, res) => {
-  const { id, memberId } = req.params;
-
+// 📌 Delete entire household with all members
+exports.deleteHousehold = async (req, res) => {
   try {
-    const [result] = await pool.query(
-      `DELETE FROM household_members WHERE id = ? AND household_id = ?`,
-      [memberId, id]
-    );
+    const { id } = req.params;
+    const connection = await pool.getConnection();
+    
+    await connection.beginTransaction();
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: 'Member not found or does not belong to specified household' });
+    try {
+      // 1. Get the household data
+      const [household] = await connection.execute(
+        'SELECT * FROM households WHERE id = ?',
+        [id]
+      );
+
+      if (household.length === 0) {
+        await connection.rollback();
+        return res.status(404).json({ error: 'Household not found' });
+      }
+
+      // 2. Archive the household
+      await connection.execute(
+        `INSERT INTO archive_households 
+        (id, head_last_name, head_first_name, head_middle_name, head_suffix, 
+         house_unit_no, street_name, subdivision, birth_place, birth_date, 
+         sex, civil_status, citizenship, occupation, email_address, status, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          household[0].id,
+          household[0].head_last_name,
+          household[0].head_first_name,
+          household[0].head_middle_name,
+          household[0].head_suffix,
+          household[0].house_unit_no,
+          household[0].street_name,
+          household[0].subdivision,
+          household[0].birth_place,
+          household[0].birth_date,
+          household[0].sex,
+          household[0].civil_status,
+          household[0].citizenship,
+          household[0].occupation,
+          household[0].email_address,
+          household[0].status,
+          household[0].created_at
+        ]
+      );
+
+      // 3. Delete the household
+      await connection.execute(
+        'DELETE FROM households WHERE id = ?',
+        [id]
+      );
+
+      await connection.commit();
+      res.status(200).json({ message: 'Household archived and deleted successfully' });
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
     }
-
-    res.json({ success: true, message: 'Member deleted successfully' });
   } catch (error) {
-    console.error('❌ Delete member error:', error);
-    res.status(500).json({ error: 'Failed to delete member', details: error.message });
+    console.error('Error deleting household:', error);
+    res.status(500).json({ error: 'Failed to delete household' });
   }
 };
 
-// 📌 Delete entire household with all members
-exports.deleteHousehold = async (req, res) => {
-  const { id } = req.params;
+exports.deleteHouseholdMember = async (req, res) => {
+  const { memberId } = req.params;
+  const connection = await pool.getConnection();
   
-  let connection;
   try {
-    connection = await pool.getConnection();
     await connection.beginTransaction();
 
-    // Delete all members first (due to foreign key constraint)
-    await connection.query(
-      `DELETE FROM household_members WHERE household_id = ?`,
-      [id]
+    // 1. Verify member exists and get data
+    const [member] = await connection.execute(
+      `SELECT hm.*, h.id as household_id FROM household_members hm
+       JOIN households h ON hm.household_id = h.id
+       WHERE hm.id = ?`,
+      [memberId]
     );
 
-    // Then delete the household
-    const [result] = await connection.query(
-      `DELETE FROM households WHERE id = ?`,
-      [id]
-    );
-
-    if (result.affectedRows === 0) {
+    if (member.length === 0) {
       await connection.rollback();
-      return res.status(404).json({ error: 'Household not found' });
+      return res.status(404).json({ error: 'Member not found' });
     }
+
+    // 2. First, verify if the household is already archived
+    const [archivedHousehold] = await connection.execute(
+      `SELECT id FROM archive_households WHERE id = ?`,
+      [member[0].household_id]
+    );
+
+    // 2a. If the household is not archived, archive it first
+    if (archivedHousehold.length === 0) {
+      // Get household data
+      const [household] = await connection.execute(
+        `SELECT * FROM households WHERE id = ?`,
+        [member[0].household_id]
+      );
+      
+      if (household.length > 0) {
+        // Archive the household
+        await connection.execute(
+          `INSERT INTO archive_households 
+          (id, head_last_name, head_first_name, head_middle_name, head_suffix, 
+           house_unit_no, street_name, subdivision, birth_place, birth_date, 
+           sex, civil_status, citizenship, occupation, email_address, status, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            household[0].id,
+            household[0].head_last_name,
+            household[0].head_first_name,
+            household[0].head_middle_name,
+            household[0].head_suffix,
+            household[0].house_unit_no,
+            household[0].street_name,
+            household[0].subdivision,
+            household[0].birth_place,
+            household[0].birth_date,
+            household[0].sex,
+            household[0].civil_status,
+            household[0].citizenship,
+            household[0].occupation,
+            household[0].email_address,
+            household[0].status,
+            household[0].created_at
+          ]
+        );
+      }
+    }
+
+    // 3. Now archive the member
+    await connection.execute(
+      `INSERT INTO archive_household_members 
+      (id, household_id, last_name, first_name, middle_name, suffix, 
+       birth_place, birth_date, sex, civil_status, citizenship, occupation)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        member[0].id,
+        member[0].household_id,
+        member[0].last_name,
+        member[0].first_name,
+        member[0].middle_name,
+        member[0].suffix || null, // Handle NULL suffix
+        member[0].birth_place,
+        member[0].birth_date,
+        member[0].sex,
+        member[0].civil_status,
+        member[0].citizenship,
+        member[0].occupation || null // Handle NULL occupation
+      ]
+    );
+
+    // 4. Delete from main table
+    await connection.execute(
+      'DELETE FROM household_members WHERE id = ?',
+      [memberId]
+    );
 
     await connection.commit();
-    res.json({ success: true, message: 'Household and all members deleted successfully' });
+    res.status(200).json({ 
+      success: true,
+      message: 'Member archived and deleted successfully'
+    });
   } catch (error) {
-    if (connection) {
-      await connection.rollback();
-    }
-    console.error('❌ Delete household error:', error);
-    res.status(500).json({ error: 'Failed to delete household', details: error.message });
+    await connection.rollback();
+    console.error('Database error:', {
+      message: error.message,
+      sqlMessage: error.sqlMessage,
+      sql: error.sql
+    });
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to process member deletion',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   } finally {
-    if (connection) {
-      connection.release();
-    }
+    connection.release();
+  }
+};
+
+exports.findSimilarRbis = async (req, res) => {
+  try {
+    const { lastName, firstName, middleName } = req.body;
+    
+    // Search for similar names (adjust the query as needed)
+    const [households] = await pool.execute(
+      `SELECT h.* FROM households h
+       WHERE h.head_last_name LIKE ? 
+       OR h.head_first_name LIKE ?
+       OR EXISTS (
+         SELECT 1 FROM household_members m 
+         WHERE m.household_id = h.id 
+         AND (m.last_name LIKE ? OR m.first_name LIKE ?)
+       )`,
+      [
+        `%${lastName}%`, 
+        `%${firstName}%`,
+        `%${lastName}%`,
+        `%${firstName}%`
+      ]
+    );
+
+    // Get members for matching households
+    const records = await Promise.all(
+      households.map(async (household) => {
+        const [members] = await pool.execute(
+          `SELECT * FROM household_members WHERE household_id = ?`,
+          [household.id]
+        );
+
+        return {
+          ...household,
+          members: members.filter(m => 
+            m.last_name.includes(lastName) || 
+            m.first_name.includes(firstName) ||
+            (middleName && m.middle_name && m.middle_name.includes(middleName))
+          )
+        };
+      })
+    );
+
+    // Flatten results (both household heads and members)
+    const results = records.flatMap(record => [
+      {
+        last_name: record.head_last_name,
+        first_name: record.head_first_name,
+        middle_name: record.head_middle_name,
+        birth_date: record.birth_date,
+        house_unit_no: record.house_unit_no,
+        street_name: record.street_name,
+        subdivision: record.subdivision,
+        status: record.status,
+        type: 'Household Head'
+      },
+      ...record.members.map(m => ({
+        last_name: m.last_name,
+        first_name: m.first_name,
+        middle_name: m.middle_name,
+        birth_date: m.birth_date,
+        house_unit_no: record.house_unit_no,
+        street_name: record.street_name,
+        subdivision: record.subdivision,
+        status: record.status,
+        type: 'Household Member'
+      }))
+    ]);
+
+    res.status(200).json(results);
+  } catch (error) {
+    console.error('Error finding similar RBIs:', error);
+    res.status(500).json({ error: 'Failed to search for similar RBI records' });
   }
 };

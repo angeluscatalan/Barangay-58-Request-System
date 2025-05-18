@@ -11,6 +11,7 @@ import RBI_Request_Manager from "../components/RBI_Request_Manager"
 import Request_Manager from "../components/Request_Manager"
 import Account_Manager from "../components/Account_Manager"
 import Verified_RBI_List from "../components/Verified_RBI_List"
+import ComparisonModal from "../components/comparisonModal";
 import AdminDashboard from "../components/AdminDashboard"
 
 function Admin() {
@@ -26,6 +27,9 @@ function Admin() {
   const [sidebarVisible, setSidebarVisible] = useState(true)
   const [sortBy, setSortBy] = useState("latest");
   const [isPrinting, setIsPrinting] = useState({});
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [similarRbis, setSimilarRbis] = useState([]);
+  const [showRbiComparison, setShowRbiComparison] = useState(false);
 
   const { requests, loading: requestsLoading, error: requestsError, fetchRequests, updateRequestStatus } = useRequests()
 
@@ -45,6 +49,29 @@ function Admin() {
       }
     }
   }
+
+    const findSimilarRbis = async (request) => {
+    try {
+      setSelectedRequest(request);
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        "http://localhost:5000/api/rbi/find-similar",
+        {
+          lastName: request.last_name,
+          firstName: request.first_name,
+          middleName: request.middle_name
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      setSimilarRbis(response.data);
+      setShowRbiComparison(true);
+    } catch (error) {
+      console.error("Error finding similar RBIs:", error);
+      alert("Failed to search for similar RBI records");
+    }
+  };
 
   // Memoize fetchUserData with no dependencies
   const fetchUserData = useCallback(async () => {
@@ -447,6 +474,21 @@ function Admin() {
                       <button className="bulk-delete-btn" onClick={handleBulkDelete}>
                         <i className="fas fa-trash-alt"></i> Delete Selected ({selectedRequests.length})
                       </button>
+                      {selectedRequests.length === 1 && (
+                        <button
+                          className="compare-btn"
+                          onClick={() => {
+                            // Find the request object that corresponds to the selected ID
+                            const selectedReq = filteredRequests.find(req => req.id === selectedRequests[0]);
+                            if (selectedReq) {
+                              findSimilarRbis(selectedReq);
+                            }
+                          }}
+                          title="Compare with RBI records"
+                        >
+                          <i className="fas fa-user-check"></i> Compare with RBI
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -587,6 +629,13 @@ function Admin() {
           </div>
         </div>
       </div>
+      {showRbiComparison && (
+  <ComparisonModal 
+    request={selectedRequest}
+    rbis={similarRbis}
+    onClose={() => setShowRbiComparison(false)}
+  />
+)}
     </>
   )
 }
