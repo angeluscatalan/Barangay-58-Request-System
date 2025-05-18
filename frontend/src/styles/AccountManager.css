@@ -191,3 +191,8 @@ tr:hover {
 .radio-group input[type="radio"] {
   margin: 0;
 }
+
+.rbi-form-subsection-title
+{
+  color: black;
+}

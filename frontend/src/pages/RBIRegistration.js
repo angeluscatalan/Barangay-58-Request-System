@@ -13,6 +13,8 @@ import facebookIcon from "../assets/facebookIcon.png"
 import emailIcon from "../assets/emailIcon.png"
 import axios from "axios"
 import Footer from "../components/Footer"
+import ValidationErrorPopup from "../components/ValidationErrorPopup"
+import SuccessPopup from "../components/SuccessPopup"
 
 function RBIRegistration() {
   const [activeSection, setActiveSection] = useState("info")
@@ -24,6 +26,9 @@ function RBIRegistration() {
   })
   const [showConfirmation, setShowConfirmation] = useState(false)
   const memberRefs = useRef([])
+  const [showValidationError, setShowValidationError] = useState(false)
+  const [missingFields, setMissingFields] = useState([])
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false)
 
   // Household head information
   const [householdData, setHouseholdData] = useState({
@@ -60,6 +65,7 @@ function RBIRegistration() {
   }
 
   const handleHouseholdDateChange = (date) => {
+    console.log("Date selected:", date)
     setHouseholdData({ ...householdData, birth_date: date })
   }
 
@@ -148,51 +154,208 @@ function RBIRegistration() {
     setMemberCount(memberCount - 1)
   }
 
+  // Update the validateForm function to properly check for empty birth_date
   const validateForm = () => {
     let isValid = true
     const newErrors = {
       household: {},
       members: members.map(() => ({})),
     }
+    const missingFieldsList = []
 
     // Validate household head data
-    Object.keys(householdData).forEach((key) => {
-      if (householdData[key].trim() === "" && key !== "head_suffix") {
-        newErrors.household[key] = "This field is required"
-        isValid = false
-      }
-    })
+    const householdFieldLabels = {
+      head_last_name: "Household Head Last Name",
+      head_first_name: "Household Head First Name",
+      head_middle_name: "Household Head Middle Name",
+      house_unit_no: "House/Unit No.",
+      street_name: "Street Name",
+      subdivision: "Subdivision/Sitio/Purok",
+      birth_place: "Birth Place",
+      birth_date: "Birth Date",
+      sex: "Sex",
+      civil_status: "Civil Status",
+      citizenship: "Citizenship",
+      occupation: "Occupation",
+      email_address: "Email Address",
+    }
 
-    // Add email validation
-    if (householdData.email_address && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(householdData.email_address)) {
+    // Check each household field
+    if (!householdData.head_last_name || householdData.head_last_name.trim() === "") {
+      newErrors.household.head_last_name = "This field is required"
+      isValid = false
+      missingFieldsList.push(householdFieldLabels.head_last_name)
+    }
+
+    if (!householdData.head_first_name || householdData.head_first_name.trim() === "") {
+      newErrors.household.head_first_name = "This field is required"
+      isValid = false
+      missingFieldsList.push(householdFieldLabels.head_first_name)
+    }
+
+    if (!householdData.head_middle_name || householdData.head_middle_name.trim() === "") {
+      newErrors.household.head_middle_name = "This field is required"
+      isValid = false
+      missingFieldsList.push(householdFieldLabels.head_middle_name)
+    }
+
+    if (!householdData.house_unit_no || householdData.house_unit_no.trim() === "") {
+      newErrors.household.house_unit_no = "This field is required"
+      isValid = false
+      missingFieldsList.push(householdFieldLabels.house_unit_no)
+    }
+
+    if (!householdData.street_name || householdData.street_name.trim() === "") {
+      newErrors.household.street_name = "This field is required"
+      isValid = false
+      missingFieldsList.push(householdFieldLabels.street_name)
+    }
+
+    if (!householdData.subdivision || householdData.subdivision.trim() === "") {
+      newErrors.household.subdivision = "This field is required"
+      isValid = false
+      missingFieldsList.push(householdFieldLabels.subdivision)
+    }
+
+    if (!householdData.birth_place || householdData.birth_place.trim() === "") {
+      newErrors.household.birth_place = "This field is required"
+      isValid = false
+      missingFieldsList.push(householdFieldLabels.birth_place)
+    }
+
+    // Explicitly check birth_date
+    if (!householdData.birth_date) {
+      newErrors.household.birth_date = "This field is required"
+      isValid = false
+      missingFieldsList.push(householdFieldLabels.birth_date)
+    }
+
+    if (!householdData.sex || householdData.sex.trim() === "") {
+      newErrors.household.sex = "This field is required"
+      isValid = false
+      missingFieldsList.push(householdFieldLabels.sex)
+    }
+
+    if (!householdData.civil_status || householdData.civil_status.trim() === "") {
+      newErrors.household.civil_status = "This field is required"
+      isValid = false
+      missingFieldsList.push(householdFieldLabels.civil_status)
+    }
+
+    if (!householdData.citizenship || householdData.citizenship.trim() === "") {
+      newErrors.household.citizenship = "This field is required"
+      isValid = false
+      missingFieldsList.push(householdFieldLabels.citizenship)
+    }
+
+    if (!householdData.occupation || householdData.occupation.trim() === "") {
+      newErrors.household.occupation = "This field is required"
+      isValid = false
+      missingFieldsList.push(householdFieldLabels.occupation)
+    }
+
+    if (!householdData.email_address || householdData.email_address.trim() === "") {
+      newErrors.household.email_address = "This field is required"
+      isValid = false
+      missingFieldsList.push(householdFieldLabels.email_address)
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(householdData.email_address)) {
       newErrors.household.email_address = "Please enter a valid email address"
       isValid = false
+      missingFieldsList.push("Email Address (Invalid format)")
     }
 
     // Validate members data if there are any
     members.forEach((member, index) => {
-      Object.keys(member).forEach((key) => {
-        if (member[key].trim() === "" && key !== "suffix") {
-          newErrors.members[index][key] = "This field is required"
-          isValid = false
-        }
-      })
+      const memberFieldLabels = {
+        last_name: `Member ${index + 1} Last Name`,
+        first_name: `Member ${index + 1} First Name`,
+        middle_name: `Member ${index + 1} Middle Name`,
+        birth_place: `Member ${index + 1} Birth Place`,
+        birth_date: `Member ${index + 1} Birth Date`,
+        sex: `Member ${index + 1} Sex`,
+        civil_status: `Member ${index + 1} Civil Status`,
+        citizenship: `Member ${index + 1} Citizenship`,
+        occupation: `Member ${index + 1} Occupation`,
+      }
+
+      // Check each member field
+      if (!member.last_name || member.last_name.trim() === "") {
+        newErrors.members[index].last_name = "This field is required"
+        isValid = false
+        missingFieldsList.push(memberFieldLabels.last_name)
+      }
+
+      if (!member.first_name || member.first_name.trim() === "") {
+        newErrors.members[index].first_name = "This field is required"
+        isValid = false
+        missingFieldsList.push(memberFieldLabels.first_name)
+      }
+
+      if (!member.middle_name || member.middle_name.trim() === "") {
+        newErrors.members[index].middle_name = "This field is required"
+        isValid = false
+        missingFieldsList.push(memberFieldLabels.middle_name)
+      }
+
+      if (!member.birth_place || member.birth_place.trim() === "") {
+        newErrors.members[index].birth_place = "This field is required"
+        isValid = false
+        missingFieldsList.push(memberFieldLabels.birth_place)
+      }
+
+      // Explicitly check birth_date for members
+      if (!member.birth_date) {
+        newErrors.members[index].birth_date = "This field is required"
+        isValid = false
+        missingFieldsList.push(memberFieldLabels.birth_date)
+      }
+
+      if (!member.sex || member.sex.trim() === "") {
+        newErrors.members[index].sex = "This field is required"
+        isValid = false
+        missingFieldsList.push(memberFieldLabels.sex)
+      }
+
+      if (!member.civil_status || member.civil_status.trim() === "") {
+        newErrors.members[index].civil_status = "This field is required"
+        isValid = false
+        missingFieldsList.push(memberFieldLabels.civil_status)
+      }
+
+      if (!member.citizenship || member.citizenship.trim() === "") {
+        newErrors.members[index].citizenship = "This field is required"
+        isValid = false
+        missingFieldsList.push(memberFieldLabels.citizenship)
+      }
+
+      if (!member.occupation || member.occupation.trim() === "") {
+        newErrors.members[index].occupation = "This field is required"
+        isValid = false
+        missingFieldsList.push(memberFieldLabels.occupation)
+      }
     })
 
     setErrors(newErrors)
+    setMissingFields(missingFieldsList)
     return isValid
   }
 
-  const handleSubmit = async (e) => {
+  // Now, let's update the handleSubmit function to ensure it shows the validation popup
+  const handleSubmit = (e) => {
     e.preventDefault()
 
-    if (!validateForm()) {
-      alert("Please fill in all required fields correctly.")
+    // Validate the form
+    const isValid = validateForm()
+
+    if (!isValid) {
+      // Show validation error popup
+      setShowValidationError(true)
       return
     }
 
     if (!document.getElementById("terms").checked) {
-      alert("Please verify with our terms by clicking the checkbox.")
+      setMissingFields(["Agreement to terms and conditions"])
+      setShowValidationError(true)
       return
     }
 
@@ -221,7 +384,8 @@ function RBIRegistration() {
 
       if (response.status === 200 || response.status === 201) {
         setShowConfirmation(false)
-        alert("✅ RBI Registration successfully submitted!")
+        // Show success popup instead of alert
+        setShowSuccessPopup(true)
 
         // Reset form
         setHouseholdData({
@@ -245,12 +409,14 @@ function RBIRegistration() {
         document.getElementById("terms").checked = false
       } else {
         setShowConfirmation(false)
-        alert("❌ Submission failed. Please try again later.")
+        // Show error popup
+        setShowSuccessPopup(false)
       }
     } catch (error) {
       setShowConfirmation(false)
       console.error("Error submitting RBI registration:", error)
-      alert(`❌ Error: ${error.response?.data?.message || error.message || "Failed to submit registration"}`)
+      // Show error popup
+      setShowSuccessPopup(false)
     }
   }
 
@@ -352,7 +518,7 @@ function RBIRegistration() {
             <div className="rbi-fill-up">
               <h1 className="fill-up-title">Complete the Form to Register Your Household</h1>
 
-              <form className="rbi-form-content" onSubmit={handleSubmit}>
+              <form className="rbi-form-content" onSubmit={handleSubmit} noValidate>
                 {/* Household Head Information */}
                 <div className="rbi-form-section">
                   <h2 className="rbi-form-section-title">HOUSEHOLD HEAD INFORMATION</h2>
@@ -610,25 +776,6 @@ function RBIRegistration() {
                 {/* Household Members Section */}
                 <div className="rbi-form-section household-members-section">
                   <h2 className="rbi-form-section-title">HOUSEHOLD MEMBERS</h2>
-                  <button type="button" className="add-member-button" onClick={addMember}>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="add-icon"
-                    >
-                      <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                      <circle cx="8.5" cy="7" r="4"></circle>
-                      <line x1="20" y1="8" x2="20" y2="14"></line>
-                      <line x1="23" y1="11" x2="17" y2="11"></line>
-                    </svg>
-                    Add Household Member
-                  </button>
-                  <p className="members-count">Number of members: {memberCount} (Max: 10)</p>
 
                   {members.map((member, index) => (
                     <div key={index} className="member-form" ref={(el) => (memberRefs.current[index] = el)}>
@@ -835,6 +982,26 @@ function RBIRegistration() {
                       </div>
                     </div>
                   ))}
+
+                  <button type="button" className="add-member-button" onClick={addMember}>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="add-icon"
+                    >
+                      <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="8.5" cy="7" r="4"></circle>
+                      <line x1="20" y1="8" x2="20" y2="14"></line>
+                      <line x1="23" y1="11" x2="17" y2="11"></line>
+                    </svg>
+                    Add Household Member
+                  </button>
+                  <p className="members-count">Number of members: {memberCount} (Max: 10)</p>
                 </div>
 
                 <div className="rbi-form-terms-container">
@@ -869,6 +1036,20 @@ function RBIRegistration() {
         onConfirm={handleConfirmSubmit}
         formData={{ ...householdData, members }}
         formType="rbi"
+      />
+
+      {/* Validation Error Popup */}
+      <ValidationErrorPopup
+        isOpen={showValidationError}
+        onClose={() => setShowValidationError(false)}
+        missingFields={missingFields}
+      />
+
+      {/* Success Popup */}
+      <SuccessPopup
+        isOpen={showSuccessPopup}
+        onClose={() => setShowSuccessPopup(false)}
+        message="Your RBI Registration has been successfully submitted! You will be notified once it has been processed."
       />
 
       <Footer />

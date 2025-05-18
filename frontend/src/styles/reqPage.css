@@ -745,3 +745,21 @@
     color: #000000;
   }
 }
+
+/* Fix container and footer alignment */
+@media screen and (max-width: 768px) {
+  .req {
+    padding-bottom: 0;
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  .reqContainer2 {
+    margin-bottom: 0;
+  }
+
+  .back-button-container {
+    margin-bottom: 20px;
+  }
+}

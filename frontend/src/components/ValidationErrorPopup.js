@@ -2,6 +2,8 @@
 import "../styles/ValidationErrorPopup.css"
 
 const ValidationErrorPopup = ({ isOpen, onClose, missingFields }) => {
+  console.log("ValidationErrorPopup props:", { isOpen, missingFields })
+
   if (!isOpen) return null
 
   return (
@@ -25,14 +27,10 @@ const ValidationErrorPopup = ({ isOpen, onClose, missingFields }) => {
         <h3 className="validation-title">Error</h3>
         <div className="validation-errors">
           <p>Please fill in the following required fields:</p>
-          <ul>
-            {missingFields.map((field, index) => (
-              <li key={index}>{field}</li>
-            ))}
-          </ul>
+          <ul>{missingFields && missingFields.map((field, index) => <li key={index}>{field}</li>)}</ul>
         </div>
         <button className="validation-button" onClick={onClose}>
-          OK
+          Go Back
         </button>
       </div>
     </div>

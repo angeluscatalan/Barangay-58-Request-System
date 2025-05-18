@@ -67,7 +67,9 @@
 }
 
 .success-button:hover {
-  background-color: #1d4ed8;
+  border: solid  #1d4ed8;
+  color:  #1d4ed8;
+  background-color: transparent;
 }
 
 @media (max-width: 640px) {
