@@ -25,6 +25,16 @@ function Account_Manager() {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
+
+       if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        console.log('Token payload:', payload);
+      } catch (e) {
+        console.error('Token decode error:', e);
+      }
+    }
+
       const response = await axios.get("http://localhost:5000/api/admin/accounts", {
         headers: { 
           Authorization: `Bearer ${token}`,
@@ -34,11 +44,11 @@ function Account_Manager() {
       setAccounts(response.data);
       setError(null);
     } catch (err) {
-      console.error("Error fetching accounts:", err.response);
+      console.error("Full error:", err);
       if (err.response?.status === 403) {
-        setError("You don't have Staff privileges to access this section");
+        setError("You need Admin (access_level=1) or Super Admin (access_level=2) privileges");
       } else {
-        setError(err.response?.data?.message || "Failed to load accounts");
+        setError(err.message);
       }
     } finally {
       setLoading(false);
@@ -57,6 +67,10 @@ function Account_Manager() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
+      if (token) {
+  const payload = JSON.parse(atob(token.split('.')[1]));
+  console.log('Current user access level:', payload.access_level);
+}
       
       // Prepare the account data with all required fields
       const accountData = {

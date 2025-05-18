@@ -14,10 +14,12 @@ const authenticateToken = (req, res, next) => {
 };
 
 const authorizeAdmin = (req, res, next) => {
-  if (req.user?.role !== 'admin') { // Optional chaining for safety
-    return res.status(403).json({ message: 'Admin access required' });
+  if ([1, 2].includes(req.user?.access_level)) {
+    return next();
   }
-  next();
+  res.status(403).json({ message: 'Admin privileges required' });
 };
+
+
 
 module.exports = { authenticateToken, authorizeAdmin };
