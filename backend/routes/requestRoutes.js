@@ -22,4 +22,8 @@ router.get('/:id', requestController.getRequestById);
 router.put('/:id', requestController.updateRequestStatus);
 router.delete('/:id', requestController.deleteRequest);
 
+// Add new routes for backup functionality
+router.get('/backup/list', requestController.getBackupRequests);
+router.post('/backup/restore', requestController.restoreRequests);
+
 module.exports = router;

@@ -1217,22 +1217,26 @@ tr:hover {
   gap: 20px;
 }
 
-.request-details, .rbi-results {
+.request-details,
+.rbi-results {
   flex: 1;
 }
 
-.request-details table, .rbi-results table {
+.request-details table,
+.rbi-results table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.request-details th, .rbi-results th {
+.request-details th,
+.rbi-results th {
   text-align: left;
   padding: 8px;
   background-color: #f2f2f2;
 }
 
-.request-details td, .rbi-results td {
+.request-details td,
+.rbi-results td {
   padding: 8px;
   border-bottom: 1px solid #ddd;
 }
@@ -1247,4 +1251,26 @@ tr:hover {
 
 .compare-btn:hover {
   color: #3e8e41;
+}
+
+.retrieve-btn {
+  background-color: #da1c6f;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.retrieve-btn:hover {
+  background-color: #c01961;
+}
+
+.retrieve-btn i {
+  font-size: 14px;
 }

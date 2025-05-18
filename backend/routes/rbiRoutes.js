@@ -33,7 +33,7 @@ const validateCompleteHousehold = [
     .withMessage('Occupation is required'),
   check('household.email_address').isEmail().normalizeEmail()
     .withMessage('Valid email address is required'),
-    
+
   // Members validation (if there are any)
   check('members.*.last_name').notEmpty().trim().escape()
     .withMessage('Member last name is required'),
@@ -89,6 +89,7 @@ router.get('/test', (req, res) => {
   res.send('RBI Routes are working!');
 });
 
+// Main RBI routes
 router.post('/', validateCompleteHousehold, rbiController.createCompleteHousehold);
 router.get('/', rbiController.getAllHouseholds);
 router.get('/:id', rbiController.getHouseholdWithMembersById);
@@ -97,9 +98,13 @@ router.put('/:id/status', validateStatusUpdate, rbiController.updateHouseholdSta
 router.delete('/:id', rbiController.deleteHousehold);
 router.post('/:id/members', validateMember, rbiController.addHouseholdMember);
 router.put('/:id/members/:memberId', validateMember, rbiController.updateHouseholdMember);
-router.delete('/members/:memberId', 
-  rbiController.deleteHouseholdMember
-);
+router.delete('/members/:memberId', rbiController.deleteHouseholdMember);
+
+// Backup routes
+router.get('/backup/list', rbiController.getBackupRBI);
+router.post('/backup/restore', rbiController.restoreRBI);
+
+// Additional routes
 router.get("/households", (req, res) => {
   rbiController.getAllHouseholds(req, res);
 });

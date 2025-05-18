@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import "../styles/Request_Manager.css";
 import { useRequests } from "./RBI_Request_Context";
 import RBI_Household_Detail from "./RBI_Household_Detail";
+import BackupRBIModal from "./BackupRBIModal";
 
 function RBI_Request_Manager() {
   const {
@@ -12,12 +13,13 @@ function RBI_Request_Manager() {
     fetchRbiRequests,
     getHouseholdWithMembers
   } = useRequests();
-  
+
   const [expandedHouseholds, setExpandedHouseholds] = useState({});
   const [selectedHouseholdId, setSelectedHouseholdId] = useState(null);
   const [householdMembers, setHouseholdMembers] = useState({});
   const [activeFilter, setActiveFilter] = useState("pending");
   const [searchTerm, setSearchTerm] = useState("");
+  const [showBackupModal, setShowBackupModal] = useState(false);
 
   useEffect(() => {
     fetchRbiRequests(activeFilter); // Initial fetch with default filter
@@ -84,53 +86,70 @@ function RBI_Request_Manager() {
   return (
     <div className="request-manager">
       <h1>RBI Household Registration Management</h1>
-      
-      <div className="filter-controls">
-        <div className="filter-buttons">
-          <button 
-            className={activeFilter === "pending" ? "active" : ""} 
-            onClick={() => handleFilterClick("pending")}
-          >
-            Pending
-          </button>
-          <button 
-            className={activeFilter === "approved" ? "active" : ""} 
-            onClick={() => handleFilterClick("approved")}
-          >
-            Approved
-          </button>
-          <button 
-            className={activeFilter === "rejected" ? "active" : ""} 
-            onClick={() => handleFilterClick("rejected")}
-          >
-            Rejected
-          </button>
-          <button 
-            className={activeFilter === "for interview" ? "active" : ""} 
-            onClick={() => handleFilterClick("for interview")}
-          >
-            For Interview
-          </button>
-          <button 
-            className={activeFilter === null ? "active" : ""} 
-            onClick={() => handleFilterClick(null)}
-          >
-            All
-          </button>
+
+      <div className="table-header">
+        <div className="events-count">
+          RBI Registrations <span className="event-count">({rbiRequests.totalRecords || 0})</span>
         </div>
-        
-        <form className="search-form" onSubmit={handleSearch}>
-          <input
-            type="text"
-            placeholder="Search households..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <button type="submit">Search</button>
-          {searchTerm && <button type="button" onClick={clearSearch}>Clear</button>}
-        </form>
+        <div className="table-controls">
+          <div className="filter-buttons">
+            <button
+              className={activeFilter === "pending" ? "active" : ""}
+              onClick={() => handleFilterClick("pending")}
+            >
+              Pending
+            </button>
+            <button
+              className={activeFilter === "approved" ? "active" : ""}
+              onClick={() => handleFilterClick("approved")}
+            >
+              Approved
+            </button>
+            <button
+              className={activeFilter === "rejected" ? "active" : ""}
+              onClick={() => handleFilterClick("rejected")}
+            >
+              Rejected
+            </button>
+            <button
+              className={activeFilter === "for interview" ? "active" : ""}
+              onClick={() => handleFilterClick("for interview")}
+            >
+              For Interview
+            </button>
+            <button
+              className={activeFilter === null ? "active" : ""}
+              onClick={() => handleFilterClick(null)}
+            >
+              All
+            </button>
+          </div>
+          <div className="action-buttons">
+            <button
+              className="retrieve-data-btn"
+              onClick={() => setShowBackupModal(true)}
+              style={{
+                backgroundColor: "#da1c6f",
+                marginRight: "10px"
+              }}
+            >
+              <i className="fas fa-undo"></i>
+              Retrieve Data
+            </button>
+            <form className="search-form" onSubmit={handleSearch}>
+              <input
+                type="text"
+                placeholder="Search households..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <button type="submit">Search</button>
+              {searchTerm && <button type="button" onClick={clearSearch}>Clear</button>}
+            </form>
+          </div>
+        </div>
       </div>
-      
+
       <div className="table-container">
         <table>
           <thead>
@@ -150,7 +169,7 @@ function RBI_Request_Manager() {
                   <td>
                     <div className="household-head">
                       {`${household.head_last_name}, ${household.head_first_name} ${household.head_middle_name || ""} ${household.head_suffix || ""}`}
-                      <button 
+                      <button
                         className="toggle-btn"
                         onClick={() => toggleHouseholdDetails(household.id)}
                         title="Show/Hide Members"
@@ -242,13 +261,13 @@ function RBI_Request_Manager() {
       {/* Pagination controls */}
       {rbiRequests.totalPages > 1 && (
         <div className="pagination">
-          <button 
+          <button
             disabled={rbiRequests.currentPage === 1}
             onClick={() => fetchRbiRequests(activeFilter, 1)}
           >
             First
           </button>
-          <button 
+          <button
             disabled={rbiRequests.currentPage === 1}
             onClick={() => fetchRbiRequests(activeFilter, rbiRequests.currentPage - 1)}
           >
@@ -257,13 +276,13 @@ function RBI_Request_Manager() {
           <span className="page-info">
             Page {rbiRequests.currentPage} of {rbiRequests.totalPages}
           </span>
-          <button 
+          <button
             disabled={rbiRequests.currentPage === rbiRequests.totalPages}
             onClick={() => fetchRbiRequests(activeFilter, rbiRequests.currentPage + 1)}
           >
             Next
           </button>
-          <button 
+          <button
             disabled={rbiRequests.currentPage === rbiRequests.totalPages}
             onClick={() => fetchRbiRequests(activeFilter, rbiRequests.totalPages)}
           >
@@ -279,11 +298,21 @@ function RBI_Request_Manager() {
 
       {/* Detailed household modal */}
       {selectedHouseholdId && (
-        <RBI_Household_Detail 
-          householdId={selectedHouseholdId} 
-          onClose={closeModal} 
+        <RBI_Household_Detail
+          householdId={selectedHouseholdId}
+          onClose={closeModal}
         />
       )}
+
+      {/* Backup RBI Modal */}
+      <BackupRBIModal
+        isOpen={showBackupModal}
+        onClose={() => setShowBackupModal(false)}
+        onRestore={() => {
+          fetchRbiRequests(activeFilter);
+          setShowBackupModal(false);
+        }}
+      />
     </div>
   );
 }

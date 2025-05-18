@@ -95,17 +95,17 @@ exports.createCompleteHousehold = async (req, res) => {
 exports.getAllHouseholds = async (req, res) => {
   try {
     const { status } = req.query;
-    
+
     let query = `SELECT * FROM households`;
     const params = [];
-    
+
     if (status) {
       query += ` WHERE status = ?`;
       params.push(status);
     }
-    
+
     query += ` ORDER BY created_at DESC`;
-    
+
     const [households] = await pool.execute(query, params);
 
     const records = await Promise.all(
@@ -180,7 +180,7 @@ exports.updateHouseholdStatus = async (req, res) => {
   const { status } = req.body;
 
   const validStatuses = ['pending', 'approved', 'rejected', 'for interview'];
-  
+
   if (!validStatuses.includes(status)) {
     return res.status(400).json({ error: 'Invalid status value' });
   }
@@ -195,9 +195,9 @@ exports.updateHouseholdStatus = async (req, res) => {
       return res.status(404).json({ error: 'Household not found' });
     }
 
-    res.json({ 
-      success: true, 
-      message: `Household status updated to '${status}' successfully` 
+    res.json({
+      success: true,
+      message: `Household status updated to '${status}' successfully`
     });
   } catch (error) {
     console.error('❌ Status update error:', error);
@@ -381,7 +381,7 @@ exports.deleteHousehold = async (req, res) => {
   try {
     const { id } = req.params;
     const connection = await pool.getConnection();
-    
+
     await connection.beginTransaction();
 
     try {
@@ -447,7 +447,7 @@ exports.deleteHousehold = async (req, res) => {
 exports.deleteHouseholdMember = async (req, res) => {
   const { memberId } = req.params;
   const connection = await pool.getConnection();
-  
+
   try {
     await connection.beginTransaction();
 
@@ -477,7 +477,7 @@ exports.deleteHouseholdMember = async (req, res) => {
         `SELECT * FROM households WHERE id = ?`,
         [member[0].household_id]
       );
-      
+
       if (household.length > 0) {
         // Archive the household
         await connection.execute(
@@ -538,7 +538,7 @@ exports.deleteHouseholdMember = async (req, res) => {
     );
 
     await connection.commit();
-    res.status(200).json({ 
+    res.status(200).json({
       success: true,
       message: 'Member archived and deleted successfully'
     });
@@ -549,7 +549,7 @@ exports.deleteHouseholdMember = async (req, res) => {
       sqlMessage: error.sqlMessage,
       sql: error.sql
     });
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
       error: 'Failed to process member deletion',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -562,7 +562,7 @@ exports.deleteHouseholdMember = async (req, res) => {
 exports.findSimilarRbis = async (req, res) => {
   try {
     const { lastName, firstName, middleName } = req.body;
-    
+
     // Search for similar names (adjust the query as needed)
     const [households] = await pool.execute(
       `SELECT h.* FROM households h
@@ -574,7 +574,7 @@ exports.findSimilarRbis = async (req, res) => {
          AND (m.last_name LIKE ? OR m.first_name LIKE ?)
        )`,
       [
-        `%${lastName}%`, 
+        `%${lastName}%`,
         `%${firstName}%`,
         `%${lastName}%`,
         `%${firstName}%`
@@ -591,8 +591,8 @@ exports.findSimilarRbis = async (req, res) => {
 
         return {
           ...household,
-          members: members.filter(m => 
-            m.last_name.includes(lastName) || 
+          members: members.filter(m =>
+            m.last_name.includes(lastName) ||
             m.first_name.includes(firstName) ||
             (middleName && m.middle_name && m.middle_name.includes(middleName))
           )
@@ -630,5 +630,212 @@ exports.findSimilarRbis = async (req, res) => {
   } catch (error) {
     console.error('Error finding similar RBIs:', error);
     res.status(500).json({ error: 'Failed to search for similar RBI records' });
+  }
+};
+
+// Get backup RBI requests
+exports.getBackupRBI = async (req, res) => {
+  try {
+    // Get archived households with their members count
+    const [households] = await pool.query(`
+            SELECT 
+                h.id,
+                h.head_last_name,
+                h.head_first_name,
+                h.head_middle_name,
+                h.head_suffix,
+                h.house_unit_no,
+                h.street_name,
+                h.subdivision,
+                h.birth_place,
+                h.birth_date,
+                h.sex,
+                h.civil_status,
+                h.citizenship,
+                h.occupation,
+                h.email_address,
+                h.status,
+                h.created_at,
+                COUNT(m.id) as member_count
+            FROM archive_households h
+            LEFT JOIN archive_household_members m ON h.id = m.household_id
+            GROUP BY 
+                h.id, h.head_last_name, h.head_first_name, h.head_middle_name,
+                h.head_suffix, h.house_unit_no, h.street_name, h.subdivision,
+                h.birth_place, h.birth_date, h.sex, h.civil_status,
+                h.citizenship, h.occupation, h.email_address, h.status,
+                h.created_at
+            ORDER BY h.created_at DESC
+        `);
+
+    // For each household, get its members with all their fields
+    for (let household of households) {
+      const [members] = await pool.query(
+        `SELECT 
+            id,
+            household_id,
+            last_name,
+            first_name,
+            middle_name,
+            suffix,
+            birth_place,
+            birth_date,
+            sex,
+            civil_status,
+            citizenship,
+            occupation
+         FROM archive_household_members 
+         WHERE household_id = ?`,
+        [household.id]
+      );
+      household.members = members;
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        households: households.map(household => ({
+          household: {
+            id: household.id,
+            head_last_name: household.head_last_name,
+            head_first_name: household.head_first_name,
+            head_middle_name: household.head_middle_name,
+            head_suffix: household.head_suffix,
+            house_unit_no: household.house_unit_no,
+            street_name: household.street_name,
+            subdivision: household.subdivision,
+            birth_place: household.birth_place,
+            birth_date: household.birth_date,
+            sex: household.sex,
+            civil_status: household.civil_status,
+            citizenship: household.citizenship,
+            occupation: household.occupation,
+            email_address: household.email_address,
+            status: household.status,
+            created_at: household.created_at,
+            member_count: household.member_count
+          },
+          members: household.members
+        }))
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching backup RBI:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to fetch backup RBI data',
+      details: error.message
+    });
+  }
+};
+
+// Restore RBI from backup
+exports.restoreRBI = async (req, res) => {
+  const { householdIds } = req.body;
+  const connection = await pool.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    for (const id of householdIds) {
+      // Get the backup household data
+      const [backupHousehold] = await connection.execute(
+        "SELECT * FROM archive_households WHERE id = ?",
+        [id]
+      );
+
+      if (backupHousehold.length === 0) {
+        await connection.rollback();
+        return res.status(404).json({ error: `Backup household with id ${id} not found` });
+      }
+
+      const householdData = backupHousehold[0];
+
+      // Insert into main households table with preserved timestamps
+      const [result] = await connection.execute(
+        `INSERT INTO households 
+                 (head_first_name, head_middle_name, head_last_name, head_suffix,
+                  house_unit_no, street_name, subdivision, birth_place, birth_date,
+                  sex, civil_status, citizenship, occupation, email_address, contact_no,
+                  status, created_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          householdData.head_first_name,
+          householdData.head_middle_name,
+          householdData.head_last_name,
+          householdData.head_suffix,
+          householdData.house_unit_no,
+          householdData.street_name,
+          householdData.subdivision,
+          householdData.birth_place,
+          householdData.birth_date,
+          householdData.sex,
+          householdData.civil_status,
+          householdData.citizenship,
+          householdData.occupation,
+          householdData.email_address,
+          householdData.contact_no,
+          householdData.status,
+          householdData.created_at
+        ]
+      );
+
+      const newHouseholdId = result.insertId;
+
+      // Get and restore household members
+      const [backupMembers] = await connection.execute(
+        "SELECT * FROM archive_household_members WHERE household_id = ?",
+        [id]
+      );
+
+      // Insert each member with preserved timestamps
+      for (const member of backupMembers) {
+        await connection.execute(
+          `INSERT INTO household_members 
+                     (household_id, first_name, middle_name, last_name, suffix,
+                      relationship, birth_date, birth_place, sex, civil_status,
+                      citizenship, occupation, created_at)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            newHouseholdId,
+            member.first_name,
+            member.middle_name,
+            member.last_name,
+            member.suffix,
+            member.relationship,
+            member.birth_date,
+            member.birth_place,
+            member.sex,
+            member.civil_status,
+            member.citizenship,
+            member.occupation,
+            member.created_at
+          ]
+        );
+      }
+
+      // Only delete from backup tables after successful restore
+      await connection.execute(
+        "DELETE FROM archive_household_members WHERE household_id = ?",
+        [id]
+      );
+      await connection.execute(
+        "DELETE FROM archive_households WHERE id = ?",
+        [id]
+      );
+    }
+
+    await connection.commit();
+    res.json({
+      success: true,
+      message: `Successfully restored ${householdIds.length} household(s)`,
+      restoredIds: householdIds
+    });
+  } catch (error) {
+    await connection.rollback();
+    console.error('Error restoring RBI:', error);
+    res.status(500).json({ error: 'Failed to restore RBI data', details: error.message });
+  } finally {
+    connection.release();
   }
 };

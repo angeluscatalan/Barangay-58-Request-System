@@ -13,6 +13,7 @@ import Account_Manager from "../components/Account_Manager"
 import Verified_RBI_List from "../components/Verified_RBI_List"
 import ComparisonModal from "../components/comparisonModal";
 import AdminDashboard from "../components/AdminDashboard"
+import BackupRequestsModal from "../components/BackupRequestsModal"
 
 function Admin() {
   const navigate = useNavigate()
@@ -30,6 +31,7 @@ function Admin() {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [similarRbis, setSimilarRbis] = useState([]);
   const [showRbiComparison, setShowRbiComparison] = useState(false);
+  const [showBackupModal, setShowBackupModal] = useState(false);
 
   const { requests, loading: requestsLoading, error: requestsError, fetchRequests, updateRequestStatus } = useRequests()
 
@@ -38,7 +40,7 @@ function Admin() {
     if (window.confirm("Are you sure you want to delete this request?")) {
       try {
         const token = localStorage.getItem("token")
-        await axios.delete(`http://localhost:5000/requests/${id}`, {
+        await axios.delete(`http://localhost:5000/api/requests/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         await fetchRequests() // Refresh the requests list
@@ -50,7 +52,7 @@ function Admin() {
     }
   }
 
-    const findSimilarRbis = async (request) => {
+  const findSimilarRbis = async (request) => {
     try {
       setSelectedRequest(request);
       const token = localStorage.getItem("token");
@@ -270,7 +272,7 @@ function Admin() {
         const token = localStorage.getItem("token")
         await Promise.all(
           selectedRequests.map((id) =>
-            axios.delete(`http://localhost:5000/requests/${id}`, {
+            axios.delete(`http://localhost:5000/api/requests/${id}`, {
               headers: { Authorization: `Bearer ${token}` },
             }),
           ),
@@ -286,51 +288,51 @@ function Admin() {
   }
 
   const handlePrintRequest = async (request) => {
-  setIsPrinting(prev => ({ ...prev, [request.id]: true }));
-  try {
-    console.log('Sending request data:', request);
-    const response = await axios.post(
-      'http://localhost:5000/api/certificates/generate-pdf',
-      { requestData: request },
-      {
-        responseType: 'blob',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+    setIsPrinting(prev => ({ ...prev, [request.id]: true }));
+    try {
+      console.log('Sending request data:', request);
+      const response = await axios.post(
+        'http://localhost:5000/api/certificates/generate-pdf',
+        { requestData: request },
+        {
+          responseType: 'blob',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
         }
-      }
-    );
+      );
 
-    // Check if this is a JobseekerCert to handle ZIP differently
-    if (request.type_of_certificate === 'JobseekerCert') {
-      // Create a blob from the ZIP Stream
-      const file = new Blob([response.data], { type: 'application/zip' });
-      const fileURL = URL.createObjectURL(file);
-      const link = document.createElement('a');
-      link.href = fileURL;
-      link.download = `JobseekerDocuments_${request.last_name}.zip`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(fileURL);
-    } else {
-      // Handle regular PDFs as before
-      const file = new Blob([response.data], { type: 'application/pdf' });
-      const fileURL = URL.createObjectURL(file);
-      const link = document.createElement('a');
-      link.href = fileURL;
-      link.download = `${request.type_of_certificate}_${request.last_name}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(fileURL);
+      // Check if this is a JobseekerCert to handle ZIP differently
+      if (request.type_of_certificate === 'JobseekerCert') {
+        // Create a blob from the ZIP Stream
+        const file = new Blob([response.data], { type: 'application/zip' });
+        const fileURL = URL.createObjectURL(file);
+        const link = document.createElement('a');
+        link.href = fileURL;
+        link.download = `JobseekerDocuments_${request.last_name}.zip`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(fileURL);
+      } else {
+        // Handle regular PDFs as before
+        const file = new Blob([response.data], { type: 'application/pdf' });
+        const fileURL = URL.createObjectURL(file);
+        const link = document.createElement('a');
+        link.href = fileURL;
+        link.download = `${request.type_of_certificate}_${request.last_name}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(fileURL);
+      }
+    } catch (error) {
+      console.error('Error printing certificate:', error);
+      alert('Failed to generate certificate');
+    } finally {
+      setIsPrinting(prev => ({ ...prev, [request.id]: false }));
     }
-  } catch (error) {
-    console.error('Error printing certificate:', error);
-    alert('Failed to generate certificate');
-  } finally {
-    setIsPrinting(prev => ({ ...prev, [request.id]: false }));
-  }
-};
+  };
 
   if (requestsLoading) return <div className="loading">Loading...</div>
   if (requestsError) return <div className="error">Error: {requestsError}</div>
@@ -456,6 +458,34 @@ function Admin() {
                       <option value="lastMonth">Last Month</option>
                       <option value="lastYear">Last Year</option>
                     </select>
+                    <button
+                      className="retrieve-btn"
+                      onClick={() => setShowBackupModal(true)}
+                    >
+                      <i className="fas fa-undo"></i> Retrieve Data
+                    </button>
+                    {selectedRequests.length > 0 && (
+                      <>
+                        <button className="bulk-delete-btn" onClick={handleBulkDelete}>
+                          <i className="fas fa-trash-alt"></i> Delete Selected ({selectedRequests.length})
+                        </button>
+                        {selectedRequests.length === 1 && (
+                          <button
+                            className="compare-btn"
+                            onClick={() => {
+                              // Find the request object that corresponds to the selected ID
+                              const selectedReq = filteredRequests.find(req => req.id === selectedRequests[0]);
+                              if (selectedReq) {
+                                findSimilarRbis(selectedReq);
+                              }
+                            }}
+                            title="Compare with RBI records"
+                          >
+                            <i className="fas fa-user-check"></i> Compare with RBI
+                          </button>
+                        )}
+                      </>
+                    )}
                     <div className="zoom-controls">
                       <button className="zoom-btn" onClick={() => handleZoom("out")} title="Zoom Out">
                         <i className="fas fa-search-minus"></i>
@@ -469,28 +499,6 @@ function Admin() {
                       </button>
                     </div>
                   </div>
-                  {selectedRequests.length > 0 && (
-                    <div className="bulk-actions">
-                      <button className="bulk-delete-btn" onClick={handleBulkDelete}>
-                        <i className="fas fa-trash-alt"></i> Delete Selected ({selectedRequests.length})
-                      </button>
-                      {selectedRequests.length === 1 && (
-                        <button
-                          className="compare-btn"
-                          onClick={() => {
-                            // Find the request object that corresponds to the selected ID
-                            const selectedReq = filteredRequests.find(req => req.id === selectedRequests[0]);
-                            if (selectedReq) {
-                              findSimilarRbis(selectedReq);
-                            }
-                          }}
-                          title="Compare with RBI records"
-                        >
-                          <i className="fas fa-user-check"></i> Compare with RBI
-                        </button>
-                      )}
-                    </div>
-                  )}
                 </div>
                 <div
                   className="dashboard-content"
@@ -630,12 +638,17 @@ function Admin() {
         </div>
       </div>
       {showRbiComparison && (
-  <ComparisonModal 
-    request={selectedRequest}
-    rbis={similarRbis}
-    onClose={() => setShowRbiComparison(false)}
-  />
-)}
+        <ComparisonModal
+          request={selectedRequest}
+          rbis={similarRbis}
+          onClose={() => setShowRbiComparison(false)}
+        />
+      )}
+      <BackupRequestsModal
+        isOpen={showBackupModal}
+        onClose={() => setShowBackupModal(false)}
+        onRestore={fetchRequests}
+      />
     </>
   )
 }

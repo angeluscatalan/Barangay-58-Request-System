@@ -10,7 +10,8 @@ const eventRoutes = require("./routes/eventRoutes");
 const authRoutes = require("./routes/authRoutes");
 const requestRoutes = require("./routes/requestRoutes");
 const adminRoutes = require("./routes/adminRoutes");
-const certificateRoutes = require("./routes/certificateRoutes")
+const certificateRoutes = require("./routes/certificateRoutes");
+const apiRoutes = require("./routes/api");
 
 // Express app setup
 const app = express();
@@ -27,13 +28,16 @@ app.use(cors({
 }));
 
 // API Routes with /api prefix
+// Mount feature-specific routes first
 app.use("/api/rbi", rbiRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/auth", authRoutes);
-app.use('/api/households', rbiRoutes);
 app.use("/api/requests", requestRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/certificates", certificateRoutes);
+
+// Mount general API routes last
+app.use("/api", apiRoutes);
 
 // Server start
 const PORT = process.env.PORT || 5000;

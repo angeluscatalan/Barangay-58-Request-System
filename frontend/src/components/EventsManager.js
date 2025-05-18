@@ -6,6 +6,8 @@ import dayGridPlugin from "@fullcalendar/daygrid"
 import interactionPlugin from "@fullcalendar/interaction"
 import "../styles/EventsManager.css"
 import AddEvent from "./AddEvent"
+import BackupEventsModal from "./BackupEventsModal"
+import axios from "axios"
 
 function EventsManager() {
   const [showAddEvent, setShowAddEvent] = useState(false)
@@ -13,18 +15,26 @@ function EventsManager() {
   const [events, setEvents] = useState([])
   const [sortBy, setSortBy] = useState("All")
   const [viewMode, setViewMode] = useState("table")
+  const [showBackupModal, setShowBackupModal] = useState(false)
+  const [selectedEvents, setSelectedEvents] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const fetchEvents = async () => {
+    try {
+      setLoading(true)
+      const response = await axios.get("http://localhost:5000/api/events")
+      setEvents(response.data)
+    } catch (error) {
+      console.error("Error fetching events:", error)
+      setError("Failed to fetch events")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await fetch("http://localhost:5000/api/events")
-        if (!response.ok) throw new Error("Network response was not ok")
-        const data = await response.json()
-        setEvents(data)
-      } catch (error) {
-        console.error("Fetch error:", error)
-      }
-    }
     fetchEvents()
   }, [])
 
@@ -46,9 +56,7 @@ function EventsManager() {
     if (!window.confirm("Are you sure you want to delete this event?")) return
 
     try {
-      const response = await fetch(`http://localhost:5000/api/events/${id}`, {
-        method: "DELETE",
-      })
+      const response = await axios.delete(`http://localhost:5000/api/events/${id}`)
 
       if (!response.ok) {
         const errorText = await response.text()
@@ -109,6 +117,53 @@ function EventsManager() {
     },
   }))
 
+  const handleSelectEvent = (id) => {
+    setSelectedEvents(prev => {
+      if (prev.includes(id)) {
+        return prev.filter(eventId => eventId !== id)
+      } else {
+        return [...prev, id]
+      }
+    })
+  }
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedEvents(events.map(event => event.id))
+    } else {
+      setSelectedEvents([])
+    }
+  }
+
+  const handleDeleteSelected = async () => {
+    if (selectedEvents.length === 0) {
+      alert("Please select at least one event to delete")
+      return
+    }
+
+    if (!window.confirm(`Are you sure you want to delete ${selectedEvents.length} selected event(s)?`)) {
+      return
+    }
+
+    setIsDeleting(true)
+    try {
+      for (const id of selectedEvents) {
+        await axios.delete(`http://localhost:5000/api/events/${id}`)
+      }
+      fetchEvents()
+      setSelectedEvents([])
+      alert("Successfully deleted selected events")
+    } catch (error) {
+      console.error("Error deleting events:", error)
+      alert("Failed to delete some events")
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  if (loading) return <div className="loading">Loading events...</div>
+  if (error) return <div className="error">{error}</div>
+
   return (
     <div className="events-section">
       {/* Switch Buttons */}
@@ -135,6 +190,33 @@ function EventsManager() {
                   <option value="Published">Sort by: Published</option>
                 </select>
               </div>
+              {selectedEvents.length > 0 && (
+                <button
+                  className="bulk-delete-btn"
+                  onClick={handleDeleteSelected}
+                  disabled={isDeleting}
+                  style={{ marginRight: "10px" }}
+                >
+                  {isDeleting ? (
+                    <i className="fas fa-spinner fa-spin"></i>
+                  ) : (
+                    <>
+                      <i className="fas fa-trash-alt"></i> Delete Selected ({selectedEvents.length})
+                    </>
+                  )}
+                </button>
+              )}
+              <button
+                className="retrieve-data-btn"
+                onClick={() => setShowBackupModal(true)}
+                style={{
+                  backgroundColor: "#da1c6f",
+                  marginRight: "10px"
+                }}
+              >
+                <i className="fas fa-undo"></i>
+                Retrieve Data
+              </button>
               <button className="add-request-btn" onClick={() => setShowAddEvent(true)}>
                 + Add Event
               </button>
@@ -144,6 +226,13 @@ function EventsManager() {
             <table>
               <thead>
                 <tr>
+                  <th>
+                    <input
+                      type="checkbox"
+                      checked={selectedEvents.length === events.length && events.length > 0}
+                      onChange={handleSelectAll}
+                    />
+                  </th>
                   <th style={{ width: "5%" }}>NO.</th>
                   <th style={{ width: "15%" }}>IMAGE</th>
                   <th style={{ width: "13%" }}>CREATED AT</th>
@@ -157,6 +246,13 @@ function EventsManager() {
               <tbody>
                 {events.map((event, index) => (
                   <tr key={event.id}>
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={selectedEvents.includes(event.id)}
+                        onChange={() => handleSelectEvent(event.id)}
+                      />
+                    </td>
                     <td>{index + 1}</td>
                     <td>
                       {event.image_url ? (
@@ -198,16 +294,12 @@ function EventsManager() {
                     </td>
                     <td>{event.venue}</td>
                     <td>
-                      <div className="action-buttons">
-                        <button className="action-btn edit" onClick={() => handleEdit(event)}>
-                          <i className="fas fa-edit"></i>
-                          <span>Edit</span>
-                        </button>
-                        <button className="action-btn delete" onClick={() => handleDelete(event.id)}>
-                          <i className="fas fa-trash"></i>
-                          <span>Delete</span>
-                        </button>
-                      </div>
+                      <button className="edit-btn" onClick={() => handleEdit(event)}>
+                        <i className="fas fa-edit"></i>
+                      </button>
+                      <button className="delete-btn" onClick={() => handleDelete(event.id)}>
+                        <i className="fas fa-trash"></i>
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -221,63 +313,35 @@ function EventsManager() {
             plugins={[dayGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"
             events={calendarEvents}
-            eventColor="#da1c6f"
             headerToolbar={{
               left: "prev,next today",
               center: "title",
-              right: "",
+              right: "dayGridMonth,dayGridWeek,dayGridDay",
             }}
-            buttonText={{
-              today: "Today",
-            }}
-            height="auto"
-            eventOverlap={false}
-            dayMaxEventRows={true}
-            eventTimeFormat={{
-              hour: "numeric",
-              minute: "2-digit",
-              hour12: true,
-            }}
-            eventContent={(eventInfo) => {
-              return (
-                <div className="event-content">
-                  <strong>{eventInfo.event.title}</strong> {/* Event title */}
-                  <div>
-                    Time: {eventInfo.event.extendedProps.time_start} - {eventInfo.event.extendedProps.time_end}
-                  </div>{" "}
-                  {/* Time range */}
-                  <div>Venue: {eventInfo.event.extendedProps.venue}</div> {/* Venue */}
-                </div>
-              )
+            eventClick={(info) => {
+              const event = events.find((e) => e.id === parseInt(info.event.id))
+              if (event) handleEdit(event)
             }}
           />
         </div>
       )}
+
       {showAddEvent && (
-        <div className="modal-overlay">
-          <AddEvent
-            onClose={() => {
-              setShowAddEvent(false)
-              setEditingEvent(null)
-            }}
-            editData={editingEvent}
-            onEditEvent={handleEditSubmit}
-            onAddEvent={(eventData) => {
-              const newEvent = {
-                ...eventData,
-                id: Date.now(),
-                isPublished: false,
-                event_name: eventData.name || eventData.event_name,
-                event_date: eventData.date || eventData.event_date,
-                time_start: eventData.timeStart || eventData.time_start,
-                time_end: eventData.timeEnd || eventData.time_end,
-              }
-              setEvents([...events, newEvent])
-              setShowAddEvent(false)
-            }}
-          />
-        </div>
+        <AddEvent
+          onClose={() => {
+            setShowAddEvent(false)
+            setEditingEvent(null)
+          }}
+          onSubmit={handleEditSubmit}
+          editingEvent={editingEvent}
+        />
       )}
+
+      <BackupEventsModal
+        isOpen={showBackupModal}
+        onClose={() => setShowBackupModal(false)}
+        onRestore={fetchEvents}
+      />
     </div>
   )
 }

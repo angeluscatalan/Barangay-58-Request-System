@@ -1,0 +1,199 @@
+.backup-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.backup-modal {
+    background-color: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 1000px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.backup-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1rem;
+    border-bottom: 1px solid #eee;
+    background-color: white;
+    border-radius: 8px 8px 0 0;
+    flex-shrink: 0;
+}
+
+.backup-modal-title {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.backup-modal-header h2 {
+    margin: 0;
+    color: #333;
+}
+
+.backup-counters {
+    display: flex;
+    gap: 15px;
+    font-size: 14px;
+    color: #666;
+}
+
+.counter {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.counter.selected {
+    color: #da1c6f;
+    font-weight: 500;
+}
+
+.counter.total {
+    color: #666;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    margin-top: -5px;
+}
+
+.close-btn:hover {
+    color: #333;
+}
+
+.backup-modal-content {
+    padding: 1rem;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+}
+
+.search-container {
+    margin-bottom: 1rem;
+    width: 100%;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px 16px;
+    border: 2px solid #eee;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    color: #333;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #da1c6f;
+    box-shadow: 0 0 0 3px rgba(218, 28, 111, 0.1);
+}
+
+.search-input::placeholder {
+    color: #999;
+}
+
+.backup-table-container {
+    overflow-x: auto;
+    margin-bottom: 1rem;
+}
+
+.backup-table-container table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0;
+}
+
+.backup-table-container th,
+.backup-table-container td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.backup-table-container th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.backup-table-container tr:hover {
+    background-color: #f8f9fa;
+}
+
+.backup-modal-footer {
+    padding: 1rem;
+    background-color: white;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    border-radius: 0 0 8px 8px;
+    flex-shrink: 0;
+}
+
+.cancel-btn {
+    background-color: #f8f9fa;
+    color: #666;
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.cancel-btn:hover {
+    background-color: #e9ecef;
+    border-color: #ccc;
+}
+
+.restore-btn {
+    background-color: #da1c6f;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.restore-btn:hover {
+    background-color: #c01961;
+}
+
+.restore-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.loading {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+}
+
+.error {
+    text-align: center;
+    padding: 2rem;
+    color: #dc3545;
+}
