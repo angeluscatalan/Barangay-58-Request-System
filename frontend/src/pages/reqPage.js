@@ -171,11 +171,16 @@ function reqPage() {
         imageUrl = imageResponse.data.imageUrl;
       }
 
-      // Prepare request data
+      const addressParts = [
+        formData.unit_no,
+        formData.street,
+        formData.subdivision
+      ].filter(part => part && part.trim() !== ""); // Remove empty parts
+
       const requestData = {
         ...formData,
         photo_url: imageUrl,
-        address: `${formData.unit_no}, ${formData.street}, ${formData.subdivision}`,
+        address: addressParts.join(", "), // Join with commas
         number_of_copies: Number(formData.number_of_copies)
       };
 

@@ -3,6 +3,10 @@ import "../styles/Request_Manager.css";
 import { useRequests } from "./RBI_Request_Context";
 import axios from "axios";
 import BackupVerifiedRBIModal from "./BackupVerifiedRBIModal";
+import EditRBIModal from "./EditRBIModal";
+import AddHouseholdModal from "./AddHouseholdModal";
+import AddHouseholdMemberModal from "./AddHouseholdMemberModal";
+
 
 function Verified_RBI_List() {
   const { rbiRequests, loading, error, fetchRbiRequests } = useRequests();
@@ -13,6 +17,14 @@ function Verified_RBI_List() {
   });
   const [isDeleting, setIsDeleting] = useState(false);
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [currentEditItem, setCurrentEditItem] = useState(null);
+  const [editType, setEditType] = useState('household');
+  const [isAddHouseholdModalOpen, setIsAddHouseholdModalOpen] = useState(false);
+  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
+  const [selectedHouseholdId, setSelectedHouseholdId] = useState(null);
+
+
 
   useEffect(() => {
     fetchRbiRequests("approved");
@@ -28,30 +40,31 @@ function Verified_RBI_List() {
 
   // Handle selection of households or members
   const handleSelectItem = (type, id, householdId = null) => {
-    setSelectedItems(prev => {
-      const key = type === 'household' ? 'households' : 'members';
-      const newSelection = [...prev[key]];
+  setSelectedItems(prev => {
+    const key = type === 'household' ? 'households' : 'members';
+    const newSelection = [...prev[key]];
 
-      const index = newSelection.findIndex(item =>
-        type === 'household' ? item === id : item.id === id
-      );
+    const index = newSelection.findIndex(item =>
+      type === 'household' ? item === id : item.id === id
+    );
 
-      if (index > -1) {
-        newSelection.splice(index, 1);
+    if (index > -1) {
+      newSelection.splice(index, 1);
+    } else {
+      if (type === 'household') {
+        newSelection.push(id);
+        setSelectedHouseholdId(id); // Add this line
       } else {
-        if (type === 'household') {
-          newSelection.push(id);
-        } else {
-          newSelection.push({ id, householdId });
-        }
+        newSelection.push({ id, householdId });
       }
+    }
 
-      return {
-        ...prev,
-        [key]: newSelection
-      };
-    });
-  };
+    return {
+      ...prev,
+      [key]: newSelection
+    };
+  });
+};
 
   // Master select for households
   const handleMasterSelectHouseholds = (e) => {
@@ -122,6 +135,108 @@ function Verified_RBI_List() {
     await fetchRbiRequests("approved");
   };
 
+  const handleEditSelected = () => {
+    const totalSelected = selectedItems.households.length + selectedItems.members.length;
+    if (totalSelected !== 1) {
+      alert("Please select exactly one item to edit");
+      return;
+    }
+
+    if (selectedItems.households.length === 1) {
+      const householdId = selectedItems.households[0];
+      const household = rbiRequests.records.find(h => h.id === householdId);
+      if (household) {
+        setCurrentEditItem(household);
+        setEditType('household');
+        setEditModalOpen(true);
+      }
+    } else if (selectedItems.members.length === 1) {
+      const member = selectedItems.members[0];
+      const household = rbiRequests.records.find(h => h.id === member.householdId);
+      if (household) {
+        const memberData = household.members.find(m => m.id === member.id);
+        if (memberData) {
+          setCurrentEditItem(memberData);
+          setEditType('member');
+          setEditModalOpen(true);
+        }
+      }
+    }
+  };
+
+  // Add this function to handle saving edits
+  const handleSaveEdit = async (updatedData) => {
+    try {
+      const token = localStorage.getItem("token");
+      let response;
+
+      if (editType === 'household') {
+        response = await axios.put(
+          `http://localhost:5000/api/rbi/${currentEditItem.id}`,
+          updatedData,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } else {
+        const member = selectedItems.members[0];
+        response = await axios.put(
+          `http://localhost:5000/api/rbi/${member.householdId}/members/${member.id}`,
+          updatedData,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
+
+      if (response.data.success) {
+        alert("Changes saved successfully!");
+        setEditModalOpen(false);
+        fetchRbiRequests("approved");
+      }
+    } catch (error) {
+      console.error("Error saving changes:", error);
+      alert("Failed to save changes");
+    }
+  };
+
+   const handleAddHousehold = async (householdData) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        'http://localhost:5000/api/rbi',
+        { household: householdData, members: [] }, // Empty members array for now
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.data.success) {
+        alert("Household added successfully!");
+        setIsAddHouseholdModalOpen(false);
+        fetchRbiRequests("approved");
+      }
+    } catch (error) {
+      console.error("Error adding household:", error);
+      alert("Failed to add household");
+    }
+  };
+
+  const handleAddHouseholdMember = async (memberData) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        `http://localhost:5000/api/rbi/${selectedHouseholdId}/members`,
+        memberData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.data.success) {
+        alert("Household member added successfully!");
+        setIsAddMemberModalOpen(false);
+        fetchRbiRequests("approved");
+      }
+    } catch (error) {
+      console.error("Error adding household member:", error);
+      alert("Failed to add household member");
+    }
+  };
+
+
   if (loading) return <div className="loading">Loading approved registrations...</div>;
   if (error) return <div className="error">Error: {error}</div>;
 
@@ -131,6 +246,12 @@ function Verified_RBI_List() {
 
       {/* Action buttons */}
       <div className="action-buttons">
+        <button
+          className="add-btn"
+          onClick={() => setIsAddHouseholdModalOpen(true)}
+        >
+          <i className="fas fa-plus"></i> Add Household
+        </button>
         <button
           className="retrieve-btn"
           onClick={() => setIsBackupModalOpen(true)}
@@ -142,6 +263,23 @@ function Verified_RBI_List() {
       {/* Bulk actions bar */}
       {(selectedItems.households.length > 0 || selectedItems.members.length > 0) && (
         <div className="bulk-actions">
+          <button
+            className="bulk-edit-btn"
+            onClick={handleEditSelected}
+          >
+            <i className="fas fa-edit"></i> Edit Selected
+          </button>
+          {selectedItems.households.length === 1 && selectedItems.members.length === 0 && (
+            <button
+              className="bulk-add-member-btn"
+              onClick={() => {
+                setSelectedHouseholdId(selectedItems.households[0]);
+                setIsAddMemberModalOpen(true);
+              }}
+            >
+              <i className="fas fa-user-plus"></i> Add Member
+            </button>
+          )}
           <button
             className="bulk-delete-btn"
             onClick={handleDeleteSelected}
@@ -262,6 +400,31 @@ function Verified_RBI_List() {
         isOpen={isBackupModalOpen}
         onClose={() => setIsBackupModalOpen(false)}
         onRestore={handleRestore}
+      />
+
+      <EditRBIModal
+        isOpen={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        item={currentEditItem}
+        type={editType}
+        onSave={handleSaveEdit}
+      />
+
+      <BackupVerifiedRBIModal
+        isOpen={isBackupModalOpen}
+        onClose={() => setIsBackupModalOpen(false)}
+        onRestore={handleRestore}
+      />
+      <AddHouseholdModal
+        isOpen={isAddHouseholdModalOpen}
+        onClose={() => setIsAddHouseholdModalOpen(false)}
+        onSave={handleAddHousehold}
+      />
+      <AddHouseholdMemberModal
+        isOpen={isAddMemberModalOpen}
+        onClose={() => setIsAddMemberModalOpen(false)}
+        onSave={handleAddHouseholdMember}
+        householdId={selectedHouseholdId}
       />
     </div>
   );

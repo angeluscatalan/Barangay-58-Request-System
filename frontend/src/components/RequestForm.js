@@ -162,7 +162,7 @@ const RequestForm = ({
                           textAlign: "right",
                         }}
                       >
-                        <span style={{ fontWeight: 600, marginRight: 4 }}>AGE:</span>{" "}
+                        <span style={{ fontWeight: 400, marginRight: 2 }}>AGE:</span>{" "}
                         {formData.birthday ? `${calculateAge(formData.birthday)} yrs old` : ""}
                       </span>
                     </div>

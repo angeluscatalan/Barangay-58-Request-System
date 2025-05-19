@@ -561,70 +561,74 @@ exports.deleteHouseholdMember = async (req, res) => {
 
 exports.findSimilarRbis = async (req, res) => {
   try {
-    const { lastName, firstName, middleName } = req.body;
+    const { lastName, firstName, middleName, birthday, address } = req.body;
 
-    // Search for similar names (adjust the query as needed)
-    const [households] = await pool.execute(
+    // Search for matching household heads
+    const [householdHeads] = await pool.execute(
       `SELECT h.* FROM households h
        WHERE h.head_last_name LIKE ? 
-       OR h.head_first_name LIKE ?
-       OR EXISTS (
-         SELECT 1 FROM household_members m 
-         WHERE m.household_id = h.id 
-         AND (m.last_name LIKE ? OR m.first_name LIKE ?)
-       )`,
+       AND h.head_first_name LIKE ?
+       ${middleName ? 'AND h.head_middle_name LIKE ?' : ''}
+       ${birthday ? 'AND h.birth_date = ?' : ''}
+       ${address ? 'AND CONCAT(h.house_unit_no, " ", h.street_name, ", ", h.subdivision) LIKE ?' : ''}`,
       [
         `%${lastName}%`,
         `%${firstName}%`,
-        `%${lastName}%`,
-        `%${firstName}%`
+        ...(middleName ? [`%${middleName}%`] : []),
+        ...(birthday ? [birthday] : []),
+        ...(address ? [`%${address}%`] : [])
       ]
     );
 
-    // Get members for matching households
-    const records = await Promise.all(
-      households.map(async (household) => {
-        const [members] = await pool.execute(
-          `SELECT * FROM household_members WHERE household_id = ?`,
-          [household.id]
-        );
-
-        return {
-          ...household,
-          members: members.filter(m =>
-            m.last_name.includes(lastName) ||
-            m.first_name.includes(firstName) ||
-            (middleName && m.middle_name && m.middle_name.includes(middleName))
-          )
-        };
-      })
+    // Search for matching household members
+    const [householdMembers] = await pool.execute(
+      `SELECT m.*, h.house_unit_no, h.street_name, h.subdivision, h.status 
+       FROM household_members m
+       JOIN households h ON m.household_id = h.id
+       WHERE m.last_name LIKE ? 
+       AND m.first_name LIKE ?
+       ${middleName ? 'AND m.middle_name LIKE ?' : ''}
+       ${birthday ? 'AND m.birth_date = ?' : ''}
+       ${address ? 'AND CONCAT(h.house_unit_no, " ", h.street_name, ", ", h.subdivision) LIKE ?' : ''}`,
+      [
+        `%${lastName}%`,
+        `%${firstName}%`,
+        ...(middleName ? [`%${middleName}%`] : []),
+        ...(birthday ? [birthday] : []),
+        ...(address ? [`%${address}%`] : [])
+      ]
     );
 
-    // Flatten results (both household heads and members)
-    const results = records.flatMap(record => [
-      {
-        last_name: record.head_last_name,
-        first_name: record.head_first_name,
-        middle_name: record.head_middle_name,
-        birth_date: record.birth_date,
-        house_unit_no: record.house_unit_no,
-        street_name: record.street_name,
-        subdivision: record.subdivision,
-        status: record.status,
-        type: 'Household Head'
-      },
-      ...record.members.map(m => ({
+    // Format results with proper type indicators
+    const results = [
+      // Household heads that match
+      ...householdHeads.map(h => ({
+        id: h.id,
+        last_name: h.head_last_name,
+        first_name: h.head_first_name,
+        middle_name: h.head_middle_name,
+        birth_date: h.birth_date,
+        house_unit_no: h.house_unit_no,
+        street_name: h.street_name,
+        subdivision: h.subdivision,
+        status: h.status,
+        type: 'Household Head'  // Add type identifier
+      })),
+      // Household members that match
+      ...householdMembers.map(m => ({
+        id: m.id,
         last_name: m.last_name,
         first_name: m.first_name,
         middle_name: m.middle_name,
         birth_date: m.birth_date,
-        house_unit_no: record.house_unit_no,
-        street_name: record.street_name,
-        subdivision: record.subdivision,
-        status: record.status,
-        type: 'Household Member'
+        house_unit_no: m.house_unit_no,
+        street_name: m.street_name,
+        subdivision: m.subdivision,
+        status: m.status,
+        household_id: m.household_id,
+        type: 'Household Member'  // Add type identifier
       }))
-    ]);
+    ];
 
     res.status(200).json(results);
   } catch (error) {

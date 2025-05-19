@@ -58,7 +58,6 @@ function Login() {
                         <h1>Login</h1>
                         <h2>Welcome Back to Barangay 58 Portal</h2>
                     </div>
-                    {/* Display error message if exists */}
                     {errorMessage && (
                         <div className="login-error-message">
                             {errorMessage}
@@ -91,15 +90,6 @@ function Login() {
                             <div className="forgot-password">
                                 <Link to="/forgot-password">Forgot Password?</Link>
                             </div>
-                        </div>
-                        <div className="remember-me">
-                            <input
-                                type="checkbox"
-                                id="rememberMe"
-                                checked={rememberMe}
-                                onChange={(e) => setRememberMe(e.target.checked)}
-                            />
-                            <label htmlFor="rememberMe">Remember me</label>
                         </div>
                         <button type="submit" className="login-submit-btn">
                             Login

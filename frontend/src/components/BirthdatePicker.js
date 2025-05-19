@@ -13,9 +13,15 @@ const BirthdatePicker = forwardRef(({ selectedDate, onChange }, ref) => {
                 allowInput: true,
                 defaultDate: date,
                 onChange: (selectedDates) => {
-                    const newDate = selectedDates[0]?.toISOString().split("T")[0] || "";
-                    setDate(newDate);
-                    if (onChange) onChange(newDate);
+                    if (selectedDates[0]) {
+                        // Format the date as YYYY-MM-DD without timezone conversion
+                        const year = selectedDates[0].getFullYear();
+                        const month = String(selectedDates[0].getMonth() + 1).padStart(2, '0');
+                        const day = String(selectedDates[0].getDate()).padStart(2, '0');
+                        const newDate = `${year}-${month}-${day}`;
+                        setDate(newDate);
+                        if (onChange) onChange(newDate);
+                    }
                 },
             });
         }
