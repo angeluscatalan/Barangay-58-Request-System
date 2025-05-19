@@ -230,6 +230,40 @@
     text-align: center;
     padding: 20px 0;
   }
+
+  .dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.export-button {
+  padding: 8px 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.export-button:hover {
+  background-color: #45a049;
+}
+
+.export-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.error-message {
+  color: #d32f2f;
+  background-color: #fde7e7;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
   
   @media (max-width: 1200px) {
     .stats-cards {

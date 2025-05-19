@@ -288,3 +288,21 @@ exports.logoutAdmin = (req, res) => {
         res.status(500).json({ success: false, message: "Failed to fetch user data" })
       }
     }
+
+exports.verifyAdmin = (req, res, next) => {
+  this.authenticateToken(req, res, () => {
+    console.log("User access level:", req.user.access_level) // Log the actual value
+    
+    // Updated check to handle both numeric and string admin values
+    if (req.user.access_level !== 'admin' && req.user.access_level !== 2) {
+      return res.status(403).json({ 
+        message: "Admin access required",
+        details: {
+          receivedAccessLevel: req.user.access_level,
+          expected: "Either 'admin' or 2"
+        }
+      });
+    }
+    next();
+  });
+};

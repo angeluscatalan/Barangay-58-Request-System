@@ -21,6 +21,8 @@ function AdminDashboard() {
   const [recentRBI, setRecentRBI] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [isExporting, setIsExporting] = useState(false)
+  const [exportError, setExportError] = useState(null)
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -112,6 +114,42 @@ function AdminDashboard() {
     fetchDashboardData()
   }, [])
 
+  const handleExportDatabase = async () => {
+    try {
+      setIsExporting(true)
+      setExportError(null)
+      
+      const token = localStorage.getItem("token")
+      if (!token) {
+        setExportError("Authentication token not found. Please login again.")
+        return
+      }
+      console.log("Token from localStorage:", token)  
+
+      const response = await axios.get("http://localhost:5000/api/export/export-database", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        responseType: 'blob'
+      })
+
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `database-backup-${new Date().toISOString().split('T')[0]}.sql`)
+      document.body.appendChild(link)
+      link.click()
+      link.parentNode.removeChild(link)
+
+    } catch (err) {
+      console.error("Error exporting database:", err)
+      setExportError(err.response?.data?.message || "Failed to export database")
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
   const formatDate = (dateString) => {
     if (!dateString) return "N/A"
     const date = new Date(dateString)
@@ -149,6 +187,14 @@ function AdminDashboard() {
   return (
     <div className="admin-dashboard">
       <h1>Dashboard Overview</h1>
+      <button 
+          onClick={handleExportDatabase}
+          disabled={isExporting}
+          className="export-button"
+        >
+          {isExporting ? 'Exporting...' : 'Export Database'}
+        </button>
+        {exportError && <div className="error-message">{exportError}</div>}
 
       <div className="dashboard-content">
         <div className="stats-section">

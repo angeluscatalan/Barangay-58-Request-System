@@ -3,7 +3,6 @@ const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
-
 // Route imports
 const rbiRoutes = require("./routes/rbiRoutes")
 const eventRoutes = require("./routes/eventRoutes");
@@ -12,6 +11,7 @@ const requestRoutes = require("./routes/requestRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const certificateRoutes = require("./routes/certificateRoutes");
 const apiRoutes = require("./routes/api");
+const exportRoutes = require("./routes/exportRoutes"); // Add this line
 
 // Express app setup
 const app = express();
@@ -24,6 +24,7 @@ app.use(cors({
   origin: "http://localhost:3000",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
   optionsSuccessStatus: 204,
 }));
 
@@ -35,6 +36,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/requests", requestRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/certificates", certificateRoutes);
+app.use("/api/export", exportRoutes); // Add this line
 
 // Mount general API routes last
 app.use("/api", apiRoutes);
