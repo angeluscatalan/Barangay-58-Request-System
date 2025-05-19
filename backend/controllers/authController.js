@@ -306,3 +306,27 @@ exports.verifyAdmin = (req, res, next) => {
     next();
   });
 };
+
+exports.verifyPassword = async (req, res) => {
+  const { password } = req.body;
+  const adminId = req.user.id;
+
+  try {
+    const [rows] = await pool.execute('SELECT password FROM admin WHERE id = ?', [adminId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Admin not found' });
+    }
+
+    const isMatch = await bcrypt.compare(password, rows[0].password);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Invalid password' });
+    }
+
+    res.status(200).json({ message: 'Password verified' });
+
+  } catch (err) {
+    console.error('Error verifying password:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};

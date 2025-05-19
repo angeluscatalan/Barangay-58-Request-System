@@ -11,7 +11,8 @@ const requestRoutes = require("./routes/requestRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const certificateRoutes = require("./routes/certificateRoutes");
 const apiRoutes = require("./routes/api");
-const exportRoutes = require("./routes/exportRoutes"); // Add this line
+const exportRoutes = require("./routes/exportRoutes"); 
+const importRoutes = require('./routes/importRoutes');
 
 // Express app setup
 const app = express();
@@ -37,6 +38,7 @@ app.use("/api/requests", requestRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/certificates", certificateRoutes);
 app.use("/api/export", exportRoutes); // Add this line
+app.use('/api/import', importRoutes);
 
 // Mount general API routes last
 app.use("/api", apiRoutes);

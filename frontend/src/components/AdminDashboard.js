@@ -23,6 +23,15 @@ function AdminDashboard() {
   const [error, setError] = useState(null)
   const [isExporting, setIsExporting] = useState(false)
   const [exportError, setExportError] = useState(null)
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [adminPassword, setAdminPassword] = useState("")
+  const [passwordError, setPasswordError] = useState("")
+  const [isImporting, setIsImporting] = useState(false);
+  const [importError, setImportError] = useState(null);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importPassword, setImportPassword] = useState("");
+  const [importPasswordError, setImportPasswordError] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -115,40 +124,118 @@ function AdminDashboard() {
   }, [])
 
   const handleExportDatabase = async () => {
-    try {
-      setIsExporting(true)
-      setExportError(null)
-      
-      const token = localStorage.getItem("token")
-      if (!token) {
-        setExportError("Authentication token not found. Please login again.")
-        return
+  try {
+    setIsExporting(true);
+    setExportError(null);
+    const token = localStorage.getItem("token");
+
+    // Show password modal instead of direct export
+    setShowPasswordModal(true);
+  } catch (err) {
+    console.error("Export error:", err);
+    setExportError("Export failed. Please check server connections and permissions.");
+  } finally {
+    setIsExporting(false);
+  }
+};
+
+const handleConfirmExport = async () => {
+  try {
+    setIsExporting(true);
+    setPasswordError("");
+
+    const token = localStorage.getItem("token");
+
+    const response = await axios.post(
+      "http://localhost:5000/api/export/export-database",
+      { password: adminPassword },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: "blob",
       }
-      console.log("Token from localStorage:", token)  
+    );
 
-      const response = await axios.get("http://localhost:5000/api/export/export-database", {
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `backup-${new Date().toISOString().slice(0,10)}.zip`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    setShowPasswordModal(false);
+    setAdminPassword("");
+  } catch (err) {
+    console.error("Export failed:", err);
+    if (err.response?.status === 401) {
+      setPasswordError("Incorrect password. Please try again.");
+    } else {
+      setExportError("Export failed. Please check your connection or try again later.");
+      setShowPasswordModal(false);
+    }
+  } finally {
+    setIsExporting(false);
+  }
+};
+
+const handleImportDatabase = async () => {
+  if (!selectedFile) {
+    setImportError("Please select a SQL file to import");
+    return;
+  }
+
+  try {
+    setIsImporting(true);
+    setImportError(null);
+    setImportPasswordError("");
+
+    const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append("sqlFile", selectedFile);
+    formData.append("password", importPassword);
+
+    const response = await axios.post(
+      "http://localhost:5000/api/import/import-database",
+      formData,
+      {
         headers: {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
         },
-        responseType: 'blob'
-      })
+      }
+    );
 
-      // Create download link
-      const url = window.URL.createObjectURL(new Blob([response.data]))
-      const link = document.createElement('a')
-      link.href = url
-      link.setAttribute('download', `database-backup-${new Date().toISOString().split('T')[0]}.sql`)
-      document.body.appendChild(link)
-      link.click()
-      link.parentNode.removeChild(link)
+    setShowImportModal(false);
+    setSelectedFile(null);
+    setImportPassword("");
+    alert("Database imported successfully! The page will now refresh.");
+    window.location.reload();
+  } catch (err) {
+    console.error("Import failed:", err);
+    if (err.response?.status === 401) {
+      setImportPasswordError("Incorrect password. Please try again.");
+    } else {
+      setImportError(err.response?.data?.error || "Import failed. Please try again.");
+    }
+  } finally {
+    setIsImporting(false);
+  }
+};
 
-    } catch (err) {
-      console.error("Error exporting database:", err)
-      setExportError(err.response?.data?.message || "Failed to export database")
-    } finally {
-      setIsExporting(false)
+// Add this file change handler
+const handleFileChange = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    if (file.name.endsWith('.sql') || file.type === 'application/sql') {
+      setSelectedFile(file);
+      setImportError(null);
+    } else {
+      setImportError("Please select a valid .sql file");
+      setSelectedFile(null);
     }
   }
+};
+
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A"
@@ -188,14 +275,21 @@ function AdminDashboard() {
     <div className="admin-dashboard">
       <h1>Dashboard Overview</h1>
       <button 
-          onClick={handleExportDatabase}
-          disabled={isExporting}
-          className="export-button"
-        >
-          {isExporting ? 'Exporting...' : 'Export Database'}
-        </button>
+        onClick={() => setShowPasswordModal(true)}
+        disabled={isExporting}
+        className="export-button"
+      >
+        {isExporting ? 'Exporting...' : 'Export Database'}
+      </button>
         {exportError && <div className="error-message">{exportError}</div>}
-
+      <button 
+        onClick={() => setShowImportModal(true)}
+        disabled={isImporting}
+        className="import-button"
+      >
+        {isImporting ? 'Importing...' : 'Import Database'}
+      </button>
+      {importError && <div className="error-message">{importError}</div>}
       <div className="dashboard-content">
         <div className="stats-section">
           <h2>Certificate Requests</h2>
@@ -308,7 +402,73 @@ function AdminDashboard() {
             )}
           </div>
         </div>
-      </div>
+          {showPasswordModal && (
+            <div className="modal-overlay">
+              <div className="modal">
+                <h2>Confirm Admin Password</h2>
+                <input
+                  type="password"
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
+                  placeholder="Enter your password"
+                />
+                {passwordError && <p className="error-message">{passwordError}</p>}
+                <div className="modal-buttons">
+                  <button onClick={() => setShowPasswordModal(false)}>Cancel</button>
+                  <button onClick={handleConfirmExport} disabled={isExporting}>
+                    {isExporting ? "Exporting..." : "Confirm"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          {showImportModal && (
+            <div className="modal-overlay">
+              <div className="modal">
+                <h2>Import Database</h2>
+                
+                <div className="file-upload">
+                  <label htmlFor="sql-upload" className="file-upload-label">
+                    {selectedFile ? selectedFile.name : "Choose SQL File"}
+                  </label>
+                  <input
+                    id="sql-upload"
+                    type="file"
+                    accept=".sql,.zip"
+                    onChange={handleFileChange}
+                    style={{ display: 'none' }}
+                  />
+                </div>
+                
+                <input
+                  type="password"
+                  value={importPassword}
+                  onChange={(e) => setImportPassword(e.target.value)}
+                  placeholder="Enter your admin password"
+                />
+                
+                {importPasswordError && <p className="error-message">{importPasswordError}</p>}
+                
+                <div className="modal-buttons">
+                  <button onClick={() => {
+                    setShowImportModal(false);
+                    setSelectedFile(null);
+                    setImportPassword("");
+                    setImportError(null);
+                  }}>
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={handleImportDatabase} 
+                    disabled={isImporting || !selectedFile || !importPassword}
+                  >
+                    {isImporting ? "Importing..." : "Confirm Import"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+      </div>  
     </div>
   )
 }
