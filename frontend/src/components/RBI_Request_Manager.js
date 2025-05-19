@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import "../styles/Request_Manager.css";
 import { useRequests } from "./RBI_Request_Context";
 import RBI_Household_Detail from "./RBI_Household_Detail";
-import BackupRBIModal from "./BackupRBIModal";
 
 function RBI_Request_Manager() {
   const {
@@ -19,7 +18,6 @@ function RBI_Request_Manager() {
   const [householdMembers, setHouseholdMembers] = useState({});
   const [activeFilter, setActiveFilter] = useState("pending");
   const [searchTerm, setSearchTerm] = useState("");
-  const [showBackupModal, setShowBackupModal] = useState(false);
 
   useEffect(() => {
     fetchRbiRequests(activeFilter); // Initial fetch with default filter
@@ -125,17 +123,6 @@ function RBI_Request_Manager() {
             </button>
           </div>
           <div className="action-buttons">
-            <button
-              className="retrieve-data-btn"
-              onClick={() => setShowBackupModal(true)}
-              style={{
-                backgroundColor: "#da1c6f",
-                marginRight: "10px"
-              }}
-            >
-              <i className="fas fa-undo"></i>
-              Retrieve Data
-            </button>
             <form className="search-form" onSubmit={handleSearch}>
               <input
                 type="text"
@@ -303,16 +290,6 @@ function RBI_Request_Manager() {
           onClose={closeModal}
         />
       )}
-
-      {/* Backup RBI Modal */}
-      <BackupRBIModal
-        isOpen={showBackupModal}
-        onClose={() => setShowBackupModal(false)}
-        onRestore={() => {
-          fetchRbiRequests(activeFilter);
-          setShowBackupModal(false);
-        }}
-      />
     </div>
   );
 }

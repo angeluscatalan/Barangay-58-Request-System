@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { check } = require('express-validator');
 const rbiController = require('../controllers/rbiController');
+const { authenticateToken } = require('../Middleware/authMiddleware');
 
 // ✅ Validate household complete registration (one request with head + members)
 const validateCompleteHousehold = [
@@ -85,12 +86,14 @@ const validateStatusUpdate = [
     .withMessage('Invalid status value')
 ];
 
-router.get('/test', (req, res) => {
-  res.send('RBI Routes are working!');
-});
-
-// Main RBI routes
+// Public routes (no authentication required)
 router.post('/', validateCompleteHousehold, rbiController.createCompleteHousehold);
+router.post('/find-similar', rbiController.findSimilarRbis);
+
+// Apply authentication middleware for protected routes
+router.use(authenticateToken);
+
+// Admin RBI routes
 router.get('/', rbiController.getAllHouseholds);
 router.get('/:id', rbiController.getHouseholdWithMembersById);
 router.put('/:id', rbiController.updateHousehold);
@@ -101,13 +104,10 @@ router.put('/:id/members/:memberId', validateMember, rbiController.updateHouseho
 router.delete('/members/:memberId', rbiController.deleteHouseholdMember);
 
 // Backup routes
-router.get('/backup/list', rbiController.getBackupRBI);
-router.post('/backup/restore', rbiController.restoreRBI);
+router.get('/backup/list', rbiController.getBackupRBIs);
+router.post('/backup/restore', rbiController.restoreRBIs);
 
 // Additional routes
-router.get("/households", (req, res) => {
-  rbiController.getAllHouseholds(req, res);
-});
-router.post('/find-similar', rbiController.findSimilarRbis);
+router.get("/households", rbiController.getAllHouseholds);
 
 module.exports = router;

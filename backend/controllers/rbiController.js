@@ -633,209 +633,177 @@ exports.findSimilarRbis = async (req, res) => {
   }
 };
 
-// Get backup RBI requests
-exports.getBackupRBI = async (req, res) => {
+// Get backup RBIs
+const getBackupRBIs = async (req, res) => {
   try {
-    // Get archived households with their members count
-    const [households] = await pool.query(`
-            SELECT 
-                h.id,
-                h.head_last_name,
-                h.head_first_name,
-                h.head_middle_name,
-                h.head_suffix,
-                h.house_unit_no,
-                h.street_name,
-                h.subdivision,
-                h.birth_place,
-                h.birth_date,
-                h.sex,
-                h.civil_status,
-                h.citizenship,
-                h.occupation,
-                h.email_address,
-                h.status,
-                h.created_at,
-                COUNT(m.id) as member_count
-            FROM archive_households h
-            LEFT JOIN archive_household_members m ON h.id = m.household_id
-            GROUP BY 
-                h.id, h.head_last_name, h.head_first_name, h.head_middle_name,
-                h.head_suffix, h.house_unit_no, h.street_name, h.subdivision,
-                h.birth_place, h.birth_date, h.sex, h.civil_status,
-                h.citizenship, h.occupation, h.email_address, h.status,
-                h.created_at
-            ORDER BY h.created_at DESC
-        `);
+    // First get all households
+    const [households] = await pool.query(
+      `SELECT * FROM backup_households ORDER BY created_at DESC`
+    );
 
-    // For each household, get its members with all their fields
-    for (let household of households) {
-      const [members] = await pool.query(
-        `SELECT 
-            id,
-            household_id,
-            last_name,
-            first_name,
-            middle_name,
-            suffix,
-            birth_place,
-            birth_date,
-            sex,
-            civil_status,
-            citizenship,
-            occupation
-         FROM archive_household_members 
-         WHERE household_id = ?`,
-        [household.id]
-      );
-      household.members = members;
-    }
+    // For each household, get its members
+    const results = await Promise.all(
+      households.map(async (household) => {
+        const [members] = await pool.query(
+          `SELECT * FROM backup_household_members WHERE household_id = ?`,
+          [household.id]
+        );
 
-    return res.json({
-      success: true,
-      data: {
-        households: households.map(household => ({
-          household: {
-            id: household.id,
-            head_last_name: household.head_last_name,
-            head_first_name: household.head_first_name,
-            head_middle_name: household.head_middle_name,
-            head_suffix: household.head_suffix,
-            house_unit_no: household.house_unit_no,
-            street_name: household.street_name,
-            subdivision: household.subdivision,
-            birth_place: household.birth_place,
-            birth_date: household.birth_date,
-            sex: household.sex,
-            civil_status: household.civil_status,
-            citizenship: household.citizenship,
-            occupation: household.occupation,
-            email_address: household.email_address,
-            status: household.status,
-            created_at: household.created_at,
-            member_count: household.member_count
-          },
-          members: household.members
-        }))
-      }
-    });
+        return {
+          ...household,
+          members: members
+        };
+      })
+    );
+
+    res.json(results);
   } catch (error) {
-    console.error('Error fetching backup RBI:', error);
-    return res.status(500).json({
-      success: false,
-      error: 'Failed to fetch backup RBI data',
-      details: error.message
-    });
+    console.error('Error fetching backup RBIs:', error);
+    res.status(500).json({ error: 'Failed to fetch backup RBIs' });
   }
 };
 
-// Restore RBI from backup
-exports.restoreRBI = async (req, res) => {
+// Restore RBIs from backup
+const restoreRBIs = async (req, res) => {
   const { householdIds } = req.body;
-  const connection = await pool.getConnection();
+  let connection;
 
   try {
+    connection = await pool.getConnection();
     await connection.beginTransaction();
 
-    for (const id of householdIds) {
-      // Get the backup household data
-      const [backupHousehold] = await connection.execute(
-        "SELECT * FROM archive_households WHERE id = ?",
-        [id]
+    for (const householdId of householdIds) {
+      // Get household and members from backup tables
+      const [householdResult] = await connection.query(
+        'SELECT * FROM backup_households WHERE id = ?',
+        [householdId]
       );
+      const household = householdResult[0];
 
-      if (backupHousehold.length === 0) {
-        await connection.rollback();
-        return res.status(404).json({ error: `Backup household with id ${id} not found` });
+      if (!household) {
+        throw new Error(`Household ${householdId} not found in backup`);
       }
 
-      const householdData = backupHousehold[0];
-
-      // Insert into main households table with preserved timestamps
-      const [result] = await connection.execute(
-        `INSERT INTO households 
-                 (head_first_name, head_middle_name, head_last_name, head_suffix,
-                  house_unit_no, street_name, subdivision, birth_place, birth_date,
-                  sex, civil_status, citizenship, occupation, email_address, contact_no,
-                  status, created_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      // Insert household into main table
+      await connection.query(
+        `INSERT INTO households (
+          id, head_first_name, head_middle_name, head_last_name, head_suffix,
+          sex, birth_date, birth_place, civil_status, citizenship, occupation,
+          email_address, contact_no, house_unit_no, street_name, subdivision,
+          status, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE
+          head_first_name = VALUES(head_first_name),
+          head_middle_name = VALUES(head_middle_name),
+          head_last_name = VALUES(head_last_name),
+          head_suffix = VALUES(head_suffix),
+          sex = VALUES(sex),
+          birth_date = VALUES(birth_date),
+          birth_place = VALUES(birth_place),
+          civil_status = VALUES(civil_status),
+          citizenship = VALUES(citizenship),
+          occupation = VALUES(occupation),
+          email_address = VALUES(email_address),
+          contact_no = VALUES(contact_no),
+          house_unit_no = VALUES(house_unit_no),
+          street_name = VALUES(street_name),
+          subdivision = VALUES(subdivision),
+          status = VALUES(status),
+          updated_at = CURRENT_TIMESTAMP`,
         [
-          householdData.head_first_name,
-          householdData.head_middle_name,
-          householdData.head_last_name,
-          householdData.head_suffix,
-          householdData.house_unit_no,
-          householdData.street_name,
-          householdData.subdivision,
-          householdData.birth_place,
-          householdData.birth_date,
-          householdData.sex,
-          householdData.civil_status,
-          householdData.citizenship,
-          householdData.occupation,
-          householdData.email_address,
-          householdData.contact_no,
-          householdData.status,
-          householdData.created_at
+          household.id,
+          household.head_first_name,
+          household.head_middle_name,
+          household.head_last_name,
+          household.head_suffix,
+          household.sex,
+          household.birth_date,
+          household.birth_place,
+          household.civil_status,
+          household.citizenship,
+          household.occupation,
+          household.email_address,
+          household.contact_no,
+          household.house_unit_no,
+          household.street_name,
+          household.subdivision,
+          household.status,
+          household.created_at,
+          household.updated_at
         ]
       );
 
-      const newHouseholdId = result.insertId;
-
-      // Get and restore household members
-      const [backupMembers] = await connection.execute(
-        "SELECT * FROM archive_household_members WHERE household_id = ?",
-        [id]
+      // Get and insert members
+      const [members] = await connection.query(
+        'SELECT * FROM backup_household_members WHERE household_id = ?',
+        [householdId]
       );
 
-      // Insert each member with preserved timestamps
-      for (const member of backupMembers) {
-        await connection.execute(
-          `INSERT INTO household_members 
-                     (household_id, first_name, middle_name, last_name, suffix,
-                      relationship, birth_date, birth_place, sex, civil_status,
-                      citizenship, occupation, created_at)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      for (const member of members) {
+        await connection.query(
+          `INSERT INTO household_members (
+            id, household_id, first_name, middle_name, last_name, suffix,
+            sex, birth_date, birth_place, civil_status, citizenship,
+            occupation, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ON DUPLICATE KEY UPDATE
+            first_name = VALUES(first_name),
+            middle_name = VALUES(middle_name),
+            last_name = VALUES(last_name),
+            suffix = VALUES(suffix),
+            sex = VALUES(sex),
+            birth_date = VALUES(birth_date),
+            birth_place = VALUES(birth_place),
+            civil_status = VALUES(civil_status),
+            citizenship = VALUES(citizenship),
+            occupation = VALUES(occupation),
+            updated_at = CURRENT_TIMESTAMP`,
           [
-            newHouseholdId,
+            member.id,
+            member.household_id,
             member.first_name,
             member.middle_name,
             member.last_name,
             member.suffix,
-            member.relationship,
+            member.sex,
             member.birth_date,
             member.birth_place,
-            member.sex,
             member.civil_status,
             member.citizenship,
             member.occupation,
-            member.created_at
+            member.created_at,
+            member.updated_at
           ]
         );
       }
-
-      // Only delete from backup tables after successful restore
-      await connection.execute(
-        "DELETE FROM archive_household_members WHERE household_id = ?",
-        [id]
-      );
-      await connection.execute(
-        "DELETE FROM archive_households WHERE id = ?",
-        [id]
-      );
     }
 
     await connection.commit();
-    res.json({
-      success: true,
-      message: `Successfully restored ${householdIds.length} household(s)`,
-      restoredIds: householdIds
-    });
+    res.json({ message: 'Successfully restored RBI data' });
   } catch (error) {
-    await connection.rollback();
-    console.error('Error restoring RBI:', error);
-    res.status(500).json({ error: 'Failed to restore RBI data', details: error.message });
+    if (connection) {
+      await connection.rollback();
+    }
+    console.error('Error restoring RBIs:', error);
+    res.status(500).json({ error: 'Failed to restore RBI data' });
   } finally {
-    connection.release();
+    if (connection) {
+      connection.release();
+    }
   }
+};
+
+module.exports = {
+  createCompleteHousehold: exports.createCompleteHousehold,
+  getAllHouseholds: exports.getAllHouseholds,
+  getHouseholdWithMembersById: exports.getHouseholdWithMembersById,
+  updateHouseholdStatus: exports.updateHouseholdStatus,
+  updateHousehold: exports.updateHousehold,
+  addHouseholdMember: exports.addHouseholdMember,
+  updateHouseholdMember: exports.updateHouseholdMember,
+  deleteHousehold: exports.deleteHousehold,
+  deleteHouseholdMember: exports.deleteHouseholdMember,
+  findSimilarRbis: exports.findSimilarRbis,
+  getBackupRBIs,
+  restoreRBIs
 };

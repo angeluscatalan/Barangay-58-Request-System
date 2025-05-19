@@ -322,8 +322,31 @@ input[type="checkbox"] {
 
 .action-buttons {
   display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.retrieve-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.5rem;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.retrieve-btn:hover {
+  background-color: #388E3C;
+}
+
+.retrieve-btn i {
+  font-size: 1.1rem;
 }
 
 .retrieve-data-btn {

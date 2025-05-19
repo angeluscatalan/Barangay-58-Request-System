@@ -376,15 +376,22 @@ function RBIRegistration() {
         birth_date: member.birth_date ? new Date(member.birth_date).toISOString().split("T")[0] : null,
       }))
 
-      // Submit data to API
-      const response = await axios.post("http://localhost:5000/api/households/", {
-        household: formattedHouseholdData,
-        members: formattedMembers,
-      })
+      // Submit data to API with proper headers
+      const response = await axios.post(
+        "http://localhost:5000/api/rbi",
+        {
+          household: formattedHouseholdData,
+          members: formattedMembers,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
       if (response.status === 200 || response.status === 201) {
         setShowConfirmation(false)
-        // Show success popup instead of alert
         setShowSuccessPopup(true)
 
         // Reset form
@@ -407,16 +414,23 @@ function RBIRegistration() {
         setMembers([])
         setMemberCount(0)
         document.getElementById("terms").checked = false
-      } else {
-        setShowConfirmation(false)
-        // Show error popup
-        setShowSuccessPopup(false)
       }
     } catch (error) {
       setShowConfirmation(false)
       console.error("Error submitting RBI registration:", error)
-      // Show error popup
-      setShowSuccessPopup(false)
+
+      let errorMessage = "Failed to submit RBI registration. Please try again later.";
+
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        errorMessage = error.response.data.error || error.response.data.message || errorMessage;
+      } else if (error.request) {
+        // The request was made but no response was received
+        errorMessage = "No response from server. Please check your internet connection.";
+      }
+
+      alert(errorMessage);
     }
   }
 
@@ -580,12 +594,10 @@ function RBIRegistration() {
                           id="head_suffix"
                           name="head_suffix"
                           className="rbi-form-select"
-                          value={householdData.head_suffix}
+                          value={householdData.head_suffix || ""}
                           onChange={handleHouseholdChange}
                         >
-                          <option value="" disabled selected>
-                            SUFFIX
-                          </option>
+                          <option value="">SUFFIX</option>
                           <option value="None">None</option>
                           <option value="Jr.">Jr.</option>
                           <option value="Sr.">Sr.</option>
@@ -688,17 +700,17 @@ function RBIRegistration() {
                           id="head_sex"
                           name="sex"
                           className={`rbi-form-select ${errors.household.sex ? "input-error" : ""}`}
-                          value={householdData.sex}
+                          value={householdData.sex || ""}
                           onChange={handleHouseholdChange}
                           required
                         >
-                          <option value="" disabled selected>
-                            SEX
-                          </option>
+                          <option value="">SEX</option>
                           <option value="Male">Male</option>
                           <option value="Female">Female</option>
                         </select>
-                        {errors.household.sex && <p className="error-message">*{errors.household.sex}</p>}
+                        {errors.household.sex && (
+                          <p className="error-message">*{errors.household.sex}</p>
+                        )}
                       </div>
 
                       <div className="form-row">
@@ -706,13 +718,11 @@ function RBIRegistration() {
                           id="head_civil_status"
                           name="civil_status"
                           className={`rbi-form-select ${errors.household.civil_status ? "input-error" : ""}`}
-                          value={householdData.civil_status}
+                          value={householdData.civil_status || ""}
                           onChange={handleHouseholdChange}
                           required
                         >
-                          <option value="" disabled selected>
-                            CIVIL STATUS
-                          </option>
+                          <option value="">CIVIL STATUS</option>
                           <option value="Single">Single</option>
                           <option value="Married">Married</option>
                           <option value="Widowed">Widowed</option>
@@ -851,14 +861,13 @@ function RBIRegistration() {
 
                           <div className="form-row">
                             <select
+                              id={`member_suffix_${index}`}
                               name="suffix"
                               className="rbi-form-select"
-                              value={member.suffix}
+                              value={member.suffix || ""}
                               onChange={(e) => handleMemberChange(index, e)}
                             >
-                              <option value="" disabled selected>
-                                SUFFIX
-                              </option>
+                              <option value="">SUFFIX</option>
                               <option value="None">None</option>
                               <option value="Jr.">Jr.</option>
                               <option value="Sr.">Sr.</option>
@@ -910,15 +919,14 @@ function RBIRegistration() {
                           </div>
                           <div className="form-row">
                             <select
+                              id={`member_sex_${index}`}
                               name="sex"
                               className={`rbi-form-select ${errors.members[index]?.sex ? "input-error" : ""}`}
-                              value={member.sex}
+                              value={member.sex || ""}
                               onChange={(e) => handleMemberChange(index, e)}
                               required
                             >
-                              <option value="" disabled selected>
-                                SEX
-                              </option>
+                              <option value="">SEX</option>
                               <option value="Male">Male</option>
                               <option value="Female">Female</option>
                             </select>
@@ -929,15 +937,14 @@ function RBIRegistration() {
 
                           <div className="form-row">
                             <select
+                              id={`member_civil_status_${index}`}
                               name="civil_status"
                               className={`rbi-form-select ${errors.members[index]?.civil_status ? "input-error" : ""}`}
-                              value={member.civil_status}
+                              value={member.civil_status || ""}
                               onChange={(e) => handleMemberChange(index, e)}
                               required
                             >
-                              <option value="" disabled selected>
-                                CIVIL STATUS
-                              </option>
+                              <option value="">CIVIL STATUS</option>
                               <option value="Single">Single</option>
                               <option value="Married">Married</option>
                               <option value="Widowed">Widowed</option>

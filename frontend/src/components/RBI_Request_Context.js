@@ -16,6 +16,16 @@ export const RequestProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Helper function to get auth headers
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('token');
+    return {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    };
+  };
+
   // Fetch RBI requests with the ability to filter by status, search, and pagination
   const fetchRbiRequests = useCallback(async (status = null, page = 1, limit = 10, search = '') => {
     try {
@@ -29,8 +39,11 @@ export const RequestProvider = ({ children }) => {
       if (status) params.append('status', status);
       if (search) params.append('search', search);
 
-      // Make the request to fetch data
-      const response = await axios.get(`http://localhost:5000/api/rbi?${params.toString()}`);
+      // Make the request to fetch data with auth headers
+      const response = await axios.get(
+        `http://localhost:5000/api/rbi?${params.toString()}`,
+        getAuthHeaders()
+      );
 
       // Safely update the state with the API response
       setRbiRequests({
@@ -42,6 +55,10 @@ export const RequestProvider = ({ children }) => {
     } catch (err) {
       console.error("Error fetching RBI requests:", err);
       setError(err?.response?.data?.message || 'Failed to fetch requests');
+      if (err?.response?.status === 401) {
+        // Handle unauthorized access - you might want to redirect to login
+        console.log("Unauthorized access - please log in again");
+      }
     } finally {
       setLoading(false);
     }
@@ -52,11 +69,17 @@ export const RequestProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`http://localhost:5000/api/rbi/${householdId}`);
+      const response = await axios.get(
+        `http://localhost:5000/api/rbi/${householdId}`,
+        getAuthHeaders()
+      );
       return response.data;
     } catch (err) {
       console.error("Error fetching household details:", err);
       setError(err?.response?.data?.message || 'Failed to fetch household details');
+      if (err?.response?.status === 401) {
+        console.log("Unauthorized access - please log in again");
+      }
       return null;
     } finally {
       setLoading(false);
@@ -68,8 +91,12 @@ export const RequestProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      // Make the request to update the status
-      await axios.put(`http://localhost:5000/api/rbi/${id}/status`, { status: newStatus });
+      // Make the request to update the status with auth headers
+      await axios.put(
+        `http://localhost:5000/api/rbi/${id}/status`,
+        { status: newStatus },
+        getAuthHeaders()
+      );
 
       // Update local state to reflect the status change
       setRbiRequests((prevState) => {
@@ -82,6 +109,9 @@ export const RequestProvider = ({ children }) => {
     } catch (err) {
       console.error("Error updating status:", err);
       setError(err?.response?.data?.message || 'Failed to update request status');
+      if (err?.response?.status === 401) {
+        console.log("Unauthorized access - please log in again");
+      }
       return false;
     } finally {
       setLoading(false);

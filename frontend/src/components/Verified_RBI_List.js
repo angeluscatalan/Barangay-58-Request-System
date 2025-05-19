@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import "../styles/Request_Manager.css";
 import { useRequests } from "./RBI_Request_Context";
 import axios from "axios";
+import BackupVerifiedRBIModal from "./BackupVerifiedRBIModal";
 
 function Verified_RBI_List() {
   const { rbiRequests, loading, error, fetchRbiRequests } = useRequests();
@@ -11,14 +12,15 @@ function Verified_RBI_List() {
     members: []
   });
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
 
   useEffect(() => {
     fetchRbiRequests("approved");
   }, [fetchRbiRequests]);
 
   const toggleHousehold = (id) => {
-    setExpandedHouseholds(prev => 
-      prev.includes(id) 
+    setExpandedHouseholds(prev =>
+      prev.includes(id)
         ? prev.filter(householdId => householdId !== id)
         : [...prev, id]
     );
@@ -29,8 +31,8 @@ function Verified_RBI_List() {
     setSelectedItems(prev => {
       const key = type === 'household' ? 'households' : 'members';
       const newSelection = [...prev[key]];
-      
-      const index = newSelection.findIndex(item => 
+
+      const index = newSelection.findIndex(item =>
         type === 'household' ? item === id : item.id === id
       );
 
@@ -67,54 +69,58 @@ function Verified_RBI_List() {
   };
 
   // Delete selected items
- const handleDeleteSelected = async () => {
-  const totalSelected = selectedItems.households.length + selectedItems.members.length;
-  if (totalSelected === 0) {
-    alert("Please select at least one item to delete");
-    return;
-  }
-
-  if (!window.confirm(`Delete ${totalSelected} selected item(s)?`)) return;
-
-  try {
-    setIsDeleting(true);
-    const token = localStorage.getItem("token");
-    
-    // Process deletions
-    const results = await Promise.allSettled([
-      ...selectedItems.members.map(member => 
-        axios.delete(`http://localhost:5000/api/rbi/members/${member.id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-      ),
-      ...selectedItems.households.map(id =>
-        axios.delete(`http://localhost:5000/api/rbi/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-      )
-    ]);
-
-    const failedDeletions = results.filter(r => r.status === 'rejected');
-    
-    if (failedDeletions.length > 0) {
-      console.error('Failed deletions:', failedDeletions);
-      alert(`Deleted ${totalSelected - failedDeletions.length} items successfully. ${failedDeletions.length} failed.`);
-    } else {
-      alert(`${totalSelected} items deleted successfully!`);
+  const handleDeleteSelected = async () => {
+    const totalSelected = selectedItems.households.length + selectedItems.members.length;
+    if (totalSelected === 0) {
+      alert("Please select at least one item to delete");
+      return;
     }
 
-    // Refresh data if any deletions succeeded
-    if (failedDeletions.length < totalSelected) {
-      await fetchRbiRequests("approved");
-      setSelectedItems({ households: [], members: [] });
+    if (!window.confirm(`Delete ${totalSelected} selected item(s)?`)) return;
+
+    try {
+      setIsDeleting(true);
+      const token = localStorage.getItem("token");
+
+      // Process deletions
+      const results = await Promise.allSettled([
+        ...selectedItems.members.map(member =>
+          axios.delete(`http://localhost:5000/api/rbi/members/${member.id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+        ),
+        ...selectedItems.households.map(id =>
+          axios.delete(`http://localhost:5000/api/rbi/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+        )
+      ]);
+
+      const failedDeletions = results.filter(r => r.status === 'rejected');
+
+      if (failedDeletions.length > 0) {
+        console.error('Failed deletions:', failedDeletions);
+        alert(`Deleted ${totalSelected - failedDeletions.length} items successfully. ${failedDeletions.length} failed.`);
+      } else {
+        alert(`${totalSelected} items deleted successfully!`);
+      }
+
+      // Refresh data if any deletions succeeded
+      if (failedDeletions.length < totalSelected) {
+        await fetchRbiRequests("approved");
+        setSelectedItems({ households: [], members: [] });
+      }
+    } catch (error) {
+      console.error("Deletion error:", error);
+      alert("An error occurred during deletion");
+    } finally {
+      setIsDeleting(false);
     }
-  } catch (error) {
-    console.error("Deletion error:", error);
-    alert("An error occurred during deletion");
-  } finally {
-    setIsDeleting(false);
-  }
-};
+  };
+
+  const handleRestore = async () => {
+    await fetchRbiRequests("approved");
+  };
 
   if (loading) return <div className="loading">Loading approved registrations...</div>;
   if (error) return <div className="error">Error: {error}</div>;
@@ -122,12 +128,22 @@ function Verified_RBI_List() {
   return (
     <div className="request-manager">
       <h1>Verified RBI List</h1>
-      
+
+      {/* Action buttons */}
+      <div className="action-buttons">
+        <button
+          className="retrieve-btn"
+          onClick={() => setIsBackupModalOpen(true)}
+        >
+          <i className="fas fa-cloud-download-alt"></i> Retrieve Data
+        </button>
+      </div>
+
       {/* Bulk actions bar */}
       {(selectedItems.households.length > 0 || selectedItems.members.length > 0) && (
         <div className="bulk-actions">
-          <button 
-            className="bulk-delete-btn" 
+          <button
+            className="bulk-delete-btn"
             onClick={handleDeleteSelected}
             disabled={isDeleting}
           >
@@ -150,8 +166,8 @@ function Verified_RBI_List() {
               <th>
                 <input
                   type="checkbox"
-                  checked={selectedItems.households.length === (rbiRequests.records?.length || 0) && 
-                           rbiRequests.records?.length > 0}
+                  checked={selectedItems.households.length === (rbiRequests.records?.length || 0) &&
+                    rbiRequests.records?.length > 0}
                   onChange={handleMasterSelectHouseholds}
                 />
               </th>
@@ -177,7 +193,7 @@ function Verified_RBI_List() {
             {(rbiRequests.records || []).map((household) => (
               <React.Fragment key={household.id}>
                 {/* Household Head Row */}
-                <tr 
+                <tr
                   className={`head-row clickable ${expandedHouseholds.includes(household.id) ? 'expanded' : ''}`}
                 >
                   <td>
@@ -212,35 +228,41 @@ function Verified_RBI_List() {
                 </tr>
 
                 {/* Member Rows */}
-                {expandedHouseholds.includes(household.id) && 
-                 (household.members || []).map((member, index) => (
-                  <tr key={`${household.id}-${index}`} className="member-row">
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={selectedItems.members.some(m => m.id === member.id)}
-                        onChange={() => handleSelectItem('member', member.id, household.id)}
-                      />
-                    </td>
-                    <td>{household.id}</td>
-                    <td>{member.last_name}</td>
-                    <td>{member.first_name}</td>
-                    <td>{member.middle_name || "N/A"}</td>
-                    <td>{member.suffix || "N/A"}</td>
-                    <td>{member.sex}</td>
-                    <td>{new Date(member.birth_date).toLocaleDateString()}</td>
-                    <td>{member.birth_place}</td>
-                    <td>{member.civil_status}</td>
-                    <td>{member.citizenship}</td>
-                    <td>{member.occupation}</td>
-                    <td colSpan="5">Member of Household #{household.id}</td>
-                  </tr>
-                ))}
+                {expandedHouseholds.includes(household.id) &&
+                  (household.members || []).map((member, index) => (
+                    <tr key={`${household.id}-${index}`} className="member-row">
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={selectedItems.members.some(m => m.id === member.id)}
+                          onChange={() => handleSelectItem('member', member.id, household.id)}
+                        />
+                      </td>
+                      <td>{household.id}</td>
+                      <td>{member.last_name}</td>
+                      <td>{member.first_name}</td>
+                      <td>{member.middle_name || "N/A"}</td>
+                      <td>{member.suffix || "N/A"}</td>
+                      <td>{member.sex}</td>
+                      <td>{new Date(member.birth_date).toLocaleDateString()}</td>
+                      <td>{member.birth_place}</td>
+                      <td>{member.civil_status}</td>
+                      <td>{member.citizenship}</td>
+                      <td>{member.occupation}</td>
+                      <td colSpan="5">Member of Household #{household.id}</td>
+                    </tr>
+                  ))}
               </React.Fragment>
             ))}
           </tbody>
         </table>
       </div>
+
+      <BackupVerifiedRBIModal
+        isOpen={isBackupModalOpen}
+        onClose={() => setIsBackupModalOpen(false)}
+        onRestore={handleRestore}
+      />
     </div>
   );
 }

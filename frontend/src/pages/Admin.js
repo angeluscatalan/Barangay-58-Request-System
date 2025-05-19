@@ -32,6 +32,7 @@ function Admin() {
   const [similarRbis, setSimilarRbis] = useState([]);
   const [showRbiComparison, setShowRbiComparison] = useState(false);
   const [showBackupModal, setShowBackupModal] = useState(false);
+  const [backupModalType, setBackupModalType] = useState('requests');
 
   const { requests, loading: requestsLoading, error: requestsError, fetchRequests, updateRequestStatus } = useRequests()
 
@@ -458,12 +459,17 @@ function Admin() {
                       <option value="lastMonth">Last Month</option>
                       <option value="lastYear">Last Year</option>
                     </select>
-                    <button
-                      className="retrieve-btn"
-                      onClick={() => setShowBackupModal(true)}
-                    >
-                      <i className="fas fa-undo"></i> Retrieve Data
-                    </button>
+                    {typeFilter !== "VerifiedRBI" && (
+                      <button
+                        className="retrieve-btn"
+                        onClick={() => {
+                          setBackupModalType('requests');
+                          setShowBackupModal(true);
+                        }}
+                      >
+                        <i className="fas fa-undo"></i> Retrieve Request Data
+                      </button>
+                    )}
                     {selectedRequests.length > 0 && (
                       <>
                         <button className="bulk-delete-btn" onClick={handleBulkDelete}>
@@ -647,7 +653,7 @@ function Admin() {
       <BackupRequestsModal
         isOpen={showBackupModal}
         onClose={() => setShowBackupModal(false)}
-        onRestore={fetchRequests}
+        type={backupModalType}
       />
     </>
   )
