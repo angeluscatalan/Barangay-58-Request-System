@@ -439,71 +439,72 @@ function Admin() {
                     {typeFilter !== "VerifiedRBI" && <h1>Requests ({filteredRequests.length})</h1>}
                   </div>
                   <div className="filters">
-                    <input
-                      type="text"
-                      placeholder="Search by name..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="search-bar"
-                    />
-                    <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-                      <option value="All">All Status</option>
-                      <option value="pending">Pending</option>
-                      <option value="approved">Approved</option>
-                      <option value="rejected">Rejected</option>
-                      <option value="for pickup">For Pickup</option>
-                    </select>
-                    <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                      <option value="latest">Latest</option>
-                      <option value="oldest">Oldest</option>
-                      <option value="lastMonth">Last Month</option>
-                      <option value="lastYear">Last Year</option>
-                    </select>
                     {typeFilter !== "VerifiedRBI" && (
-                      <button
-                        className="retrieve-btn"
-                        onClick={() => {
-                          setBackupModalType('requests');
-                          setShowBackupModal(true);
-                        }}
-                      >
-                        <i className="fas fa-undo"></i> Retrieve Request Data
-                      </button>
-                    )}
-                    {selectedRequests.length > 0 && (
                       <>
-                        <button className="bulk-delete-btn" onClick={handleBulkDelete}>
-                          <i className="fas fa-trash-alt"></i> Delete Selected ({selectedRequests.length})
+                        <input
+                          type="text"
+                          placeholder="Search by name..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="search-bar"
+                        />
+                        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+                          <option value="All">All Status</option>
+                          <option value="pending">Pending</option>
+                          <option value="approved">Approved</option>
+                          <option value="rejected">Rejected</option>
+                          <option value="for pickup">For Pickup</option>
+                        </select>
+                        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                          <option value="latest">Latest</option>
+                          <option value="oldest">Oldest</option>
+                          <option value="lastMonth">Last Month</option>
+                          <option value="lastYear">Last Year</option>
+                        </select>
+                        <button
+                          className="retrieve-btn"
+                          onClick={() => {
+                            setBackupModalType('requests');
+                            setShowBackupModal(true);
+                          }}
+                        >
+                          <i className="fas fa-undo"></i> Retrieve Request Data
                         </button>
-                        {selectedRequests.length === 1 && (
-                          <button
-                            className="compare-btn"
-                            onClick={() => {
-                              // Find the request object that corresponds to the selected ID
-                              const selectedReq = filteredRequests.find(req => req.id === selectedRequests[0]);
-                              if (selectedReq) {
-                                findSimilarRbis(selectedReq);
-                              }
-                            }}
-                            title="Compare with RBI records"
-                          >
-                            <i className="fas fa-user-check"></i> Compare with RBI
-                          </button>
+                        {selectedRequests.length > 0 && (
+                          <>
+                            <button className="bulk-delete-btn" onClick={handleBulkDelete}>
+                              <i className="fas fa-trash-alt"></i> Delete Selected ({selectedRequests.length})
+                            </button>
+                            {selectedRequests.length === 1 && (
+                              <button
+                                className="compare-btn"
+                                onClick={() => {
+                                  const selectedReq = filteredRequests.find(req => req.id === selectedRequests[0]);
+                                  if (selectedReq) {
+                                    findSimilarRbis(selectedReq);
+                                  }
+                                }}
+                                title="Compare with RBI records"
+                              >
+                                <i className="fas fa-user-check"></i> Compare with RBI
+                              </button>
+                            )}
+                          </>
                         )}
+                        <div className="zoom-controls">
+                          <button className="zoom-btn" onClick={() => handleZoom("out")} title="Zoom Out">
+                            <i className="fas fa-search-minus"></i>
+                          </button>
+                          <span className="zoom-level">{zoomLevel}%</span>
+                          <button className="zoom-btn" onClick={() => handleZoom("in")} title="Zoom In">
+                            <i className="fas fa-search-plus"></i>
+                          </button>
+                          <button className="zoom-btn" onClick={() => handleZoom("reset")} title="Reset Zoom">
+                            <i className="fas fa-redo-alt"></i>
+                          </button>
+                        </div>
                       </>
                     )}
-                    <div className="zoom-controls">
-                      <button className="zoom-btn" onClick={() => handleZoom("out")} title="Zoom Out">
-                        <i className="fas fa-search-minus"></i>
-                      </button>
-                      <span className="zoom-level">{zoomLevel}%</span>
-                      <button className="zoom-btn" onClick={() => handleZoom("in")} title="Zoom In">
-                        <i className="fas fa-search-plus"></i>
-                      </button>
-                      <button className="zoom-btn" onClick={() => handleZoom("reset")} title="Reset Zoom">
-                        <i className="fas fa-redo-alt"></i>
-                      </button>
-                    </div>
                   </div>
                 </div>
                 <div
@@ -654,6 +655,7 @@ function Admin() {
         isOpen={showBackupModal}
         onClose={() => setShowBackupModal(false)}
         type={backupModalType}
+        onRestore={fetchRequests}
       />
     </>
   )

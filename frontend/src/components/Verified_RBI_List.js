@@ -23,6 +23,11 @@ function Verified_RBI_List() {
   const [isAddHouseholdModalOpen, setIsAddHouseholdModalOpen] = useState(false);
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
   const [selectedHouseholdId, setSelectedHouseholdId] = useState(null);
+  // New state variables for search, sort, and zoom
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("id");
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [zoomLevel, setZoomLevel] = useState(100);
 
 
 
@@ -40,31 +45,31 @@ function Verified_RBI_List() {
 
   // Handle selection of households or members
   const handleSelectItem = (type, id, householdId = null) => {
-  setSelectedItems(prev => {
-    const key = type === 'household' ? 'households' : 'members';
-    const newSelection = [...prev[key]];
+    setSelectedItems(prev => {
+      const key = type === 'household' ? 'households' : 'members';
+      const newSelection = [...prev[key]];
 
-    const index = newSelection.findIndex(item =>
-      type === 'household' ? item === id : item.id === id
-    );
+      const index = newSelection.findIndex(item =>
+        type === 'household' ? item === id : item.id === id
+      );
 
-    if (index > -1) {
-      newSelection.splice(index, 1);
-    } else {
-      if (type === 'household') {
-        newSelection.push(id);
-        setSelectedHouseholdId(id); // Add this line
+      if (index > -1) {
+        newSelection.splice(index, 1);
       } else {
-        newSelection.push({ id, householdId });
+        if (type === 'household') {
+          newSelection.push(id);
+          setSelectedHouseholdId(id); // Add this line
+        } else {
+          newSelection.push({ id, householdId });
+        }
       }
-    }
 
-    return {
-      ...prev,
-      [key]: newSelection
-    };
-  });
-};
+      return {
+        ...prev,
+        [key]: newSelection
+      };
+    });
+  };
 
   // Master select for households
   const handleMasterSelectHouseholds = (e) => {
@@ -196,7 +201,7 @@ function Verified_RBI_List() {
     }
   };
 
-   const handleAddHousehold = async (householdData) => {
+  const handleAddHousehold = async (householdData) => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
@@ -236,13 +241,128 @@ function Verified_RBI_List() {
     }
   };
 
+  // Add search filter function
+  const filterRecords = useCallback(() => {
+    if (!rbiRequests.records) return [];
+
+    let filtered = [...rbiRequests.records];
+
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(household =>
+        household.head_last_name.toLowerCase().includes(query) ||
+        household.head_first_name.toLowerCase().includes(query) ||
+        household.head_middle_name?.toLowerCase().includes(query) ||
+        household.house_unit_no?.toLowerCase().includes(query) ||
+        household.street_name?.toLowerCase().includes(query) ||
+        household.subdivision?.toLowerCase().includes(query)
+      );
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      let compareA, compareB;
+
+      switch (sortBy) {
+        case "lastName":
+          compareA = a.head_last_name.toLowerCase();
+          compareB = b.head_last_name.toLowerCase();
+          break;
+        case "firstName":
+          compareA = a.head_first_name.toLowerCase();
+          compareB = b.head_first_name.toLowerCase();
+          break;
+        case "address":
+          compareA = `${a.house_unit_no} ${a.street_name} ${a.subdivision}`.toLowerCase();
+          compareB = `${b.house_unit_no} ${b.street_name} ${b.subdivision}`.toLowerCase();
+          break;
+        case "members":
+          compareA = a.members?.length || 0;
+          compareB = b.members?.length || 0;
+          break;
+        default: // "id"
+          compareA = a.id;
+          compareB = b.id;
+      }
+
+      return sortOrder === "asc"
+        ? compareA > compareB ? 1 : -1
+        : compareA < compareB ? 1 : -1;
+    });
+
+    return filtered;
+  }, [rbiRequests.records, searchQuery, sortBy, sortOrder]);
+
+  // Add zoom control handlers
+  const handleZoom = (action) => {
+    switch (action) {
+      case "in":
+        setZoomLevel(prev => Math.min(prev + 10, 150));
+        break;
+      case "out":
+        setZoomLevel(prev => Math.max(prev - 10, 50));
+        break;
+      case "reset":
+        setZoomLevel(100);
+        break;
+      default:
+        break;
+    }
+  };
 
   if (loading) return <div className="loading">Loading approved registrations...</div>;
   if (error) return <div className="error">Error: {error}</div>;
 
+  const filteredRecords = filterRecords();
+
   return (
     <div className="request-manager">
       <h1>Verified RBI List</h1>
+
+      {/* Controls Section */}
+      <div className="controls-section">
+        <div className="search-and-filters">
+          <input
+            type="text"
+            placeholder="Search by name or address..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="search-bar"
+          />
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="sort-select"
+          >
+            <option value="id">Sort by: ID</option>
+            <option value="lastName">Sort by: Last Name</option>
+            <option value="firstName">Sort by: First Name</option>
+            <option value="address">Sort by: Address</option>
+            <option value="members">Sort by: Number of Members</option>
+          </select>
+          <select
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value)}
+            className="sort-order-select"
+          >
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+          </select>
+          <div className="zoom-controls">
+            <button className="zoom-btn" onClick={() => handleZoom("out")} title="Zoom Out">
+              <i className="fas fa-search-minus"></i>
+            </button>
+            <span className="zoom-level">{zoomLevel}%</span>
+            <button className="zoom-btn" onClick={() => handleZoom("in")} title="Zoom In">
+              <i className="fas fa-search-plus"></i>
+            </button>
+            <button className="zoom-btn" onClick={() => handleZoom("reset")} title="Reset Zoom">
+              <i className="fas fa-redo-alt"></i>
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Action buttons */}
       <div className="action-buttons">
@@ -256,7 +376,7 @@ function Verified_RBI_List() {
           className="retrieve-btn"
           onClick={() => setIsBackupModalOpen(true)}
         >
-          <i className="fas fa-cloud-download-alt"></i> Retrieve Data
+          <i className="fas fa-undo"></i> Retrieve Data
         </button>
       </div>
 
@@ -297,15 +417,22 @@ function Verified_RBI_List() {
         </div>
       )}
 
-      <div className="table-container">
+      <div
+        className="table-container"
+        style={{
+          transform: `scale(${zoomLevel / 100})`,
+          transformOrigin: 'top left',
+          width: zoomLevel < 100 ? `${100 / (zoomLevel / 100)}%` : '100%',
+          height: zoomLevel < 100 ? `${100 / (zoomLevel / 100)}%` : '100%',
+        }}
+      >
         <table>
           <thead>
             <tr>
               <th>
                 <input
                   type="checkbox"
-                  checked={selectedItems.households.length === (rbiRequests.records?.length || 0) &&
-                    rbiRequests.records?.length > 0}
+                  checked={selectedItems.households.length === filteredRecords.length && filteredRecords.length > 0}
                   onChange={handleMasterSelectHouseholds}
                 />
               </th>
@@ -328,7 +455,7 @@ function Verified_RBI_List() {
             </tr>
           </thead>
           <tbody>
-            {(rbiRequests.records || []).map((household) => (
+            {filteredRecords.map((household) => (
               <React.Fragment key={household.id}>
                 {/* Household Head Row */}
                 <tr
@@ -410,11 +537,6 @@ function Verified_RBI_List() {
         onSave={handleSaveEdit}
       />
 
-      <BackupVerifiedRBIModal
-        isOpen={isBackupModalOpen}
-        onClose={() => setIsBackupModalOpen(false)}
-        onRestore={handleRestore}
-      />
       <AddHouseholdModal
         isOpen={isAddHouseholdModalOpen}
         onClose={() => setIsAddHouseholdModalOpen(false)}

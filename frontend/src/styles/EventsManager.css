@@ -35,9 +35,10 @@
 .table-controls {
   display: flex;
   align-items: center;
-  gap: 40px;
+  gap: 15px;
   position: absolute;
   right: 0;
+  min-width: fit-content;
 }
 
 .events-count {
@@ -97,7 +98,14 @@
   min-width: 180px;
   font-size: 14px;
   color: #333;
-  margin-right: 10px;
+  height: 38px;
+  cursor: pointer;
+}
+
+.events-filter select:focus {
+  outline: none;
+  border-color: #da1c6f;
+  box-shadow: 0 0 0 2px rgba(218, 28, 111, 0.1);
 }
 
 .table-container {
@@ -240,4 +248,29 @@
 
 .calendar-container .fc-daygrid-day {
   min-height: 120px !important;
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  width: 450px;
+  padding: 8px 6px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+  height: 38px;
+  position: relative;
+  right: 1px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #da1c6f;
+}
+
+.search-input::placeholder {
+  color: #999;
 }

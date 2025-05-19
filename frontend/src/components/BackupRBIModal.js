@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import '../styles/BackupRequestsModal.css'; // Reuse the same styles
+import '../styles/BackupRequestsModal.css';
 
 const BackupRBIModal = ({ isOpen, onClose, onRestore }) => {
     const [backupRBI, setBackupRBI] = useState([]);
@@ -19,10 +19,13 @@ const BackupRBIModal = ({ isOpen, onClose, onRestore }) => {
     const fetchBackupRBI = async () => {
         try {
             setLoading(true);
-            const response = await axios.get('http://localhost:5000/api/rbi/backup/list');
-            setBackupRBI(response.data.data.households.map(item => ({
-                ...item.household,
-                members: item.members
+            const token = localStorage.getItem('token');
+            const response = await axios.get('http://localhost:5000/api/rbi/backup/list', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setBackupRBI(response.data.map(item => ({
+                ...item,
+                member_count: item.members?.length || 0
             })));
         } catch (error) {
             console.error('Error fetching backup RBI:', error);
@@ -40,12 +43,15 @@ const BackupRBIModal = ({ isOpen, onClose, onRestore }) => {
 
         try {
             setLoading(true);
+            const token = localStorage.getItem('token');
             await axios.post('http://localhost:5000/api/rbi/backup/restore', {
                 householdIds: selectedRBI
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
             });
             onRestore(); // Callback to refresh main RBI list
             onClose(); // Close modal after successful restore
-            alert('Successfully restored selected households!');
+            alert('Successfully restored selected households and their members!');
         } catch (error) {
             console.error('Error restoring RBI:', error);
             alert('Failed to restore RBI data');
@@ -79,10 +85,11 @@ const BackupRBIModal = ({ isOpen, onClose, onRestore }) => {
         const searchTermLower = searchTerm.toLowerCase();
         return backupRBI.filter(household => {
             const headName = `${household.head_last_name}, ${household.head_first_name} ${household.head_middle_name || ''}`.toLowerCase();
-            const address = `${household.house_unit_no} ${household.street_name} ${household.subdivision}`.toLowerCase();
+            const address = `${household.house_unit_no || ''} ${household.street_name || ''} ${household.subdivision || ''}`.toLowerCase();
 
             return headName.includes(searchTermLower) ||
-                address.includes(searchTermLower);
+                address.includes(searchTermLower) ||
+                household.id.toString().includes(searchTermLower);
         });
     };
 
@@ -101,7 +108,7 @@ const BackupRBIModal = ({ isOpen, onClose, onRestore }) => {
             <div className="backup-modal">
                 <div className="backup-modal-header">
                     <div className="backup-modal-title">
-                        <h2>Backup RBI Records</h2>
+                        <h2>Retrieve RBI Records</h2>
                         <div className="backup-counters">
                             <span className="counter selected">Selected: {getVisibleSelectedCount()}</span>
                             <span className="counter total">Total Found: {filteredRBI.length}</span>
@@ -136,10 +143,11 @@ const BackupRBIModal = ({ isOpen, onClose, onRestore }) => {
                                                     checked={selectedRBI.length === filteredRBI.length && filteredRBI.length > 0}
                                                 />
                                             </th>
-                                            <th>Date Created</th>
+                                            <th>ID</th>
                                             <th>Household Head</th>
                                             <th>Address</th>
                                             <th>Members</th>
+                                            <th>Backup Date</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -152,10 +160,11 @@ const BackupRBIModal = ({ isOpen, onClose, onRestore }) => {
                                                         onChange={() => handleSelectRBI(household.id)}
                                                     />
                                                 </td>
-                                                <td>{household.created_at}</td>
+                                                <td>{household.id}</td>
                                                 <td>{`${household.head_last_name}, ${household.head_first_name} ${household.head_middle_name || ''}`}</td>
-                                                <td>{`${household.house_unit_no} ${household.street_name} ${household.subdivision}`}</td>
+                                                <td>{`${household.house_unit_no || ''} ${household.street_name || ''} ${household.subdivision || ''}`}</td>
                                                 <td>{household.member_count}</td>
+                                                <td>{new Date(household.created_at).toLocaleString()}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -171,9 +180,9 @@ const BackupRBIModal = ({ isOpen, onClose, onRestore }) => {
                     <button
                         className="restore-btn"
                         onClick={handleRestore}
-                        disabled={getVisibleSelectedCount() === 0}
+                        disabled={getVisibleSelectedCount() === 0 || loading}
                     >
-                        Restore Selected ({getVisibleSelectedCount()})
+                        {loading ? 'Restoring...' : `Restore Selected (${getVisibleSelectedCount()})`}
                     </button>
                 </div>
             </div>

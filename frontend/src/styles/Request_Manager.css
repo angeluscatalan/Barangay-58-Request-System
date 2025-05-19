@@ -350,24 +350,25 @@ input[type="checkbox"] {
 }
 
 .retrieve-data-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 15px;
-  border: none;
-  border-radius: 4px;
-  color: white;
-  cursor: pointer;
   font-size: 14px;
-  transition: all 0.3s ease;
+  transition: background-color 0.2s;
+}
+
+.retrieve-data-btn:hover {
+  background-color: #388E3C;
 }
 
 .retrieve-data-btn i {
   font-size: 14px;
-}
-
-.retrieve-data-btn:hover {
-  opacity: 0.9;
 }
 
 .search-form {
@@ -399,4 +400,40 @@ input[type="checkbox"] {
 
 .search-form button:hover {
   opacity: 0.9;
+}
+
+.controls-section {
+  margin-bottom: 20px;
+}
+
+.search-and-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.sort-select,
+.sort-order-select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  min-width: 150px;
+  cursor: pointer;
+}
+
+.sort-select:hover,
+.sort-order-select:hover {
+  border-color: #4CAF50;
+}
+
+.sort-select:focus,
+.sort-order-select:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
 }

@@ -1254,21 +1254,21 @@ tr:hover {
 }
 
 .retrieve-btn {
-  background-color: #da1c6f;
+  background-color: #4CAF50;
   color: white;
   border: none;
   padding: 8px 15px;
-  border-radius: 5px;
+  border-radius: 4px;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 14px;
-  transition: all 0.3s ease;
+  transition: background-color 0.2s;
 }
 
 .retrieve-btn:hover {
-  background-color: #c01961;
+  background-color: #388E3C;
 }
 
 .retrieve-btn i {
@@ -1320,7 +1320,8 @@ tr:hover {
   padding: 20px;
 }
 
-.request-details, .rbi-results {
+.request-details,
+.rbi-results {
   flex: 1;
   padding: 0 15px;
 }
@@ -1340,7 +1341,8 @@ table {
   margin-bottom: 20px;
 }
 
-th, td {
+th,
+td {
   padding: 10px;
   text-align: left;
   border-bottom: 1px solid #eee;
@@ -1517,7 +1519,7 @@ th {
   padding: 8px 15px;
   border-radius: 5px;
   cursor: pointer;
-  display: flex; 
+  display: flex;
   align-items: center;
   gap: 8px;
   font-size: 14px;

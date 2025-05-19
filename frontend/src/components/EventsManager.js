@@ -20,6 +20,7 @@ function EventsManager() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
 
   const fetchEvents = async () => {
     try {
@@ -161,6 +162,38 @@ function EventsManager() {
     }
   }
 
+  const filterEvents = () => {
+    let filtered = [...events];
+
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(event =>
+        (event.event_name || '').toLowerCase().includes(query) ||
+        (event.venue || '').toLowerCase().includes(query) ||
+        (event.description || '').toLowerCase().includes(query)
+      );
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case "Date":
+          return new Date(a.event_date || 0) - new Date(b.event_date || 0);
+        case "Name":
+          return (a.event_name || '').localeCompare(b.event_name || '');
+        case "Latest":
+          return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+        case "Oldest":
+          return new Date(a.created_at || 0) - new Date(b.created_at || 0);
+        default:
+          return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+      }
+    });
+
+    return filtered;
+  };
+
   if (loading) return <div className="loading">Loading events...</div>
   if (error) return <div className="error">{error}</div>
 
@@ -179,15 +212,24 @@ function EventsManager() {
         <>
           <div className="table-header">
             <div className="events-count">
-              Events <span className="event-count">({events.length})</span>
+              Events <span className="event-count">({filterEvents().length})</span>
             </div>
             <div className="table-controls">
+              <div className="search-container">
+                <input
+                  type="text"
+                  placeholder="Search events..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="search-input"
+                />
+              </div>
               <div className="events-filter">
                 <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                  <option value="All">Sort by: All</option>
-                  <option value="Date">Sort by: Date</option>
+                  <option value="Latest">Sort by: Latest</option>
+                  <option value="Oldest">Sort by: Oldest</option>
+                  <option value="Date">Sort by: Event Date</option>
                   <option value="Name">Sort by: Name</option>
-                  <option value="Published">Sort by: Published</option>
                 </select>
               </div>
               {selectedEvents.length > 0 && (
@@ -206,19 +248,14 @@ function EventsManager() {
                   )}
                 </button>
               )}
-              <button
-                className="retrieve-data-btn"
-                onClick={() => setShowBackupModal(true)}
-                style={{
-                  backgroundColor: "#da1c6f",
-                  marginRight: "10px"
-                }}
-              >
-                <i className="fas fa-undo"></i>
-                Retrieve Data
-              </button>
               <button className="add-request-btn" onClick={() => setShowAddEvent(true)}>
-                + Add Event
+                <i className="fas fa-plus"></i> Add Event
+              </button>
+              <button
+                className="retrieve-btn"
+                onClick={() => setShowBackupModal(true)}
+              >
+                <i className="fas fa-undo"></i> Retrieve Data
               </button>
             </div>
           </div>
@@ -244,7 +281,7 @@ function EventsManager() {
                 </tr>
               </thead>
               <tbody>
-                {events.map((event, index) => {
+                {filterEvents().map((event, index) => {
                   console.log('Event row:', event);
                   return (
                     <tr key={event.id}>

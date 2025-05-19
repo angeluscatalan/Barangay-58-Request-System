@@ -167,18 +167,18 @@
 }
 
 .restore-btn {
-    background-color: #da1c6f;
+    background-color: #4CAF50;
     color: white;
     border: none;
     padding: 8px 16px;
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
-    transition: all 0.3s ease;
+    transition: background-color 0.2s;
 }
 
 .restore-btn:hover {
-    background-color: #c01961;
+    background-color: #388E3C;
 }
 
 .restore-btn:disabled {
