@@ -1,7 +1,18 @@
 "use client"
+import { useState } from "react"
 import "../styles/ConfirmationModal.css"
 
-const ConfirmationModal = ({ isOpen, onClose, onConfirm, formData, formType }) => {
+const ConfirmationModal = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  formData,
+  formType,
+  imagePreview,
+  setImagePreview,
+}) => {
+  const [showImageUpload, setShowImageUpload] = useState(false) // State managed here
+
   if (!isOpen) return null
 
   const formatDate = (dateString) => {
@@ -13,6 +24,30 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, formData, formType }) =
       day: "numeric",
     })
   }
+
+  const requiresPhotoUpload = () => {
+  return formData.type_of_certificate === "IDApp" ||
+          formData.type_of_certificate === "ClearanceCert"
+}
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleContinue = () => {
+    if (requiresPhotoUpload() && !showImageUpload) {
+      setShowImageUpload(true);
+    } else {
+      onConfirm(imagePreview); // Pass the imagePreview data URL to onConfirm
+    }
+  };
 
   const renderRequestData = () => (
     <div className="confirmation-data">
@@ -65,6 +100,46 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, formData, formType }) =
           <span className="data-value">{formData.number_of_copies}</span>
         </div>
       </div>
+    </div>
+  )
+
+  const renderImageUpload = () => (
+    <div className="image-upload-section">
+      <h3>Photo Requirement</h3>
+      <div className="upload-instructions">
+        <p>Please upload a clear photo of yourself with a <strong>white background</strong> in either:</p>
+        <ul>
+          <li>1x1 inch size (for ID applications)</li>
+          <li>2x2 inch size (for clearance applications)</li>
+        </ul>
+      </div>
+
+      <div className="upload-area">
+        <label htmlFor="photo-upload" className="upload-label">
+          {imagePreview ? (
+            <div className="image-preview-container">
+              <img src={imagePreview} alt="Preview" className="image-preview" />
+              <span className="change-photo-text">Change Photo</span>
+            </div>
+          ) : (
+            <div className="upload-placeholder">
+              <span className="upload-icon">+</span>
+              <span className="upload-text">Click to upload photo</span>
+            </div>
+          )}
+          <input
+            id="photo-upload"
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="hidden-input"
+          />
+        </label>
+      </div>
+
+      {!imagePreview && (
+        <p className="upload-warning">Photo upload is required to proceed</p>
+      )}
     </div>
   )
 
@@ -161,23 +236,41 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, formData, formType }) =
     <div className="modal-overlay">
       <div className="confirmation-modal">
         <div className="modal-header">
-          <h2>Please Review Your Information</h2>
+          <h2>
+            {showImageUpload ? "Upload Required Photo" : "Please Review Your Information"}
+          </h2>
           <button className="close-button" onClick={onClose}>
             &times;
           </button>
         </div>
+
         <div className="modal-body">
-          <p className="review-message">
-            Please review the information below to ensure everything is correct before final submission.
-          </p>
-          {formType === "request" ? renderRequestData() : renderRBIData()}
+          {showImageUpload ? (
+            renderImageUpload()
+          ) : (
+            <>
+              <p className="review-message">
+                Please review the information below to ensure everything is correct before final submission.
+              </p>
+              {formType === "request" ? renderRequestData() : renderRBIData()}
+            </>
+          )}
         </div>
+
         <div className="modal-footer">
-          <button className="back-button" onClick={onClose}>
-            Go Back & Edit
+          <button
+            className="back-button"
+            onClick={() => showImageUpload ? setShowImageUpload(false) : onClose()}
+          >
+            {showImageUpload ? "Back to Review" : "Go Back & Edit"}
           </button>
-          <button className="submit-button" onClick={onConfirm}>
-            Submit Now
+
+          <button
+            className="submit-button"
+            onClick={handleContinue}
+            disabled={showImageUpload && !imagePreview}
+          >
+            {showImageUpload ? "Submit Application" : "Continue"}
           </button>
         </div>
       </div>

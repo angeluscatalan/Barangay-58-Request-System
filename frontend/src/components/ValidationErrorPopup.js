@@ -2,8 +2,6 @@
 import "../styles/ValidationErrorPopup.css"
 
 const ValidationErrorPopup = ({ isOpen, onClose, missingFields }) => {
-  console.log("ValidationErrorPopup props:", { isOpen, missingFields })
-
   if (!isOpen) return null
 
   return (

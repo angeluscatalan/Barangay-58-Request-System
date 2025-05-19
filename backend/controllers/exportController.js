@@ -113,7 +113,6 @@ exports.exportDatabase = async (req, res) => {
             console.error('Cleanup error during .sql deletion:', cleanupErr);
           }
 
-          // Clean up the temporary ZIP file
           const tempZipFilePath = path.join(tempDir, zipFileName);
           try {
             console.log('Cleaning up temporary ZIP file:', tempZipFilePath);

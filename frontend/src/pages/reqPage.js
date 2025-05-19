@@ -37,6 +37,9 @@ function reqPage() {
   const [showValidationError, setShowValidationError] = useState(false)
   const [missingFields, setMissingFields] = useState([])
   const [showSuccessPopup, setShowSuccessPopup] = useState(false)
+  const [imagePreview, setImagePreview] = useState(null);
+  const [showImageUpload, setShowImageUpload] = useState(false);
+  
 
   // Handle form field changes
   const handleChange = (e) => {
@@ -143,74 +146,92 @@ function reqPage() {
   }
 
   // Handle final submission after confirmation
-  const handleConfirmSubmit = () => {
-    const fullAddress = `${formData.unit_no}, ${formData.street}, ${formData.subdivision}`
+  const handleConfirmSubmit = async (imagePreviewFromModal) => {
+  try {
+    let imageUrl = null;
+    
+    if ((formData.type_of_certificate === "IDApp" || 
+         formData.type_of_certificate === "ClearanceCert") && 
+        imagePreviewFromModal){
 
-    const requestData = {
-      ...formData,
-      address: fullAddress,
-      number_of_copies: Number(formData.number_of_copies),
+        // Convert data URL to blob
+        const blob = await fetch(imagePreviewFromModal).then(res => res.blob());
+        const imageFormData = new FormData();
+        imageFormData.append('image', blob, 'request_photo.jpg');
+
+        // Upload image
+        const imageResponse = await axios.post(
+          'http://localhost:5000/api/images/upload',
+          imageFormData,
+          {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          }
+        );
+
+        imageUrl = imageResponse.data.imageUrl;
+      }
+
+      // Prepare request data
+      const requestData = {
+        ...formData,
+        photo_url: imageUrl,
+        address: `${formData.unit_no}, ${formData.street}, ${formData.subdivision}`,
+        number_of_copies: Number(formData.number_of_copies)
+      };
+
+      // Submit request
+      const response = await axios.post(
+        'http://localhost:5000/api/requests',
+        requestData,
+        {
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 5000
+        }
+      );
+
+      // Handle success
+      setShowConfirmation(false);
+      setShowSuccessPopup(true);
+
+      // Reset form
+      setFormData({
+        last_name: "",
+        first_name: "",
+        middle_name: "",
+        suffix: "",
+        sex: "",
+        birthday: "",
+        contact_no: "",
+        country_code: "+63",
+        email: "",
+        unit_no: "",
+        street: "",
+        subdivision: "",
+        type_of_certificate: "",
+        purpose_of_request: "",
+        number_of_copies: "",
+      });
+
+      // Reset terms checkbox
+      const termsCheckbox = document.getElementById("terms");
+      if (termsCheckbox) termsCheckbox.checked = false;
+
+      setErrors({});
+
+    } catch (error) {
+      setShowConfirmation(false);
+      console.error("Submission error:", error);
+
+      let errorMessage = "An error occurred while submitting your request.";
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      alert(errorMessage);
     }
-
-    console.log("Sending request data:", requestData)
-
-    axios
-      .post("http://localhost:5000/api/requests", requestData, {
-        headers: { "Content-Type": "application/json" },
-        timeout: 5000,
-      })
-      .then((response) => {
-        setShowConfirmation(false)
-        // Show success popup instead of alert
-        setShowSuccessPopup(true)
-
-        // Reset form after successful submission
-        setFormData({
-          last_name: "",
-          first_name: "",
-          middle_name: "",
-          suffix: "",
-          sex: "",
-          birthday: "",
-          contact_no: "",
-          country_code: "+63",
-          email: "",
-          unit_no: "",
-          street: "",
-          subdivision: "",
-          type_of_certificate: "",
-          purpose_of_request: "",
-          number_of_copies: "",
-        })
-
-        // Reset checkbox and errors
-        if (document.getElementById("terms")) {
-          document.getElementById("terms").checked = false
-        }
-        setErrors({})
-      })
-      .catch((error) => {
-        setShowConfirmation(false)
-        console.error("❌ Error details:", {
-          message: error.message,
-          code: error.code,
-          config: error.config,
-        })
-
-        let errorMessage = "An error occurred while submitting your request."
-
-        if (error.code === "ECONNREFUSED") {
-          errorMessage = "Could not connect to server. Please ensure the backend is running."
-        } else if (error.code === "ERR_NETWORK") {
-          errorMessage = "Network error. Please check your internet connection."
-        } else if (error.message) {
-          errorMessage = `Error: ${error.message}`
-        }
-
-        // Show error popup instead of alert
-        setShowSuccessPopup(false)
-      })
-  }
+  };
 
   // Field-specific validators
   const validatorNum = () => {
@@ -277,6 +298,8 @@ function reqPage() {
         onConfirm={handleConfirmSubmit}
         formData={formData}
         formType="request"
+        imagePreview={imagePreview}
+        setImagePreview={setImagePreview}
       />
 
       {/* Validation Error Popup */}
