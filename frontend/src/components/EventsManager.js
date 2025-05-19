@@ -244,65 +244,85 @@ function EventsManager() {
                 </tr>
               </thead>
               <tbody>
-                {events.map((event, index) => (
-                  <tr key={event.id}>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={selectedEvents.includes(event.id)}
-                        onChange={() => handleSelectEvent(event.id)}
-                      />
-                    </td>
-                    <td>{index + 1}</td>
-                    <td>
-                      {event.image_url ? (
-                        <img
-                          src={event.image_url}
-                          alt="Event"
-                          style={{ width: "50px", height: "50px", objectFit: "cover" }}
-                          onError={(e) => {
-                            e.target.onerror = null
-                            e.target.src = "/placeholder.jpg"
-                          }}
+                {events.map((event, index) => {
+                  console.log('Event row:', event);
+                  return (
+                    <tr key={event.id}>
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={selectedEvents.includes(event.id)}
+                          onChange={() => handleSelectEvent(event.id)}
                         />
-                      ) : (
-                        <div style={{
-                          width: "50px",
-                          height: "50px",
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          backgroundColor: "#f8f9fa",
-                          color: "#6c757d",
-                          border: "1px dashed #dee2e6",
-                          borderRadius: "4px",
-                          fontSize: "10px",
-                          textAlign: "center",
-                          padding: "4px"
-                        }}>
-                          <i className="fas fa-image" style={{ fontSize: "16px", marginBottom: "2px" }}></i>
-                          <span>No image</span>
-                        </div>
-                      )}
-                    </td>
-                    <td>{formatDateTime(event.created_at)}</td>
-                    <td>{event.event_name || "No name"}</td>
-                    <td>{formatDate(event.event_date)}</td>
-                    <td>
-                      {event.time_start} - {event.time_end}
-                    </td>
-                    <td>{event.venue}</td>
-                    <td>
-                      <button className="edit-btn" onClick={() => handleEdit(event)}>
-                        <i className="fas fa-edit"></i>
-                      </button>
-                      <button className="delete-btn" onClick={() => handleDelete(event.id)}>
-                        <i className="fas fa-trash"></i>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td>{index + 1}</td>
+                      <td>
+                        {event.image_url ? (
+                          <div style={{
+                            width: "50px",
+                            height: "50px",
+                            overflow: "hidden",
+                            borderRadius: "4px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            backgroundColor: "#f8f9fa"
+                          }}>
+                            <img
+                              src={event.image_url}
+                              alt="Event"
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                                transition: "transform 0.2s ease"
+                              }}
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "/placeholder.jpg";
+                              }}
+                              loading="lazy"
+                            />
+                          </div>
+                        ) : (
+                          <div style={{
+                            width: "50px",
+                            height: "50px",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            backgroundColor: "#f8f9fa",
+                            color: "#6c757d",
+                            border: "1px dashed #dee2e6",
+                            borderRadius: "4px",
+                            fontSize: "10px",
+                            textAlign: "center",
+                            padding: "4px"
+                          }}>
+                            <i className="fas fa-image" style={{ fontSize: "16px", marginBottom: "2px" }}></i>
+                            <span>No image</span>
+                          </div>
+                        )}
+                      </td>
+                      <td>{formatDateTime(event.created_at)}</td>
+                      <td>{event.event_name || "No name"}</td>
+                      <td>{formatDate(event.event_date)}</td>
+                      <td>
+                        {event.time_start} - {event.time_end}
+                      </td>
+                      <td>{event.venue}</td>
+                      <td>
+                        <button className="edit-btn" onClick={() => handleEdit(event)}>
+                          <i className="fas fa-edit"></i>
+                        </button>
+                        <button className="delete-btn" onClick={() => handleDelete(event.id)}>
+                          <i className="fas fa-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>

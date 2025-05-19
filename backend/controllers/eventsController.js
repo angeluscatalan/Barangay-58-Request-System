@@ -31,11 +31,16 @@ const uploadImageToS3 = async (file) => {
         console.error("S3 upload failed:", error);
         throw error;
     } finally {
-        fs.unlinkSync(file.path);
+        // Clean up the temporary file
+        if (fs.existsSync(file.path)) {
+            fs.unlinkSync(file.path);
+        }
     }
 };
 
 const deleteImageFromS3 = async (imageUrl) => {
+    if (!imageUrl) return;
+
     try {
         const imageKey = imageUrl.split(".com/")[1];
         await s3.send(new DeleteObjectCommand({
@@ -44,52 +49,18 @@ const deleteImageFromS3 = async (imageUrl) => {
         }));
     } catch (error) {
         console.error("Error deleting image from S3:", error);
-        throw error;
+        // Don't throw the error - just log it and continue
+        // This prevents the deletion of the database record from failing
     }
 };
 
-// Database operations
-const createEventRecord = async (table, eventData) => {
-    const [result] = await pool.execute(
-        `INSERT INTO ${table} 
-         (event_name, event_date, time_start, time_end, venue, description, image_url)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [
-            eventData.name || eventData.eventName,
-            eventData.date || eventData.eventDate,
-            eventData.timeStart || null,
-            eventData.timeEnd || null,
-            eventData.venue || null,
-            eventData.description || null,
-            eventData.imageUrl || null
-        ]
-    );
-    return result;
-};
-
-const backupEvent = async (eventData, type = 'create') => {
-    await pool.execute(
-        `INSERT INTO backup_events 
-         (event_name, event_date, time_start, time_end, venue, description, image_url, original_id, backup_type)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-            eventData.name || eventData.eventName,
-            eventData.date || eventData.eventDate,
-            eventData.timeStart || null,
-            eventData.timeEnd || null,
-            eventData.venue || null,
-            eventData.description || null,
-            eventData.imageUrl || null,
-            eventData.id,
-            type
-        ]
-    );
-};
-
-// Controller methods
+// Create event
 exports.createEvent = async (req, res) => {
+    const connection = await pool.getConnection();
     try {
-        if (!req.body.name || !req.body.date) {
+        await connection.beginTransaction();
+
+        if (!req.body.event_name || !req.body.event_date) {
             return res.status(400).json({ message: 'Event name and date are required' });
         }
 
@@ -98,26 +69,41 @@ exports.createEvent = async (req, res) => {
             imageUrl = await uploadImageToS3(req.file);
         }
 
-        // Only create in main events table
-        const result = await createEventRecord('archive_events', {
-            ...req.body,
-            imageUrl
-        });
+        // Insert into archive_events table
+        const [result] = await connection.execute(
+            `INSERT INTO archive_events 
+             (event_name, event_date, time_start, time_end, venue, description, image_url)
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [
+                req.body.event_name,
+                req.body.event_date,
+                req.body.time_start,
+                req.body.time_end,
+                req.body.venue,
+                req.body.description,
+                imageUrl
+            ]
+        );
 
+        await connection.commit();
         res.status(201).json({
             message: 'Event created successfully',
             id: result.insertId,
             imageUrl
         });
     } catch (error) {
+        await connection.rollback();
         console.error('Error creating event:', error);
         res.status(500).json({
             message: 'Failed to create event',
             error: error.message
         });
+    } finally {
+        connection.release();
     }
 };
 
+// Get all events
 exports.getEvents = async (req, res) => {
     try {
         const [rows] = await pool.query(`
@@ -144,90 +130,14 @@ exports.getEvents = async (req, res) => {
     }
 };
 
-exports.deleteEvent = async (req, res) => {
-    const connection = await pool.getConnection();
-    try {
-        await connection.beginTransaction();
-        const { id } = req.params;
-
-        // Get the full event data from main table
-        const [event] = await connection.execute(
-            "SELECT * FROM archive_events WHERE id = ?",
-            [id]
-        );
-
-        if (event.length === 0) {
-            await connection.rollback();
-            return res.status(404).json({
-                success: false,
-                message: "Event not found"
-            });
-        }
-
-        const eventData = event[0];
-        
-        // Archive to backup_events
-        await connection.execute(
-            `INSERT INTO backup_events 
-             (event_name, event_date, time_start, time_end, venue, description, image_url, original_id, backup_type)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-                eventData.event_name,
-                eventData.event_date ? new Date(eventData.event_date).toISOString().split('T')[0] : null,
-                eventData.time_start,
-                eventData.time_end,
-                eventData.venue,
-                eventData.description,
-                eventData.image_url,
-                id,
-                'delete' // Mark as deleted
-            ]
-        );
-
-        // Delete image from S3 if exists
-        if (eventData.image_url) {
-            await deleteImageFromS3(eventData.image_url);
-        }
-
-        // Delete from main table
-        const [result] = await connection.execute(
-            "DELETE FROM archive_events WHERE id = ?",
-            [id]
-        );
-
-        if (result.affectedRows === 0) {
-            await connection.rollback();
-            return res.status(404).json({
-                success: false,
-                message: "Event not found"
-            });
-        }
-
-        await connection.commit();
-        res.status(200).json({
-            success: true,
-            message: "Event deleted and archived successfully"
-        });
-    } catch (error) {
-        await connection.rollback();
-        console.error("Error deleting event:", error);
-        res.status(500).json({
-            success: false,
-            message: "Failed to delete event",
-            error: error.message
-        });
-    } finally {
-        connection.release();
-    }
-};
-
+// Update event
 exports.updateEvent = async (req, res) => {
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
         const { id } = req.params;
-        let imageUrl = null;
 
+        // Get existing event
         const [existingEvent] = await connection.execute(
             "SELECT * FROM archive_events WHERE id = ?",
             [id]
@@ -241,56 +151,44 @@ exports.updateEvent = async (req, res) => {
             });
         }
 
+        let imageUrl = existingEvent[0].image_url;
         if (req.file) {
+            // Upload new image
             imageUrl = await uploadImageToS3(req.file);
             // Delete old image if exists
-            if (existingEvent[0]?.image_url) {
+            if (existingEvent[0].image_url) {
                 await deleteImageFromS3(existingEvent[0].image_url);
             }
-        } else {
-            imageUrl = existingEvent[0].image_url;
         }
 
-        let updateQuery = `UPDATE archive_events SET
-            event_name = ?,
-            event_date = ?,
-            time_start = ?,
-            time_end = ?,
-            venue = ?,
-            description = ?`;
-
-        const queryParams = [
-            req.body.name,
-            req.body.date,
-            req.body.timeStart,
-            req.body.timeEnd,
-            req.body.venue,
-            req.body.description
-        ];
-
-        if (imageUrl) {
-            updateQuery += `, image_url = ?`;
-            queryParams.push(imageUrl);
-        }
-
-        updateQuery += ` WHERE id = ?`;
-        queryParams.push(id);
-
-        const [result] = await connection.execute(updateQuery, queryParams);
-
-        if (result.affectedRows === 0) {
-            await connection.rollback();
-            return res.status(404).json({
-                success: false,
-                message: 'Event not updated'
-            });
-        }
+        // Update the event
+        const [result] = await connection.execute(
+            `UPDATE archive_events 
+             SET event_name = ?, 
+                 event_date = ?,
+                 time_start = ?,
+                 time_end = ?,
+                 venue = ?,
+                 description = ?,
+                 image_url = ?
+             WHERE id = ?`,
+            [
+                req.body.event_name,
+                req.body.event_date,
+                req.body.time_start,
+                req.body.time_end,
+                req.body.venue,
+                req.body.description,
+                imageUrl,
+                id
+            ]
+        );
 
         await connection.commit();
         res.status(200).json({
             success: true,
             message: 'Event updated successfully',
-            imageUrl: imageUrl || null
+            imageUrl
         });
     } catch (error) {
         await connection.rollback();
@@ -299,6 +197,171 @@ exports.updateEvent = async (req, res) => {
             success: false,
             message: 'Failed to update event',
             error: error.message
+        });
+    } finally {
+        connection.release();
+    }
+};
+
+// Delete event
+exports.deleteEvent = async (req, res) => {
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+        const { id } = req.params;
+
+        // Get the event data before deleting
+        const [event] = await connection.execute(
+            "SELECT * FROM archive_events WHERE id = ?",
+            [id]
+        );
+
+        if (event.length === 0) {
+            await connection.rollback();
+            return res.status(404).json({
+                success: false,
+                message: "Event not found"
+            });
+        }
+
+        // Backup the event
+        await connection.execute(
+            `INSERT INTO backup_events 
+             (event_name, event_date, time_start, time_end, venue, description, image_url, original_id, backup_type, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                event[0].event_name,
+                event[0].event_date,
+                event[0].time_start,
+                event[0].time_end,
+                event[0].venue,
+                event[0].description,
+                event[0].image_url,
+                id,
+                'delete',
+                event[0].created_at
+            ]
+        );
+
+        // Delete image from S3 if exists
+        if (event[0].image_url) {
+            await deleteImageFromS3(event[0].image_url);
+        }
+
+        // Delete from main table
+        await connection.execute(
+            "DELETE FROM archive_events WHERE id = ?",
+            [id]
+        );
+
+        await connection.commit();
+        res.status(200).json({
+            success: true,
+            message: "Event deleted and archived successfully"
+        });
+    } catch (error) {
+        await connection.rollback();
+        console.error('Error deleting event:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to delete event',
+            error: error.message
+        });
+    } finally {
+        connection.release();
+    }
+};
+
+// Get backup events
+exports.getBackupEvents = async (req, res) => {
+    try {
+        const [rows] = await pool.query(`
+            SELECT 
+                id,
+                event_name,
+                DATE_FORMAT(event_date, '%Y-%m-%d') as event_date,
+                TIME_FORMAT(time_start, '%H:%i') as time_start,
+                TIME_FORMAT(time_end, '%H:%i') as time_end,
+                venue,
+                description,
+                image_url,
+                CONVERT_TZ(created_at, 'UTC', 'Asia/Manila') as created_at,
+                original_id,
+                backup_type
+            FROM backup_events 
+            ORDER BY created_at DESC
+        `);
+        res.status(200).json(rows);
+    } catch (error) {
+        console.error('Error fetching backup events:', error);
+        res.status(500).json({
+            message: "Failed to fetch backup events",
+            error: error.message
+        });
+    }
+};
+
+// Restore events from backup
+exports.restoreEvents = async (req, res) => {
+    const { eventIds } = req.body;
+    const connection = await pool.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        for (const id of eventIds) {
+            // Get the backup event data
+            const [backupEvent] = await connection.execute(
+                "SELECT * FROM backup_events WHERE id = ?",
+                [id]
+            );
+
+            if (backupEvent.length === 0) {
+                await connection.rollback();
+                return res.status(404).json({
+                    success: false,
+                    error: `Backup event with id ${id} not found`
+                });
+            }
+
+            const eventData = backupEvent[0];
+
+            // Insert into main events table with original timestamp
+            await connection.execute(
+                `INSERT INTO archive_events 
+                 (event_name, event_date, time_start, time_end, venue, description, image_url, created_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    eventData.event_name,
+                    eventData.event_date,
+                    eventData.time_start,
+                    eventData.time_end,
+                    eventData.venue,
+                    eventData.description,
+                    eventData.image_url,
+                    eventData.created_at
+                ]
+            );
+
+            // Delete from backup table
+            await connection.execute(
+                "DELETE FROM backup_events WHERE id = ?",
+                [id]
+            );
+        }
+
+        await connection.commit();
+        res.status(200).json({
+            success: true,
+            message: `Successfully restored ${eventIds.length} event(s)`
+        });
+    } catch (error) {
+        await connection.rollback();
+        console.error('Error restoring events:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to restore events',
+            details: error.message
         });
     } finally {
         connection.release();
