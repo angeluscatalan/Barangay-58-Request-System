@@ -1,10 +1,16 @@
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&display=swap");
 
+html,
+body {
+  background-color: #ffe3e2;
+}
+
 body {
   margin: 0;
   padding: 0;
   font-family: "Montserrat", sans-serif;
+  background-color: #ffe3e2;
 }
 
 .events-header-section {
@@ -100,10 +106,14 @@ body {
 
 .events-content-section {
   padding: 50px 0;
-  background-color: #ffd2dd;
+  background-color: #ffe3e2;
   text-align: center;
   /* Remove bottom margin that creates space */
   margin-bottom: 0;
+}
+
+#second-section.events-content-section {
+  background-color: #ffe3e2;
 }
 
 .events-content-section h2 {
@@ -191,13 +201,21 @@ body {
 }
 
 .events-section {
+  background-color: #ffe3e2 !important;
   display: flex;
   justify-content: center;
   align-items: center;
   margin-top: 40px;
+  padding-bottom: 40px;
+}
+
+.events-section,
+.events-section > * {
+  background-color: #ffe3e2;
 }
 
 .event-cards-container {
+  background-color: #ffe3e2 !important;
   position: relative;
   display: grid;
   grid-template-columns: repeat(1, 1fr);
@@ -525,6 +543,7 @@ p.event-modal-overlay {
 }
 
 .events-table-section {
+  background-color: #ffe3e2;
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;

@@ -235,7 +235,7 @@
 }
 
 .form-row {
-  margin-bottom: 15px;
+  margin-bottom: 20px; /* Increase from 15px to provide space for error message */
   width: 100%;
 }
 
@@ -247,7 +247,7 @@
 .input-container {
   flex: 1;
   position: relative;
-  margin-bottom: 20px;
+  margin-bottom: 25px; /* Increase from 20px to provide space for error message */
   /* Remove flex-direction: column; */
 }
 
@@ -303,11 +303,12 @@
 
 .error-message {
   color: #ff4444;
-  font-size: 0.8rem;
-  margin-top: 5px;
-  position: absolute;
-  bottom: -20px;
-  left: 0;
+  font-size: 0.7rem;
+  margin-top: 2px;
+  position: static; /* Change from absolute to static positioning */
+  display: block;
+  text-align: left;
+  padding-left: 2px;
 }
 
 .reqFormTermsContainer {
@@ -400,7 +401,7 @@
 }
 
 .input-error {
-  border: 2px solid #ff4444 !important;
+  border: 1px solid #ff4444 !important;
 }
 
 .address-box {

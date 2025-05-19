@@ -226,7 +226,7 @@
 }
 
 .form-row {
-  margin-bottom: 15px;
+  margin-bottom: 20px; /* Increase from 15px to provide space for error message */
   width: 100%;
   position: relative;
 }
@@ -278,15 +278,16 @@
 
 .error-message {
   color: #ff4444;
-  font-size: 0.8rem;
-  margin-top: 5px;
-  position: absolute;
-  bottom: -20px;
-  left: 0;
+  font-size: 0.7rem;
+  margin-top: 2px;
+  position: static; /* Change from absolute to static positioning */
+  display: block;
+  text-align: left;
+  padding-left: 2px;
 }
 
 .input-error {
-  border: 2px solid #ff4444 !important;
+  border: 1px solid #ff4444 !important;
 }
 
 .rbi-form-terms-container {
@@ -333,7 +334,9 @@
 }
 
 .rbi-form-submit:hover {
-  background-color: #b01758;
+    color:#b01758;
+  border: solid #b01758;
+  background-color: transparent;
 }
 
 .rbi-contact {
@@ -401,7 +404,9 @@
 }
 
 .add-member-button:hover {
-  background-color: #1565c0;
+  color: #1565c0;
+  border: solid #1565c0;
+  background-color: transparent;
 }
 
 .add-icon {
@@ -433,7 +438,9 @@
 }
 
 .remove-member-button:hover {
-  background-color: #d32f2f;
+  color:#d32f2f;
+  border: solid #d32f2f;
+  background-color: transparent;
 }
 
 .remove-icon {
