@@ -46,7 +46,7 @@ function reqPage() {
     let { name, value } = e.target
 
     // Auto-capitalize names
-    if (["last_name", "first_name", "middle_name"].includes(name)) {
+    if (["last_name", "first_name", "middle_name","unit_no","street","subdivision"].includes(name)) {
       value = value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase())
     }
 

@@ -58,7 +58,7 @@ function RBIRegistration() {
 
   const handleHouseholdChange = (e) => {
     let { name, value } = e.target
-    if (["head_last_name", "head_first_name", "head_middle_name", "birth_place"].includes(name)) {
+    if (["head_last_name", "head_first_name", "head_middle_name", "birth_place","house_unit_no","street_name","subdivision"].includes(name)) {
       value = value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase())
     }
     setHouseholdData({ ...householdData, [name]: value })
