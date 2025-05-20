@@ -376,29 +376,69 @@ exports.updateHouseholdMember = async (req, res) => {
   }
 };
 
-// 📌 Delete entire household with all members
+// 📌 Delete entire household with all members (fixed version)
 exports.deleteHousehold = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const connection = await pool.getConnection();
+  const { id } = req.params;
+  const connection = await pool.getConnection();
 
+  try {
     await connection.beginTransaction();
 
-    try {
-      // 1. Get the household data
-      const [household] = await connection.execute(
-        'SELECT * FROM households WHERE id = ?',
-        [id]
-      );
+    // 1. Get the household data
+    const [household] = await connection.execute(
+      'SELECT * FROM households WHERE id = ?',
+      [id]
+    );
 
-      if (household.length === 0) {
-        await connection.rollback();
-        return res.status(404).json({ error: 'Household not found' });
-      }
+    if (household.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ error: 'Household not found' });
+    }
 
-      // 2. Archive the household
+    // 2. Get all members of this household
+    const [members] = await connection.execute(
+      'SELECT * FROM household_members WHERE household_id = ?',
+      [id]
+    );
+
+    // 3. Check if household already exists in backup
+    const [existingBackup] = await connection.execute(
+      'SELECT id FROM backup_households WHERE id = ?',
+      [id]
+    );
+
+    // 4. Archive or update the household
+    if (existingBackup.length > 0) {
       await connection.execute(
-        `INSERT INTO archive_households 
+        `UPDATE backup_households 
+         SET head_last_name = ?, head_first_name = ?, head_middle_name = ?, head_suffix = ?,
+             house_unit_no = ?, street_name = ?, subdivision = ?, birth_place = ?, birth_date = ?,
+             sex = ?, civil_status = ?, citizenship = ?, occupation = ?, email_address = ?, 
+             status = ?, created_at = ?
+         WHERE id = ?`,
+        [
+          household[0].head_last_name,
+          household[0].head_first_name,
+          household[0].head_middle_name,
+          household[0].head_suffix,
+          household[0].house_unit_no,
+          household[0].street_name,
+          household[0].subdivision,
+          household[0].birth_place,
+          household[0].birth_date,
+          household[0].sex,
+          household[0].civil_status,
+          household[0].citizenship,
+          household[0].occupation,
+          household[0].email_address,
+          household[0].status,
+          household[0].created_at,
+          id
+        ]
+      );
+    } else {
+      await connection.execute(
+        `INSERT INTO backup_households 
         (id, head_last_name, head_first_name, head_middle_name, head_suffix, 
          house_unit_no, street_name, subdivision, birth_place, birth_date, 
          sex, civil_status, citizenship, occupation, email_address, status, created_at)
@@ -423,27 +463,92 @@ exports.deleteHousehold = async (req, res) => {
           household[0].created_at
         ]
       );
+    }
 
-      // 3. Delete the household
-      await connection.execute(
-        'DELETE FROM households WHERE id = ?',
-        [id]
+    // 5. Archive all members
+    for (const member of members) {
+      const [existingMemberBackup] = await connection.execute(
+        'SELECT id FROM backup_household_members WHERE id = ?',
+        [member.id]
       );
 
-      await connection.commit();
-      res.status(200).json({ message: 'Household archived and deleted successfully' });
-    } catch (error) {
-      await connection.rollback();
-      throw error;
-    } finally {
-      connection.release();
+      if (existingMemberBackup.length > 0) {
+        await connection.execute(
+          `UPDATE backup_household_members 
+           SET household_id = ?, last_name = ?, first_name = ?, middle_name = ?, suffix = ?,
+               birth_place = ?, birth_date = ?, sex = ?, civil_status = ?, 
+               citizenship = ?, occupation = ?
+           WHERE id = ?`,
+          [
+            member.household_id,
+            member.last_name,
+            member.first_name,
+            member.middle_name,
+            member.suffix || null,
+            member.birth_place,
+            member.birth_date,
+            member.sex,
+            member.civil_status,
+            member.citizenship,
+            member.occupation || null,
+            member.id
+          ]
+        );
+      } else {
+        await connection.execute(
+          `INSERT INTO backup_household_members 
+          (id, household_id, last_name, first_name, middle_name, suffix, 
+           birth_place, birth_date, sex, civil_status, citizenship, occupation)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            member.id,
+            member.household_id,
+            member.last_name,
+            member.first_name,
+            member.middle_name,
+            member.suffix || null,
+            member.birth_place,
+            member.birth_date,
+            member.sex,
+            member.civil_status,
+            member.citizenship,
+            member.occupation || null
+          ]
+        );
+      }
     }
+
+    // 6. Delete all members from main table
+    await connection.execute(
+      'DELETE FROM household_members WHERE household_id = ?',
+      [id]
+    );
+
+    // 7. Delete the household from main table
+    await connection.execute(
+      'DELETE FROM households WHERE id = ?',
+      [id]
+    );
+
+    await connection.commit();
+    res.status(200).json({
+      success: true,
+      message: 'Household and members archived and deleted successfully'
+    });
   } catch (error) {
-    console.error('Error deleting household:', error);
-    res.status(500).json({ error: 'Failed to delete household' });
+    await connection.rollback();
+    console.error('Delete household error:', error.message);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete household',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  } finally {
+    connection.release();
   }
 };
 
+// 📌 Delete household member (fixed version)
 exports.deleteHouseholdMember = async (req, res) => {
   const { memberId } = req.params;
   const connection = await pool.getConnection();
@@ -453,7 +558,8 @@ exports.deleteHouseholdMember = async (req, res) => {
 
     // 1. Verify member exists and get data
     const [member] = await connection.execute(
-      `SELECT hm.*, h.id as household_id FROM household_members hm
+      `SELECT hm.*, h.id as household_id, h.status as household_status 
+       FROM household_members hm
        JOIN households h ON hm.household_id = h.id
        WHERE hm.id = ?`,
       [memberId]
@@ -464,24 +570,24 @@ exports.deleteHouseholdMember = async (req, res) => {
       return res.status(404).json({ error: 'Member not found' });
     }
 
-    // 2. First, verify if the household is already archived
-    const [archivedHousehold] = await connection.execute(
-      `SELECT id FROM archive_households WHERE id = ?`,
-      [member[0].household_id]
+    const memberData = member[0];
+
+    // 2. Check if household exists in backup (create if not)
+    const [existingHouseholdBackup] = await connection.execute(
+      'SELECT id FROM backup_households WHERE id = ?',
+      [memberData.household_id]
     );
 
-    // 2a. If the household is not archived, archive it first
-    if (archivedHousehold.length === 0) {
+    if (existingHouseholdBackup.length === 0) {
       // Get household data
       const [household] = await connection.execute(
-        `SELECT * FROM households WHERE id = ?`,
-        [member[0].household_id]
+        'SELECT * FROM households WHERE id = ?',
+        [memberData.household_id]
       );
 
       if (household.length > 0) {
-        // Archive the household
         await connection.execute(
-          `INSERT INTO archive_households 
+          `INSERT INTO backup_households 
           (id, head_last_name, head_first_name, head_middle_name, head_suffix, 
            house_unit_no, street_name, subdivision, birth_place, birth_date, 
            sex, civil_status, citizenship, occupation, email_address, status, created_at)
@@ -509,29 +615,59 @@ exports.deleteHouseholdMember = async (req, res) => {
       }
     }
 
-    // 3. Now archive the member
-    await connection.execute(
-      `INSERT INTO archive_household_members 
-      (id, household_id, last_name, first_name, middle_name, suffix, 
-       birth_place, birth_date, sex, civil_status, citizenship, occupation)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        member[0].id,
-        member[0].household_id,
-        member[0].last_name,
-        member[0].first_name,
-        member[0].middle_name,
-        member[0].suffix || null, // Handle NULL suffix
-        member[0].birth_place,
-        member[0].birth_date,
-        member[0].sex,
-        member[0].civil_status,
-        member[0].citizenship,
-        member[0].occupation || null // Handle NULL occupation
-      ]
+    // 3. Check if member already exists in backup
+    const [existingMemberBackup] = await connection.execute(
+      'SELECT id FROM backup_household_members WHERE id = ?',
+      [memberId]
     );
 
-    // 4. Delete from main table
+    // 4. Archive or update the member
+    if (existingMemberBackup.length > 0) {
+      await connection.execute(
+        `UPDATE backup_household_members 
+         SET household_id = ?, last_name = ?, first_name = ?, middle_name = ?, suffix = ?,
+             birth_place = ?, birth_date = ?, sex = ?, civil_status = ?, 
+             citizenship = ?, occupation = ?
+         WHERE id = ?`,
+        [
+          memberData.household_id,
+          memberData.last_name,
+          memberData.first_name,
+          memberData.middle_name,
+          memberData.suffix || null,
+          memberData.birth_place,
+          memberData.birth_date,
+          memberData.sex,
+          memberData.civil_status,
+          memberData.citizenship,
+          memberData.occupation || null,
+          memberId
+        ]
+      );
+    } else {
+      await connection.execute(
+        `INSERT INTO backup_household_members 
+        (id, household_id, last_name, first_name, middle_name, suffix, 
+         birth_place, birth_date, sex, civil_status, citizenship, occupation)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          memberData.id,
+          memberData.household_id,
+          memberData.last_name,
+          memberData.first_name,
+          memberData.middle_name,
+          memberData.suffix || null,
+          memberData.birth_place,
+          memberData.birth_date,
+          memberData.sex,
+          memberData.civil_status,
+          memberData.citizenship,
+          memberData.occupation || null
+        ]
+      );
+    }
+
+    // 5. Delete from main table
     await connection.execute(
       'DELETE FROM household_members WHERE id = ?',
       [memberId]
@@ -544,14 +680,14 @@ exports.deleteHouseholdMember = async (req, res) => {
     });
   } catch (error) {
     await connection.rollback();
-    console.error('Database error:', {
+    console.error('Delete member error:', {
       message: error.message,
       sqlMessage: error.sqlMessage,
       sql: error.sql
     });
     res.status(500).json({
       success: false,
-      error: 'Failed to process member deletion',
+      error: 'Failed to delete member',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   } finally {
@@ -666,8 +802,6 @@ const getBackupRBIs = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch backup RBIs' });
   }
 };
-
-// Restore RBIs from backup
 const restoreRBIs = async (req, res) => {
   const { householdIds } = req.body;
   let connection;
@@ -677,7 +811,7 @@ const restoreRBIs = async (req, res) => {
     await connection.beginTransaction();
 
     for (const householdId of householdIds) {
-      // Get household and members from backup tables
+      // 1. Get household from backup
       const [householdResult] = await connection.query(
         'SELECT * FROM backup_households WHERE id = ?',
         [householdId]
@@ -688,108 +822,124 @@ const restoreRBIs = async (req, res) => {
         throw new Error(`Household ${householdId} not found in backup`);
       }
 
-      // Insert household into main table
-      await connection.query(
-        `INSERT INTO households (
-          id, head_first_name, head_middle_name, head_last_name, head_suffix,
-          sex, birth_date, birth_place, civil_status, citizenship, occupation,
-          email_address, contact_no, house_unit_no, street_name, subdivision,
-          status, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ON DUPLICATE KEY UPDATE
-          head_first_name = VALUES(head_first_name),
-          head_middle_name = VALUES(head_middle_name),
-          head_last_name = VALUES(head_last_name),
-          head_suffix = VALUES(head_suffix),
-          sex = VALUES(sex),
-          birth_date = VALUES(birth_date),
-          birth_place = VALUES(birth_place),
-          civil_status = VALUES(civil_status),
-          citizenship = VALUES(citizenship),
-          occupation = VALUES(occupation),
-          email_address = VALUES(email_address),
-          contact_no = VALUES(contact_no),
-          house_unit_no = VALUES(house_unit_no),
-          street_name = VALUES(street_name),
-          subdivision = VALUES(subdivision),
-          status = VALUES(status),
-          updated_at = CURRENT_TIMESTAMP`,
-        [
-          household.id,
-          household.head_first_name,
-          household.head_middle_name,
-          household.head_last_name,
-          household.head_suffix,
-          household.sex,
-          household.birth_date,
-          household.birth_place,
-          household.civil_status,
-          household.citizenship,
-          household.occupation,
-          household.email_address,
-          household.contact_no,
-          household.house_unit_no,
-          household.street_name,
-          household.subdivision,
-          household.status,
-          household.created_at,
-          household.updated_at
-        ]
-      );
-
-      // Get and insert members
+      // 2. Get members from backup
       const [members] = await connection.query(
         'SELECT * FROM backup_household_members WHERE household_id = ?',
         [householdId]
       );
 
+      // 3. Insert household into main table
+      await connection.query(
+        `INSERT INTO households (
+          id, head_last_name, head_first_name, head_middle_name, head_suffix,
+          house_unit_no, street_name, subdivision, birth_place, birth_date,
+          sex, civil_status, citizenship, occupation, email_address, status,
+          created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE
+          head_last_name = VALUES(head_last_name),
+          head_first_name = VALUES(head_first_name),
+          head_middle_name = VALUES(head_middle_name),
+          head_suffix = VALUES(head_suffix),
+          house_unit_no = VALUES(house_unit_no),
+          street_name = VALUES(street_name),
+          subdivision = VALUES(subdivision),
+          birth_place = VALUES(birth_place),
+          birth_date = VALUES(birth_date),
+          sex = VALUES(sex),
+          civil_status = VALUES(civil_status),
+          citizenship = VALUES(citizenship),
+          occupation = VALUES(occupation),
+          email_address = VALUES(email_address),
+          status = VALUES(status),
+          created_at = VALUES(created_at)`,
+        [
+          household.id,
+          household.head_last_name,
+          household.head_first_name,
+          household.head_middle_name,
+          household.head_suffix,
+          household.house_unit_no,
+          household.street_name,
+          household.subdivision,
+          household.birth_place,
+          household.birth_date,
+          household.sex,
+          household.civil_status,
+          household.citizenship,
+          household.occupation,
+          household.email_address,
+          household.status,
+          household.created_at
+        ]
+      );
+
+      // 4. Insert members into main table
       for (const member of members) {
         await connection.query(
           `INSERT INTO household_members (
-            id, household_id, first_name, middle_name, last_name, suffix,
-            sex, birth_date, birth_place, civil_status, citizenship,
-            occupation, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            id, household_id, last_name, first_name, middle_name, suffix,
+            birth_place, birth_date, sex, civil_status, citizenship, occupation
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           ON DUPLICATE KEY UPDATE
+            last_name = VALUES(last_name),
             first_name = VALUES(first_name),
             middle_name = VALUES(middle_name),
-            last_name = VALUES(last_name),
             suffix = VALUES(suffix),
-            sex = VALUES(sex),
-            birth_date = VALUES(birth_date),
             birth_place = VALUES(birth_place),
+            birth_date = VALUES(birth_date),
+            sex = VALUES(sex),
             civil_status = VALUES(civil_status),
             citizenship = VALUES(citizenship),
-            occupation = VALUES(occupation),
-            updated_at = CURRENT_TIMESTAMP`,
+            occupation = VALUES(occupation)`,
           [
             member.id,
             member.household_id,
+            member.last_name,
             member.first_name,
             member.middle_name,
-            member.last_name,
-            member.suffix,
-            member.sex,
-            member.birth_date,
+            member.suffix || null,
             member.birth_place,
+            member.birth_date,
+            member.sex,
             member.civil_status,
             member.citizenship,
-            member.occupation,
-            member.created_at,
-            member.updated_at
+            member.occupation || null
           ]
         );
       }
+
+      // 5. Delete from backup tables
+      await connection.query(
+        'DELETE FROM backup_household_members WHERE household_id = ?',
+        [householdId]
+      );
+      await connection.query(
+        'DELETE FROM backup_households WHERE id = ?',
+        [householdId]
+      );
     }
 
     await connection.commit();
-    res.json({ message: 'Successfully restored RBI data' });
+    res.json({
+      success: true,
+      message: 'Successfully restored and removed backup RBI data'
+    });
   } catch (error) {
     if (connection) {
       await connection.rollback();
     }
-    console.error('Error restoring RBIs:', error);
-    res.status(500).json({ error: 'Failed to restore RBI data' });
+    console.error('Detailed restore error:', {
+      message: error.message,
+      sqlMessage: error.sqlMessage,
+      sql: error.sql,
+      stack: error.stack
+    });
+    res.status(500).json({
+      success: false,
+      error: 'Failed to restore RBI data',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   } finally {
     if (connection) {
       connection.release();

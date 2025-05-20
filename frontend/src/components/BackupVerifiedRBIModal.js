@@ -37,7 +37,7 @@ const BackupVerifiedRBIModal = ({ isOpen, onClose, onRestore }) => {
             console.error('Error fetching backup households:', error);
             setError('Failed to fetch backup data');
             if (error?.response?.status === 401) {
-                console.log("Unauthorized access - please log in again");
+                alert("Unauthorized access - please log in again");
             }
         } finally {
             setLoading(false);
