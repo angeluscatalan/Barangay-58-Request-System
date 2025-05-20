@@ -258,16 +258,25 @@ exports.loginAdmin = async (req, res) => {
 };
 
 exports.logoutAdmin = (req, res) => {
+  try {
     res.clearCookie("token", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict"
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict"
     });
     
     res.json({ 
-        success: true,
-        message: "Logout successful" 
+      success: true,
+      message: "Logout successful" 
     });
+  } catch (error) {
+    console.error("Logout error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error during logout",
+      error: error.message
+    });
+  }
 };
   
   exports.getCurrentUser = async (req, res) => {

@@ -15,6 +15,7 @@ import ComparisonModal from "../components/comparisonModal"
 import AdminDashboard from "../components/AdminDashboard"
 import BackupRequestsModal from "../components/BackupRequestsModal"
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal"
+import LogoutConfirmationModal from "../components/LogoutConfirmationModal"
 
 function Admin() {
   const navigate = useNavigate()
@@ -38,6 +39,7 @@ function Admin() {
   const [requestToDelete, setRequestToDelete] = useState(null)
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false)
   const [isSmallScreen, setIsSmallScreen] = useState(false)
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
 
   const { requests, loading: requestsLoading, error: requestsError, fetchRequests, updateRequestStatus } = useRequests()
 
@@ -451,12 +453,7 @@ function Admin() {
           </nav>
           <div className="sidebar-footer">
             <button
-              onClick={() => {
-                // Clear all auth-related items
-                localStorage.removeItem("token")
-                localStorage.removeItem("access_level")
-                navigate("/")
-              }}
+              onClick={() => setShowLogoutModal(true)}
               className="sidebar-logout-button"
             >
               <i className="fas fa-sign-out-alt"></i>
@@ -751,6 +748,17 @@ function Admin() {
         message={`Are you sure you want to delete ${selectedRequests.length} selected request(s)? This action cannot be undone.`}
         onConfirm={confirmBulkDelete}
         onCancel={() => setShowBulkDeleteModal(false)}
+      />
+
+      <LogoutConfirmationModal
+        isOpen={showLogoutModal}
+        onConfirm={() => {
+          // Clear all auth-related items
+          localStorage.removeItem("token")
+          localStorage.removeItem("access_level")
+          navigate("/")
+        }}
+        onCancel={() => setShowLogoutModal(false)}
       />
     </>
   )
