@@ -5,12 +5,13 @@ function AddHouseholdMemberModal({ isOpen, onClose, onSave, householdId }) {
     last_name: "",
     first_name: "",
     middle_name: "",
-    suffix: "",
+    suffix: "", // Initialize as empty string
     birth_place: "",
     birth_date: "",
     sex: "",
     civil_status: "",
     citizenship: "",
+    citizenship_other: "",
     occupation: ""
   });
 
@@ -24,7 +25,15 @@ function AddHouseholdMemberModal({ isOpen, onClose, onSave, householdId }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(memberData);
+    // Prepare the data to be saved
+    const dataToSave = {
+      ...memberData,
+      // If "Other" is selected, use the citizenship_other value
+      citizenship: memberData.citizenship === "Other" 
+        ? memberData.citizenship_other 
+        : memberData.citizenship
+    };
+    onSave(dataToSave);
   };
 
   if (!isOpen) return null;
@@ -70,12 +79,20 @@ function AddHouseholdMemberModal({ isOpen, onClose, onSave, householdId }) {
           </div>
           <div className="form-group">
             <label>Suffix:</label>
-            <input
-              type="text"
+            {/* Changed from input to select */}
+            <select
               name="suffix"
               value={memberData.suffix}
               onChange={handleChange}
-            />
+            >
+              <option value="">None</option> {/* Option for no suffix */}
+              <option value="Jr.">Jr.</option>
+              <option value="Sr.">Sr.</option>
+              <option value="II">II</option>
+              <option value="III">III</option>
+              <option value="IV">IV</option>
+              <option value="V">V</option>
+            </select>
           </div>
           <div className="form-group">
             <label>Birth Place:</label>
@@ -128,13 +145,27 @@ function AddHouseholdMemberModal({ isOpen, onClose, onSave, householdId }) {
           </div>
           <div className="form-group">
             <label>Citizenship:</label>
-            <input
-              type="text"
+            <select
               name="citizenship"
               value={memberData.citizenship}
               onChange={handleChange}
               required
-            />
+            >
+              <option value="">Select</option>
+              <option value="Filipino">Filipino</option>
+              <option value="Other">Other</option>
+            </select>
+            {memberData.citizenship === "Other" && (
+              <input
+                type="text"
+                name="citizenship_other"
+                placeholder="Please specify citizenship"
+                value={memberData.citizenship_other}
+                onChange={handleChange}
+                required={memberData.citizenship === "Other"}
+                style={{ marginTop: '8px' }}
+              />
+            )}
           </div>
           <div className="form-group">
             <label>Occupation:</label>

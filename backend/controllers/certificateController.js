@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs-extra');
-const { PDFDocument } = require('pdf-lib');
+const { PDFDocument, rgb } = require('pdf-lib'); // Import rgb for drawing rectangles
 const JSZip = require('jszip');
 const { fromBuffer } = require('file-type');
 const { S3Client, GetObjectCommand } = require("@aws-sdk/client-s3");
@@ -23,6 +23,7 @@ const getTemplatePath = (certificateType) => {
 
     return path.join(__dirname, '../templates/certificates', templateFile);
 };
+
 
 // Initialize S3 client
 const s3Client = new S3Client({
@@ -69,6 +70,8 @@ const cleanAddress = (rawAddress) => {
 // Helper function to get image from S3
 const getImageFromS3 = async (s3Key) => {
   try {
+    if (!s3Key) throw new Error('No S3 key provided');
+    
     console.log(`Fetching image from S3: ${s3Key}`);
     const command = new GetObjectCommand({
       Bucket: process.env.AWS_BUCKET_NAME,
@@ -76,27 +79,51 @@ const getImageFromS3 = async (s3Key) => {
     });
     
     const { Body } = await s3Client.send(command);
-    return await Body.transformToByteArray();
+    const imageBytes = await Body.transformToByteArray();
+    
+    if (!imageBytes || imageBytes.length === 0) {
+      throw new Error('Empty image data received from S3');
+    }
+    
+    return imageBytes;
   } catch (error) {
     console.error('Error fetching image from S3:', error);
-    throw error;
+    throw new Error(`Failed to fetch image: ${error.message}`);
   }
 };
 
-// Helper function to embed image into PDF
 const embedImageInPdf = async (pdfDoc, imageBytes) => {
   try {
-    const fileType = await fromBuffer(imageBytes);
-    
-    // Embed image based on detected mime type
-    if (fileType.mime === 'image/png') {
-      return await pdfDoc.embedPng(imageBytes);
-    } else {
+    // First try to embed as JPEG (most common format)
+    try {
       return await pdfDoc.embedJpg(imageBytes);
+    } catch (jpegError) {
+      // console.log('Not a JPEG, trying PNG...'); // Removed for conciseness
     }
+    
+    // Then try to embed as PNG
+    try {
+      return await pdfDoc.embedPng(imageBytes);
+    } catch (pngError) {
+      // console.log('Not a PNG either, trying to determine type...'); // Removed for conciseness
+    }
+    
+    // Fallback to file-type detection (if needed)
+    const { fileTypeFromBuffer } = await import('file-type');
+    const fileType = await fileTypeFromBuffer(imageBytes);
+    
+    if (fileType) {
+      if (fileType.mime === 'image/png') {
+        return await pdfDoc.embedPng(imageBytes);
+      } else if (fileType.mime === 'image/jpeg') {
+        return await pdfDoc.embedJpg(imageBytes);
+      }
+    }
+    
+    throw new Error('Unsupported image format');
   } catch (error) {
     console.error('Error embedding image:', error);
-    throw error;
+    throw new Error(`Image embedding failed: ${error.message}`);
   }
 };
 
@@ -219,130 +246,85 @@ exports.generatePDF = async (req, res) => {
             s3Key: requestData.s3_key
         });
         
-        if (requestData.type_of_certificate === 'ClearanceCert' && requestData.s3_key) {
-            try {
-                // Get the field for image
-                console.log('Searching for pic_af_image field...');
-                const allFields = form.getFields();
-                const fieldNames = allFields.map(f => f.getName());
-                console.log('Available fields:', fieldNames);
-                
-                // Try to get the button field specifically
-                let imageField;
-                try {
-                    imageField = form.getButton('pic_af_image');
-                    console.log('Image field found as button:', !!imageField);
-                } catch (err) {
-                    console.log('Error getting button field:', err.message);
-                }
-                
-                // If not found as button, try other field types
-                if (!imageField) {
-                    try {
-                        imageField = form.getField('pic_af_image');
-                        console.log('Image field found as generic field:', !!imageField);
-                    } catch (err) {
-                        console.log('Error getting generic field:', err.message);
-                    }
-                }
-                
-                if (imageField) {
-                    // Examine the field structure
-                    try {
-                        const fieldType = imageField.constructor.name;
-                        console.log(`Field type: ${fieldType}`);
-                        
-                        const widget = imageField.acroField.getWidgets()[0];
-                        if (widget) {
-                            const rect = widget.getRectangle();
-                            console.log('Widget rectangle:', rect);
-                        } else {
-                            console.log('No widgets found for the field');
-                        }
-                    } catch (err) {
-                        console.log('Error examining field structure:', err.message);
-                    }
-                    
-                    // Fetch the image from S3
-                    const imageBytes = await getImageFromS3(requestData.s3_key);
-                    console.log(`Successfully fetched image from S3, size: ${imageBytes.length} bytes`);
-                    
-                    // Embed the image in the PDF
-                    const image = await embedImageInPdf(pdfDoc, imageBytes);
-                    console.log(`Successfully embedded image, dimensions: ${image.width}x${image.height}`);
-                    
-                    // Get the button position and dimensions
-                    const widget = imageField.acroField.getWidgets()[0];
-                    const { x, y, width, height } = widget.getRectangle();
-                    console.log(`Image will be placed at x:${x}, y:${y}, width:${width}, height:${height}`);
-                    
-                    // Draw the image on the page
-                    const page = pdfDoc.getPages()[0];
-                    page.drawImage(image, {
-                        x,
-                        y,
-                        width,
-                        height,
-                        opacity: 1
-                    });
-                    
-                    // Remove the original field
-                    form.removeField('pic_af_image');
-                    console.log('✅ Successfully embedded image and removed original field');
-                } else {
-                    console.log('⚠️ pic_af_image field not found using standard methods, trying alternative approach');
-                    
-                    // Try alternative approach: look for the field by iterating through all fields
-                    const targetField = fields.find(f => f.getName() === 'pic_af_image');
-                    if (targetField) {
-                        console.log(`Found pic_af_image field as ${targetField.constructor.name}`);
-                        
-                        try {
-                            // Fetch the image from S3
-                            const imageBytes = await getImageFromS3(requestData.s3_key);
-                            console.log(`Successfully fetched image from S3, size: ${imageBytes.length} bytes`);
-                            
-                            // Embed the image in the PDF
-                            const image = await embedImageInPdf(pdfDoc, imageBytes);
-                            console.log(`Successfully embedded image, dimensions: ${image.width}x${image.height}`);
-                            
-                            // Get the field's position
-                            const widget = targetField.acroField.getWidgets()[0];
-                            if (widget) {
-                                const { x, y, width, height } = widget.getRectangle();
-                                console.log(`Image will be placed at x:${x}, y:${y}, width:${width}, height:${height}`);
-                                
-                                // Draw the image on the page
-                                const page = pdfDoc.getPages()[0];
-                                page.drawImage(image, {
-                                    x,
-                                    y,
-                                    width,
-                                    height,
-                                    opacity: 1
-                                });
-                                
-                                // Remove the original field
-                                form.removeField('pic_af_image');
-                                console.log('✅ Successfully embedded image using alternative approach');
-                            } else {
-                                console.log('⚠️ No widget found for the pic_af_image field');
-                            }
-                        } catch (imageError) {
-                            console.error('Alternative image embedding failed:', imageError);
-                        }
-                    } else {
-                        console.log('⚠️ pic_af_image field not found by any method');
-                    }
-                }
-            } catch (imageError) {
-                console.error('Image embedding failed:', imageError);
-            }
+        if ((requestData.type_of_certificate === 'ClearanceCert' || requestData.type_of_certificate === 'IDApp') && requestData.s3_key) {
+    try {
+        console.log(`Processing image for ${requestData.type_of_certificate}...`);
+        
+        // Fetch the image from S3
+        const imageBytes = await getImageFromS3(requestData.s3_key);
+        console.log(`Successfully fetched image from S3, size: ${imageBytes.length} bytes`);
+        
+        // Embed the image in the PDF
+        const image = await embedImageInPdf(pdfDoc, imageBytes);
+        console.log(`Successfully embedded image, dimensions: ${image.width}x${image.height}`);
+        
+        // Get the first page
+        const page = pdfDoc.getPages()[0];
+        
+        // Different positions for different certificate types
+        let imagePosition;
+        let imageFieldName;
+        
+        if (requestData.type_of_certificate === 'ClearanceCert') {
+            imagePosition = {
+                x: 202.8,
+                y: 581,
+                width: 76.581,
+                height: 74.110
+            };
+            imageFieldName = 'pic_af_image';
+        } else if (requestData.type_of_certificate === 'IDApp') {
+            // Adjust these coordinates to match your ID template
+            imagePosition = {
+                x: 114,  // Example position - adjust as needed
+                y: 233,  // Example position - adjust as needed
+                width: 201,  // Example size - adjust as needed
+                height: 205  // Example size - adjust as needed
+            };
+            imageFieldName = 'pic_af_image';  // This should match your ID template's image field name
         }
+        
+        // Calculate adjusted y-coordinate (PDF coordinates start from bottom)
+        const adjustedY = page.getHeight() - imagePosition.y - imagePosition.height;
+        
+        // Draw the image on the page
+        page.drawImage(image, {
+            x: imagePosition.x,
+            y: adjustedY,
+            width: imagePosition.width,
+            height: imagePosition.height
+        });
+        
+        console.log(`Drew image at: x=${imagePosition.x}, y=${adjustedY}, width=${imagePosition.width}, height=${imagePosition.height}`);
+        
+        // Try to remove the field completely
+        try {
+            const imageField = form.getField(imageFieldName);
+            if (imageField) {
+                form.removeField(imageField);
+                console.log('Successfully removed image field');
+            }
+        } catch (removeError) {
+            console.log('Could not remove field:', removeError.message);
+        }
+        
+        // Add a debug rectangle to verify position
+        page.drawRectangle({
+            x: imagePosition.x,
+            y: adjustedY,
+            width: imagePosition.width,
+            height: imagePosition.height,
+            opacity: 0.5
+        });
+        
+    } catch (imageError) {
+        console.error('Image processing failed:', imageError);
+    }
+}
 
         // Finalize the form
-        form.updateFieldAppearances();
-        form.flatten();
+        // form.updateFieldAppearances(); // Removed as low-level manipulation handles appearance
+        form.flatten(); // This will apply the current state of fields to the page content
         const mainPdfBytes = await pdfDoc.save();
 
         // Handle Jobseeker certificate with undertaking
@@ -426,3 +408,4 @@ exports.generatePDF = async (req, res) => {
         });
     }
 };
+

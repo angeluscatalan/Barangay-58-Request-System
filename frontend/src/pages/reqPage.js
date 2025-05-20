@@ -147,96 +147,83 @@ function reqPage() {
 
   // Handle final submission after confirmation
   const handleConfirmSubmit = async (imagePreviewFromModal) => {
-  try {
-    let imageUrl = null;
-    
-    if ((formData.type_of_certificate === "IDApp" || 
-         formData.type_of_certificate === "ClearanceCert") && 
-        imagePreviewFromModal){
+    try {
+        let s3Key = null;
+        let photoUrl = null;
+        
+        // Modify this condition to include IDApp
+        if ((formData.type_of_certificate === "ClearanceCert" || formData.type_of_certificate === "IDApp") && imagePreviewFromModal) {
+            const blob = await fetch(imagePreviewFromModal).then(res => res.blob());
+            const imageFormData = new FormData();
+            imageFormData.append('image', blob, `${formData.last_name}_${Date.now()}.jpg`);
 
-        // Convert data URL to blob
-        const blob = await fetch(imagePreviewFromModal).then(res => res.blob());
-        const imageFormData = new FormData();
-        imageFormData.append('image', blob, 'request_photo.jpg');
-
-        // Upload image
-        const imageResponse = await axios.post(
-          'http://localhost:5000/api/images/upload',
-          imageFormData,
-          {
-            headers: { 'Content-Type': 'multipart/form-data' }
-          }
-        );
-
-        imageUrl = imageResponse.data.imageUrl;
-      }
-
-      const addressParts = [
+            const uploadResponse = await axios.post(
+                'http://localhost:5000/api/images/upload',
+                imageFormData,
+                { headers: { 'Content-Type': 'multipart/form-data' } }
+            );
+            
+            s3Key = uploadResponse.data.s3Key;
+            photoUrl = uploadResponse.data.imageUrl;
+        }
+    // Prepare the request data with both s3_key and photo_url
+    const requestData = {
+      ...formData,
+      s3_key: s3Key,
+      photo_url: photoUrl,
+      address: [
         formData.unit_no,
         formData.street,
         formData.subdivision
-      ].filter(part => part && part.trim() !== ""); // Remove empty parts
+      ].filter(Boolean).join(", "),
+      number_of_copies: Number(formData.number_of_copies)
+    };
 
-      const requestData = {
-        ...formData,
-        photo_url: imageUrl,
-        address: addressParts.join(", "), // Join with commas
-        number_of_copies: Number(formData.number_of_copies)
-      };
+    // Create the request
+    await axios.post('http://localhost:5000/api/requests', requestData);
+    
+    setShowConfirmation(false);
+    setShowSuccessPopup(true);
+    
+    // Reset form
+    setFormData({
+      last_name: "",
+      first_name: "",
+      middle_name: "",
+      suffix: "",
+      sex: "",
+      birthday: "",
+      contact_no: "",
+      country_code: "+63",
+      email: "",
+      unit_no: "",
+      street: "",
+      subdivision: "",
+      type_of_certificate: "",
+      purpose_of_request: "",
+      number_of_copies: "",
+    });
 
-      // Submit request
-      const response = await axios.post(
-        'http://localhost:5000/api/requests',
-        requestData,
-        {
-          headers: { 'Content-Type': 'application/json' },
-          timeout: 5000
-        }
-      );
+    // Reset terms checkbox
+    const termsCheckbox = document.getElementById("terms");
+    if (termsCheckbox) termsCheckbox.checked = false;
 
-      // Handle success
-      setShowConfirmation(false);
-      setShowSuccessPopup(true);
+    setErrors({});
 
-      // Reset form
-      setFormData({
-        last_name: "",
-        first_name: "",
-        middle_name: "",
-        suffix: "",
-        sex: "",
-        birthday: "",
-        contact_no: "",
-        country_code: "+63",
-        email: "",
-        unit_no: "",
-        street: "",
-        subdivision: "",
-        type_of_certificate: "",
-        purpose_of_request: "",
-        number_of_copies: "",
-      });
-
-      // Reset terms checkbox
-      const termsCheckbox = document.getElementById("terms");
-      if (termsCheckbox) termsCheckbox.checked = false;
-
-      setErrors({});
-
-    } catch (error) {
-      setShowConfirmation(false);
-      console.error("Submission error:", error);
-
-      let errorMessage = "An error occurred while submitting your request.";
-      if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-
-      alert(errorMessage);
+  } catch (error) {
+    setShowConfirmation(false);
+    console.error("Submission error:", error);
+    
+    let errorMessage = "An error occurred while submitting your request.";
+    if (error.response?.data?.message) {
+      errorMessage = error.response.data.message;
+    } else if (error.message) {
+      errorMessage = error.message;
     }
-  };
+
+    alert(errorMessage);
+  }
+};
 
   // Field-specific validators
   const validatorNum = () => {

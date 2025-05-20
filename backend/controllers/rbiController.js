@@ -186,6 +186,19 @@ exports.updateHouseholdStatus = async (req, res) => {
   }
 
   try {
+    // First get current status
+    const [current] = await pool.query(
+      'SELECT status FROM households WHERE id = ?',
+      [id]
+    );
+
+    if (current.length === 0) {
+      return res.status(404).json({ error: 'Household not found' });
+    }
+
+    const currentStatus = current[0].status;
+
+    // Allow any status transition
     const [result] = await pool.query(
       `UPDATE households SET status = ? WHERE id = ?`,
       [status, id]
@@ -197,11 +210,14 @@ exports.updateHouseholdStatus = async (req, res) => {
 
     res.json({
       success: true,
-      message: `Household status updated to '${status}' successfully`
+      message: `Household status updated from '${currentStatus}' to '${status}' successfully`
     });
   } catch (error) {
     console.error('❌ Status update error:', error);
-    res.status(500).json({ error: 'Failed to update status', details: error.message });
+    res.status(500).json({ 
+      error: 'Failed to update status', 
+      details: error.message 
+    });
   }
 };
 

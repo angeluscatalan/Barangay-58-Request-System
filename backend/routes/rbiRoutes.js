@@ -29,7 +29,13 @@ const validateCompleteHousehold = [
   check('household.civil_status').isIn(['Single', 'Married', 'Widowed', 'Separated', 'Divorced'])
     .withMessage('Invalid civil status'),
   check('household.citizenship').notEmpty().trim().escape()
-    .withMessage('Citizenship is required'),
+  .withMessage('Citizenship is required')
+  .custom((value, { req }) => {
+    if (value === 'Other' && (!req.body.household.citizenship_other || req.body.household.citizenship_other.trim() === '')) {
+      throw new Error('Please specify citizenship when selecting "Other"');
+    }
+    return true;
+  }),
   check('household.occupation').notEmpty().trim().escape()
     .withMessage('Occupation is required'),
   check('household.email_address').isEmail().normalizeEmail()
@@ -52,7 +58,14 @@ const validateCompleteHousehold = [
   check('members.*.civil_status').isIn(['Single', 'Married', 'Widowed', 'Separated', 'Divorced'])
     .withMessage('Invalid member civil status'),
   check('members.*.citizenship').notEmpty().trim().escape()
-    .withMessage('Member citizenship is required'),
+  .withMessage('Member citizenship is required')
+  .custom((value, { req, path }) => {
+    const index = path.match(/\[(\d+)\]/)[1];
+    if (value === 'Other' && (!req.body.members[index].citizenship_other || req.body.members[index].citizenship_other.trim() === '')) {
+      throw new Error('Please specify citizenship when selecting "Other"');
+    }
+    return true;
+  }),
   check('members.*.occupation').notEmpty().trim().escape()
     .withMessage('Member occupation is required')
 ];

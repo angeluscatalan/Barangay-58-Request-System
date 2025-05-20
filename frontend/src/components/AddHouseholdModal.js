@@ -6,7 +6,7 @@ function AddHouseholdModal({ isOpen, onClose, onSave }) {
     head_last_name: '',
     head_first_name: '',
     head_middle_name: '',
-    head_suffix: '',
+    head_suffix: '', // Initialize as empty string
     house_unit_no: '',
     street_name: '',
     subdivision: '',
@@ -15,6 +15,7 @@ function AddHouseholdModal({ isOpen, onClose, onSave }) {
     sex: 'Male',
     civil_status: 'Single',
     citizenship: '',
+    citizenship_other: '',
     occupation: '',
     email_address: '',
     members: []
@@ -27,8 +28,17 @@ function AddHouseholdModal({ isOpen, onClose, onSave }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
+    // Prepare the data to be saved
+    const dataToSave = {
+      ...formData,
+      // If "Other" is selected, use the citizenship_other value
+      citizenship: formData.citizenship === "Other" 
+        ? formData.citizenship_other 
+        : formData.citizenship
+    };
+    onSave(dataToSave);
   };
+
 
   if (!isOpen) return null;
 
@@ -78,12 +88,20 @@ function AddHouseholdModal({ isOpen, onClose, onSave }) {
             </div>
             <div className="form-group">
               <label>Suffix</label>
-              <input
-                type="text"
+              {/* Changed from input to select */}
+              <select
                 name="head_suffix"
                 value={formData.head_suffix}
                 onChange={handleChange}
-              />
+              >
+                <option value="">None</option> {/* Option for no suffix */}
+                <option value="Jr.">Jr.</option>
+                <option value="Sr.">Sr.</option>
+                <option value="II">II</option>
+                <option value="III">III</option>
+                <option value="IV">IV</option>
+                <option value="V">V</option>
+              </select>
             </div>
           </div>
 
@@ -124,6 +142,7 @@ function AddHouseholdModal({ isOpen, onClose, onSave }) {
           </div>
 
           <div className="form-row">
+            <div className="form-row">
             <div className="form-group">
               <label>Civil Status*</label>
               <select
@@ -141,14 +160,29 @@ function AddHouseholdModal({ isOpen, onClose, onSave }) {
             </div>
             <div className="form-group">
               <label>Citizenship*</label>
-              <input
-                type="text"
+              <select
                 name="citizenship"
                 value={formData.citizenship}
                 onChange={handleChange}
                 required
-              />
+              >
+                <option value="">Select</option>
+                <option value="Filipino">Filipino</option>
+                <option value="Other">Other</option>
+              </select>
+              {formData.citizenship === "Other" && (
+                <input
+                  type="text"
+                  name="citizenship_other"
+                  placeholder="Please specify citizenship"
+                  value={formData.citizenship_other}
+                  onChange={handleChange}
+                  required={formData.citizenship === "Other"}
+                  style={{ marginTop: '8px' }}
+                />
+              )}
             </div>
+          </div>
           </div>
 
           <div className="form-group">
@@ -169,6 +203,7 @@ function AddHouseholdModal({ isOpen, onClose, onSave }) {
               name="email_address"
               value={formData.email_address}
               onChange={handleChange}
+              required
             />
           </div>
 

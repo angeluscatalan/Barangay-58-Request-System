@@ -192,40 +192,76 @@ function RBI_Request_Manager() {
                   </td>
                   <td>{`${household.house_unit_no || ""} ${household.street_name || ""}, ${household.subdivision || ""}`}</td>
                   <td className={`status ${household.status}`}>{household.status}</td>
-                  <td className="actions">
-                    {household.status === 'pending' && (
-                      <>
-                        <button
-                          className="approve-btn"
-                          onClick={() => handleStatusChange(household.id, "approved")}
-                          title="Approve this household and all members"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          className="reject-btn"
-                          onClick={() => handleStatusChange(household.id, "rejected")}
-                          title="Reject this household registration"
-                        >
-                          Reject
-                        </button>
-                        <button
-                          className="interview-btn"
-                          onClick={() => handleStatusChange(household.id, "for interview")}
-                          title="Mark for further interview"
-                        >
-                          Interview
-                        </button>
-                      </>
-                    )}
-                    <button
-                      className="view-btn"
-                      onClick={() => viewHouseholdDetails(household)}
-                      title="View complete household details"
-                    >
-                      View
-                    </button>
-                  </td>
+<td className="actions">
+  {household.status === 'pending' && (
+    <>
+      <button
+        className="approve-btn"
+        onClick={() => handleStatusChange(household.id, "approved")}
+        title="Approve this household and all members"
+      >
+        Approve
+      </button>
+      <button
+        className="reject-btn"
+        onClick={() => handleStatusChange(household.id, "rejected")}
+        title="Reject this household registration"
+      >
+        Reject
+      </button>
+      <button
+        className="interview-btn"
+        onClick={() => handleStatusChange(household.id, "for interview")}
+        title="Mark for further interview"
+      >
+        Interview
+      </button>
+    </>
+  )}
+  {(household.status === 'rejected' || household.status === 'for interview') && (
+    <>
+      <button
+        className="approve-btn"
+        onClick={() => handleStatusChange(household.id, "approved")}
+        title="Approve this household"
+      >
+        Approve
+      </button>
+      <button
+        className="pending-btn"
+        onClick={() => handleStatusChange(household.id, "pending")}
+        title="Return to pending status"
+      >
+        Set Pending
+      </button>
+    </>
+  )}
+  {household.status === 'approved' && (
+    <>
+      <button
+        className="reject-btn"
+        onClick={() => handleStatusChange(household.id, "rejected")}
+        title="Reject this household"
+      >
+        Reject
+      </button>
+      <button
+        className="interview-btn"
+        onClick={() => handleStatusChange(household.id, "for interview")}
+        title="Mark for further interview"
+      >
+        Interview
+      </button>
+    </>
+  )}
+  <button
+    className="view-btn"
+    onClick={() => viewHouseholdDetails(household)}
+    title="View complete household details"
+  >
+    View
+  </button>
+</td>
                 </tr>
                 {expandedHouseholds[household.id] && (
                   <tr className="member-details">

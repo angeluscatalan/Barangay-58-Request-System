@@ -31,60 +31,67 @@ function RBIRegistration() {
   const [showSuccessPopup, setShowSuccessPopup] = useState(false)
 
   // Household head information
-  const [householdData, setHouseholdData] = useState({
-    head_last_name: "",
-    head_first_name: "",
-    head_middle_name: "",
-    head_suffix: "",
-    house_unit_no: "",
-    street_name: "",
-    subdivision: "",
-    birth_place: "",
-    birth_date: "",
-    sex: "",
-    civil_status: "",
-    citizenship: "",
-    occupation: "",
-    email_address: "",
-  })
+ const [householdData, setHouseholdData] = useState({
+  head_last_name: "",
+  head_first_name: "",
+  head_middle_name: "",
+  head_suffix: "",
+  house_unit_no: "",
+  street_name: "",
+  subdivision: "",
+  birth_place: "",
+  birth_date: "",
+  sex: "",
+  civil_status: "",
+  citizenship: "",
+  citizenship_other: "", // Add this
+  occupation: "",
+  email_address: "",
+});
+
 
   // State for household members
-  const [members, setMembers] = useState([])
+const [members, setMembers] = useState([{
+  // ... other fields
+  citizenship: "",
+  citizenship_other: "", // Add this field
+}]);
 
   // Update refs when members change
   useEffect(() => {
     memberRefs.current = memberRefs.current.slice(0, members.length)
   }, [members])
 
-  const handleHouseholdChange = (e) => {
-    let { name, value } = e.target
-    if (["head_last_name", "head_first_name", "head_middle_name", "birth_place","house_unit_no","street_name","subdivision"].includes(name)) {
-      value = value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase())
-    }
-    setHouseholdData({ ...householdData, [name]: value })
+const handleHouseholdChange = (e) => {
+  let { name, value } = e.target;
+  if (["head_last_name", "head_first_name", "head_middle_name", "birth_place","house_unit_no","street_name","subdivision"].includes(name)) {
+    value = value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
   }
+  setHouseholdData({ ...householdData, [name]: value });
+};
+
 
   const handleHouseholdDateChange = (date) => {
     console.log("Date selected:", date)
     setHouseholdData({ ...householdData, birth_date: date })
   }
 
-  const handleMemberChange = (index, e) => {
-    const { name, value } = e.target
-    const updatedMembers = [...members]
-    let processedValue = value
+const handleMemberChange = (index, e) => {
+  const { name, value } = e.target;
+  const updatedMembers = [...members];
+  let processedValue = value;
 
-    if (["last_name", "first_name", "middle_name", "birth_place"].includes(name)) {
-      processedValue = value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase())
-    }
-
-    updatedMembers[index] = {
-      ...updatedMembers[index],
-      [name]: processedValue,
-    }
-
-    setMembers(updatedMembers)
+  if (["last_name", "first_name", "middle_name", "birth_place"].includes(name)) {
+    processedValue = value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
   }
+
+  updatedMembers[index] = {
+    ...updatedMembers[index],
+    [name]: processedValue,
+  };
+
+  setMembers(updatedMembers);
+};
 
   const handleMemberDateChange = (index, date) => {
     setMembers((prevMembers) => {
@@ -127,6 +134,8 @@ function RBIRegistration() {
           civil_status: "",
           citizenship: "",
           occupation: "",
+          citizenship: "",
+          citizenship_other: "",
         },
       ])
       setMemberCount(memberCount + 1)
@@ -155,13 +164,13 @@ function RBIRegistration() {
   }
 
   // Update the validateForm function to properly check for empty birth_date
-  const validateForm = () => {
-    let isValid = true
-    const newErrors = {
-      household: {},
-      members: members.map(() => ({})),
-    }
-    const missingFieldsList = []
+const validateForm = () => {
+  let isValid = true;
+  const newErrors = {
+    household: {},
+    members: members.map(() => ({})),
+  };
+  const missingFieldsList = [];
 
     // Validate household head data
     const householdFieldLabels = {
@@ -243,11 +252,14 @@ function RBIRegistration() {
     }
 
     if (!householdData.citizenship || householdData.citizenship.trim() === "") {
-      newErrors.household.citizenship = "This field is required"
-      isValid = false
-      missingFieldsList.push(householdFieldLabels.citizenship)
-    }
-
+    newErrors.household.citizenship = "This field is required";
+    isValid = false;
+    missingFieldsList.push("Citizenship");
+  } else if (householdData.citizenship === "Other" && (!householdData.citizenship_other || householdData.citizenship_other.trim() === "")) {
+    newErrors.household.citizenship = "Please specify your citizenship";
+    isValid = false;
+    missingFieldsList.push("Citizenship (Specify)");
+  }
     if (!householdData.occupation || householdData.occupation.trim() === "") {
       newErrors.household.occupation = "This field is required"
       isValid = false
@@ -322,11 +334,18 @@ function RBIRegistration() {
         missingFieldsList.push(memberFieldLabels.civil_status)
       }
 
-      if (!member.citizenship || member.citizenship.trim() === "") {
-        newErrors.members[index].citizenship = "This field is required"
-        isValid = false
-        missingFieldsList.push(memberFieldLabels.citizenship)
-      }
+      members.forEach((member, index) => {
+    if (!member.citizenship || member.citizenship.trim() === "") {
+      newErrors.members[index].citizenship = "This field is required";
+      isValid = false;
+      missingFieldsList.push(`Member ${index + 1} Citizenship`);
+    } else if (member.citizenship === "Other" && (!member.citizenship_other || member.citizenship_other.trim() === "")) {
+      newErrors.members[index].citizenship = "Please specify citizenship";
+      isValid = false;
+      missingFieldsList.push(`Member ${index + 1} Citizenship (Specify)`);
+    }
+  });
+
 
       if (!member.occupation || member.occupation.trim() === "") {
         newErrors.members[index].occupation = "This field is required"
@@ -363,32 +382,40 @@ function RBIRegistration() {
     setShowConfirmation(true)
   }
 
-  const handleConfirmSubmit = async () => {
-    try {
-      // Format dates
-      const formattedHouseholdData = {
-        ...householdData,
-        birth_date: householdData.birth_date ? new Date(householdData.birth_date).toISOString().split("T")[0] : null,
-      }
+const handleConfirmSubmit = async () => {
+  try {
+    // Format household data
+    const formattedHouseholdData = {
+      ...householdData,
+      citizenship: householdData.citizenship === "Other" 
+        ? householdData.citizenship_other 
+        : householdData.citizenship,
+      birth_date: householdData.birth_date ? new Date(householdData.birth_date).toISOString().split("T")[0] : null,
+    };
 
-      const formattedMembers = members.map((member) => ({
-        ...member,
-        birth_date: member.birth_date ? new Date(member.birth_date).toISOString().split("T")[0] : null,
-      }))
+    // Format members data
+    const formattedMembers = members.map((member) => ({
+      ...member,
+      citizenship: member.citizenship === "Other" 
+        ? member.citizenship_other 
+        : member.citizenship,
+      birth_date: member.birth_date ? new Date(member.birth_date).toISOString().split("T")[0] : null,
+    }));
 
-      // Submit data to API with proper headers
-      const response = await axios.post(
-        "http://localhost:5000/api/rbi",
-        {
-          household: formattedHouseholdData,
-          members: formattedMembers,
+    // Submit data to API
+     const response = await axios.post(
+      "http://localhost:5000/api/rbi",
+      {
+        household: formattedHouseholdData,
+        members: formattedMembers,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
         },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      }
+    );
+
 
       if (response.status === 200 || response.status === 201) {
         setShowConfirmation(false)
@@ -735,20 +762,33 @@ function RBIRegistration() {
                       </div>
 
                       <div className="form-row">
-                        <input
-                          type="text"
-                          id="head_citizenship"
-                          name="citizenship"
-                          placeholder="CITIZENSHIP"
-                          className={`rbi-form-input ${errors.household.citizenship ? "input-error" : ""}`}
-                          value={householdData.citizenship}
-                          onChange={handleHouseholdChange}
-                          required
-                        />
-                        {errors.household.citizenship && (
-                          <p className="error-message">*{errors.household.citizenship}</p>
-                        )}
-                      </div>
+  <select
+    id="head_citizenship"
+    name="citizenship"
+    className={`rbi-form-select ${errors.household.citizenship ? "input-error" : ""}`}
+    value={householdData.citizenship || ""}
+    onChange={handleHouseholdChange}
+    required
+  >
+    <option value="">CITIZENSHIP</option>
+    <option value="Filipino">Filipino</option>
+    <option value="Other">Other</option>
+  </select>
+  {householdData.citizenship === "Other" && (
+    <input
+      type="text"
+      name="citizenship_other"
+      placeholder="Please specify citizenship"
+      className={`rbi-form-input ${errors.household.citizenship ? "input-error" : ""}`}
+      value={householdData.citizenship_other || ""}
+      onChange={handleHouseholdChange}
+      required={householdData.citizenship === "Other"}
+    />
+  )}
+  {errors.household.citizenship && (
+    <p className="error-message">*{errors.household.citizenship}</p>
+  )}
+</div>
 
                       <div className="form-row">
                         <input
@@ -957,19 +997,33 @@ function RBIRegistration() {
                           </div>
 
                           <div className="form-row">
-                            <input
-                              type="text"
-                              name="citizenship"
-                              placeholder="CITIZENSHIP"
-                              className={`rbi-form-input ${errors.members[index]?.citizenship ? "input-error" : ""}`}
-                              value={member.citizenship}
-                              onChange={(e) => handleMemberChange(index, e)}
-                              required
-                            />
-                            {errors.members[index]?.citizenship && (
-                              <p className="error-message">*{errors.members[index].citizenship}</p>
-                            )}
-                          </div>
+  <select
+    id={`member_citizenship_${index}`}
+    name="citizenship"
+    className={`rbi-form-select ${errors.members[index]?.citizenship ? "input-error" : ""}`}
+    value={member.citizenship || ""}
+    onChange={(e) => handleMemberChange(index, e)}
+    required
+  >
+    <option value="">CITIZENSHIP</option>
+    <option value="Filipino">Filipino</option>
+    <option value="Other">Other</option>
+  </select>
+  {member.citizenship === "Other" && (
+    <input
+      type="text"
+      name="citizenship_other"
+      placeholder="Please specify citizenship"
+      className={`rbi-form-input ${errors.members[index]?.citizenship ? "input-error" : ""}`}
+      value={member.citizenship_other || ""}
+      onChange={(e) => handleMemberChange(index, e)}
+      required={member.citizenship === "Other"}
+    />
+  )}
+  {errors.members[index]?.citizenship && (
+    <p className="error-message">*{errors.members[index].citizenship}</p>
+  )}
+</div>
 
                           <div className="form-row">
                             <input
