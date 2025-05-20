@@ -288,20 +288,25 @@ function Admin() {
     }
   }
 
-  const handlePrintRequest = async (request) => {
-    setIsPrinting(prev => ({ ...prev, [request.id]: true }));
-    try {
-      console.log('Sending request data:', request);
-      const response = await axios.post(
-        'http://localhost:5000/api/certificates/generate-pdf',
-        { requestData: request },
-        {
-          responseType: 'blob',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
+ const handlePrintRequest = async (request) => {
+  setIsPrinting(prev => ({ ...prev, [request.id]: true }));
+  try {
+    console.log('Sending request data:', request);
+    const response = await axios.post(
+      'http://localhost:5000/api/certificates/generate-pdf',
+      { 
+        requestData: {
+          ...request,
+          s3_key: request.s3_key // Make sure this is included
         }
-      );
+      },
+      {
+        responseType: 'blob',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      }
+    );
 
       // Check if this is a JobseekerCert to handle ZIP differently
       if (request.type_of_certificate === 'JobseekerCert') {
