@@ -78,6 +78,7 @@ function AdminDashboard() {
       // Use Promise.all to fetch data concurrently
       const [requestsResponse, rbiResponse, eventsResponse] = await Promise.all([
         axios.get(`${baseURL}/requests`, { headers }),
+        
         axios.get(`${baseURL}/rbi`, { headers }),
         axios.get(`${baseURL}/events`, { headers }),
       ])
@@ -139,7 +140,7 @@ function AdminDashboard() {
           }
         }
       })
-      const totalRegisteredFamilies = uniqueHeadsOfFamily.size
+      const totalRegisteredFamilies = approvedRegistrations.length
 
       // 2. Count total residents (heads of families + family members)
       let totalResidents = 0
@@ -155,84 +156,92 @@ function AdminDashboard() {
       }
 
       // Process each approved registration
-      approvedRegistrations.forEach((registration) => {
-        // Count the head of family
-        totalResidents++
+      // In the fetchDashboardData function, replace the age calculation part with this:
 
-        // Process gender (using sex field)
-        const gender = (registration.sex || registration.gender || "").toLowerCase()
-        if (gender === "male" || gender === "m") {
-          maleCount++
-        } else if (gender === "female" || gender === "f") {
-          femaleCount++
+// Process each approved registration for age calculation
+
+approvedRegistrations.forEach((registration) => {
+  // Count the head of family
+  totalResidents++
+
+  // Process gender (using sex field)
+  const gender = (registration.sex || registration.gender || "").toLowerCase()
+  if (gender === "male" || gender === "m") {
+    maleCount++
+  } else if (gender === "female" || gender === "f") {
+    femaleCount++
+  }
+ 
+  // Calculate age from birth_date if available
+  if (registration.birth_date) {
+    const birth_date = new Date(registration.birth_date)
+    const today = new Date()
+    let age = today.getFullYear() - birth_date.getFullYear()
+    const monthDiff = today.getMonth() - birth_date.getMonth()
+    
+    // Adjust age if birthday hasn't occurred yet this year
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth_date.getDate())) {
+      age--
+    }
+
+    // Categorize into age brackets
+    if (age <= 0 && age <= 3) {
+      ageBrackets.toddler++
+    } else if (age >= 4 && age <= 12) {
+      ageBrackets.child++
+    } else if (age >= 13 && age <= 19) {
+      ageBrackets.teenager++
+    } else if (age >= 20 && age <= 35) {
+      ageBrackets.youngAdult++
+    } else if (age >= 36 && age <= 59) {
+      ageBrackets.adult++
+    } else if (age >= 60) {
+      ageBrackets.seniorCitizen++
+    }
+  }
+
+  // Process household members
+  if (registration.members && Array.isArray(registration.members)) {
+    registration.members.forEach((member) => {
+      totalResidents++
+
+      // Process member gender
+      const memberGender = (member.sex || member.gender || "").toLowerCase()
+      if (memberGender === "male" || memberGender === "m") {
+        maleCount++
+      } else if (memberGender === "female" || memberGender === "f") {
+        femaleCount++
+      }
+      // Calculate age from birth_date for household members
+      if (member.birth_date) {
+        const birth_date = new Date(member.birth_date)
+        const today = new Date()
+        let age = today.getFullYear() - birth_date.getFullYear()
+        const monthDiff = today.getMonth() - birth_date.getMonth()
+              console.log("Processing BIRTHDAY:", member.birth_date)
+
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth_date.getDate())) {
+          age--
         }
-
-        // Process age for age brackets
-        if (registration.age) {
-          const age = Number.parseInt(registration.age)
-          if (!isNaN(age)) {
-            if (age >= 1 && age <= 3) {
-              ageBrackets.toddler++
-            } else if (age >= 4 && age <= 12) {
-              ageBrackets.child++
-            } else if (age >= 13 && age <= 19) {
-              ageBrackets.teenager++
-            } else if (age >= 20 && age <= 35) {
-              ageBrackets.youngAdult++
-            } else if (age >= 36 && age <= 59) {
-              ageBrackets.adult++
-            } else if (age >= 60) {
-              ageBrackets.seniorCitizen++
-            }
-          }
+        console.log("Calculated AGE:", age)
+        // Categorize into age brackets
+        if (age <= 0 && age <= 3) {
+          ageBrackets.toddler++
+        } else if (age >= 4 && age <= 12) {
+          ageBrackets.child++
+        } else if (age >= 13 && age <= 19) {
+          ageBrackets.teenager++
+        } else if (age >= 20 && age <= 35) {
+          ageBrackets.youngAdult++
+        } else if (age >= 36 && age <= 59) {
+          ageBrackets.adult++
+        } else if (age >= 60) {
+          ageBrackets.seniorCitizen++
         }
-
-        // Check if household_members exists and is an array
-        if (registration.household_members && Array.isArray(registration.household_members)) {
-          console.log(
-            `Processing household with ${registration.household_members.length} members:`,
-            registration.household_id,
-          )
-
-          // Count the household members
-          totalResidents += registration.household_members.length
-
-          // Process each household member for gender and age statistics
-          registration.household_members.forEach((member) => {
-            console.log("Processing member:", member)
-
-            // Gender count - using sex field, normalize to lowercase for case-insensitive comparison
-            const memberGender = (member.sex || member.gender || "").toLowerCase()
-            if (memberGender === "male" || memberGender === "m") {
-              maleCount++
-            } else if (memberGender === "female" || memberGender === "f") {
-              femaleCount++
-            }
-
-            // Age bracket calculation - ensure age is a number
-            if (member.age) {
-              const age = Number.parseInt(member.age)
-              if (!isNaN(age)) {
-                if (age >= 1 && age <= 3) {
-                  ageBrackets.toddler++
-                } else if (age >= 4 && age <= 12) {
-                  ageBrackets.child++
-                } else if (age >= 13 && age <= 19) {
-                  ageBrackets.teenager++
-                } else if (age >= 20 && age <= 35) {
-                  ageBrackets.youngAdult++
-                } else if (age >= 36 && age <= 59) {
-                  ageBrackets.adult++
-                } else if (age >= 60) {
-                  ageBrackets.seniorCitizen++
-                }
-              }
-            }
-          })
-        } else {
-          console.log("No household members found or not an array for registration:", registration)
-        }
-      })
+      }
+    })
+  }
+})
 
       console.log("Demographic Calculations:", {
         totalRegisteredFamilies,
