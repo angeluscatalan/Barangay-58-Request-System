@@ -443,7 +443,7 @@ function Admin() {
                       <>
                         <input
                           type="text"
-                          placeholder="Search by name..."
+                          placeholder="Search requests..."
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
                           className="search-bar"

@@ -18,9 +18,30 @@ function RBI_Request_Manager() {
   const [activeFilter, setActiveFilter] = useState("pending");
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Add filterRecords function
+  const filterRecords = () => {
+    if (!rbiRequests.records) return [];
+
+    let filtered = [...rbiRequests.records];
+
+    if (searchTerm.trim()) {
+      const query = searchTerm.toLowerCase().trim();
+      filtered = filtered.filter(household =>
+        household.head_last_name?.toLowerCase().includes(query) ||
+        household.head_first_name?.toLowerCase().includes(query) ||
+        household.head_middle_name?.toLowerCase().includes(query) ||
+        household.house_unit_no?.toLowerCase().includes(query) ||
+        household.street_name?.toLowerCase().includes(query) ||
+        household.subdivision?.toLowerCase().includes(query)
+      );
+    }
+
+    return filtered;
+  };
+
   useEffect(() => {
-    fetchRbiRequests(activeFilter);
-  }, [fetchRbiRequests, activeFilter]);
+    fetchRbiRequests(activeFilter, 1, 10, searchTerm);
+  }, [fetchRbiRequests, activeFilter, searchTerm]);
 
   const handleStatusChange = async (id, newStatus) => {
     const success = await updateRbiStatus(id, newStatus);
@@ -74,12 +95,12 @@ function RBI_Request_Manager() {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    fetchRbiRequests(activeFilter, 1, 10, searchTerm);
+    // The search will be triggered by the useEffect hook since we're updating searchTerm
   };
 
   const clearSearch = () => {
     setSearchTerm("");
-    fetchRbiRequests(activeFilter);
+    // The search will be cleared by the useEffect hook since we're updating searchTerm
   };
 
   if (loading && !rbiRequests.records.length) return <div className="loading">Loading RBI registrations...</div>;
@@ -91,7 +112,7 @@ function RBI_Request_Manager() {
 
       <div className="table-header">
         <div className="events-count">
-          RBI Registrations <span className="event-count">({rbiRequests.totalRecords || 0})</span>
+          RBI Registrations <span className="event-count">({filterRecords().length || 0})</span>
         </div>
         <div className="table-controls">
           <div className="filter-buttons">
@@ -130,7 +151,7 @@ function RBI_Request_Manager() {
             <form className="search-form" onSubmit={handleSearch}>
               <input
                 type="text"
-                placeholder="Search households..."
+                placeholder="Search pending RBI requests..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -153,7 +174,7 @@ function RBI_Request_Manager() {
             </tr>
           </thead>
           <tbody>
-            {(rbiRequests?.records || []).map((household) => (
+            {filterRecords().map((household) => (
               <React.Fragment key={household.id}>
                 <tr className={expandedHouseholds[household.id] ? "expanded" : ""}>
                   <td>{household.id}</td>
@@ -250,32 +271,32 @@ function RBI_Request_Manager() {
       </div>
 
       {/* Pagination controls */}
-      {rbiRequests.totalPages > 1 && (
+      {filterRecords().length > 10 && (
         <div className="pagination">
           <button
             disabled={rbiRequests.currentPage === 1}
-            onClick={() => fetchRbiRequests(activeFilter, 1)}
+            onClick={() => fetchRbiRequests(activeFilter, 1, 10, searchTerm)}
           >
             First
           </button>
           <button
             disabled={rbiRequests.currentPage === 1}
-            onClick={() => fetchRbiRequests(activeFilter, rbiRequests.currentPage - 1)}
+            onClick={() => fetchRbiRequests(activeFilter, rbiRequests.currentPage - 1, 10, searchTerm)}
           >
             Previous
           </button>
           <span className="page-info">
-            Page {rbiRequests.currentPage} of {rbiRequests.totalPages}
+            Page {rbiRequests.currentPage} of {Math.ceil(filterRecords().length / 10)}
           </span>
           <button
-            disabled={rbiRequests.currentPage === rbiRequests.totalPages}
-            onClick={() => fetchRbiRequests(activeFilter, rbiRequests.currentPage + 1)}
+            disabled={rbiRequests.currentPage === Math.ceil(filterRecords().length / 10)}
+            onClick={() => fetchRbiRequests(activeFilter, rbiRequests.currentPage + 1, 10, searchTerm)}
           >
             Next
           </button>
           <button
-            disabled={rbiRequests.currentPage === rbiRequests.totalPages}
-            onClick={() => fetchRbiRequests(activeFilter, rbiRequests.totalPages)}
+            disabled={rbiRequests.currentPage === Math.ceil(filterRecords().length / 10)}
+            onClick={() => fetchRbiRequests(activeFilter, Math.ceil(filterRecords().length / 10), 10, searchTerm)}
           >
             Last
           </button>
@@ -284,7 +305,7 @@ function RBI_Request_Manager() {
 
       {/* Show total record count */}
       <div className="record-count">
-        Total Records: {rbiRequests.totalRecords || 0}
+        Total Records: {filterRecords().length || 0}
       </div>
 
       {/* Household Details Modal */}

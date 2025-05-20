@@ -12,8 +12,38 @@ function Request_Manager() {
     fetchRequests
   } = useRequests();
 
-  const pendingRequests = requests.filter(req => req.status === 'Pending');
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedRequest, setSelectedRequest] = useState(null);
+
+  const filterRequests = () => {
+    if (!requests) return [];
+
+    let filtered = [...requests];
+
+    if (searchTerm.trim()) {
+      const query = searchTerm.toLowerCase().trim();
+      filtered = filtered.filter(request =>
+        request.last_name?.toLowerCase().includes(query) ||
+        request.first_name?.toLowerCase().includes(query) ||
+        request.middle_name?.toLowerCase().includes(query) ||
+        request.type_of_certificate?.toLowerCase().includes(query) ||
+        request.purpose_of_request?.toLowerCase().includes(query) ||
+        request.status?.toLowerCase().includes(query)
+      );
+    }
+
+    // Filter for pending requests after search
+    return filtered.filter(req => req.status === 'Pending');
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    // Search is handled by filterRequests function
+  };
+
+  const clearSearch = () => {
+    setSearchTerm("");
+  };
 
   const handleStatusChange = async (id, newStatus) => {
     const success = await updateRequestStatus(id, newStatus);
@@ -33,9 +63,30 @@ function Request_Manager() {
   if (loading) return <div className="loading">Loading requests...</div>;
   if (error) return <div className="error">Error: {error}</div>;
 
+  const filteredRequests = filterRequests();
+
   return (
     <div className="request-manager">
       <h1>Pending Requests</h1>
+
+      <div className="table-header">
+        <div className="requests-count">
+          Pending Requests <span className="request-count">({filteredRequests.length})</span>
+        </div>
+        <div className="table-controls">
+          <form className="search-form" onSubmit={handleSearch}>
+            <input
+              type="text"
+              placeholder="Search pending requests..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <button type="submit">Search</button>
+            {searchTerm && <button type="button" onClick={clearSearch}>Clear</button>}
+          </form>
+        </div>
+      </div>
+
       <div className="table-container">
         <table>
           <thead>
@@ -48,7 +99,7 @@ function Request_Manager() {
             </tr>
           </thead>
           <tbody>
-            {pendingRequests.map((request) => (
+            {filteredRequests.map((request) => (
               <tr key={request.id}>
                 <td>{request.id}</td>
                 <td>{`${request.last_name}, ${request.first_name}`}</td>
