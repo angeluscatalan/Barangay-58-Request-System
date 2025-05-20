@@ -147,39 +147,57 @@ function reqPage() {
 
   // Handle final submission after confirmation
   const handleConfirmSubmit = async (imagePreviewFromModal) => {
-    try {
-      let s3Key = null;
-      
-      // Only process image for ClearanceCert
-      if (formData.type_of_certificate === "ClearanceCert" && imagePreviewFromModal) {
+  try {
+    let imageUrl = null;
+    
+    if ((formData.type_of_certificate === "IDApp" || 
+         formData.type_of_certificate === "ClearanceCert") && 
+        imagePreviewFromModal){
+
+        // Convert data URL to blob
         const blob = await fetch(imagePreviewFromModal).then(res => res.blob());
         const imageFormData = new FormData();
-        imageFormData.append('image', blob, `${formData.last_name}_${Date.now()}.jpg`);
+        imageFormData.append('image', blob, 'request_photo.jpg');
 
-        const { data: { s3Key: uploadedKey } } = await axios.post(
-          '/api/images/upload',
+        // Upload image
+        const imageResponse = await axios.post(
+          'http://localhost:5000/api/images/upload',
           imageFormData,
-          { headers: { 'Content-Type': 'multipart/form-data' } }
+          {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          }
         );
-        
-        s3Key = uploadedKey;
+
+        imageUrl = imageResponse.data.imageUrl;
       }
+
+      const addressParts = [
+        formData.unit_no,
+        formData.street,
+        formData.subdivision
+      ].filter(part => part && part.trim() !== ""); // Remove empty parts
 
       const requestData = {
         ...formData,
-        s3_key: s3Key, // This will be used by the backend
-        address: [
-          formData.unit_no,
-          formData.street,
-          formData.subdivision
-        ].filter(Boolean).join(", "),
+        photo_url: imageUrl,
+        address: addressParts.join(", "), // Join with commas
         number_of_copies: Number(formData.number_of_copies)
       };
 
-      await axios.post('/api/requests', requestData);
+      // Submit request
+      const response = await axios.post(
+        'http://localhost:5000/api/requests',
+        requestData,
+        {
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 5000
+        }
+      );
+
+      // Handle success
       setShowConfirmation(false);
       setShowSuccessPopup(true);
-      
+
       // Reset form
       setFormData({
         last_name: "",
