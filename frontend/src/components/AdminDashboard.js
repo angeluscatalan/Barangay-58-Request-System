@@ -83,11 +83,6 @@ function AdminDashboard() {
         axios.get(`${baseURL}/events`, { headers }),
       ])
 
-      console.log("API Responses:", {
-        requests: requestsResponse.data,
-        rbi: rbiResponse.data,
-        events: eventsResponse.data,
-      })
 
       // Process certificate requests data
       const requests = Array.isArray(requestsResponse.data) ? requestsResponse.data : []
@@ -102,8 +97,6 @@ function AdminDashboard() {
       } else if (rbiResponse.data && Array.isArray(rbiResponse.data.records)) {
         rbiData = rbiResponse.data.records
       }
-
-      console.log("Processed RBI Data:", rbiData)
 
       const pendingRBI = rbiData.filter((rbi) => rbi?.status?.toLowerCase() === "pending")
       const approvedRBI = rbiData.filter((rbi) => rbi?.status?.toLowerCase() === "approved")
@@ -124,7 +117,6 @@ function AdminDashboard() {
 
       // Calculate demographic statistics for approved registrations only
       const approvedRegistrations = rbiData.filter((rbi) => rbi?.status?.toLowerCase() === "approved")
-      console.log("Approved Registrations:", approvedRegistrations)
 
       // 1. Count unique "head of family" entries for Total Registered Families
       const uniqueHeadsOfFamily = new Set()
@@ -218,12 +210,10 @@ approvedRegistrations.forEach((registration) => {
         const today = new Date()
         let age = today.getFullYear() - birth_date.getFullYear()
         const monthDiff = today.getMonth() - birth_date.getMonth()
-              console.log("Processing BIRTHDAY:", member.birth_date)
 
         if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth_date.getDate())) {
           age--
         }
-        console.log("Calculated AGE:", age)
         // Categorize into age brackets
         if (age <= 0 && age <= 3) {
           ageBrackets.toddler++
@@ -243,13 +233,6 @@ approvedRegistrations.forEach((registration) => {
   }
 })
 
-      console.log("Demographic Calculations:", {
-        totalRegisteredFamilies,
-        totalResidents,
-        maleCount,
-        femaleCount,
-        ageBrackets,
-      })
 
       setStats({
         totalRequests: requests.length,

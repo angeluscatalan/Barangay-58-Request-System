@@ -13,13 +13,21 @@ function Request_Manager() {
   } = useRequests();
 
   const pendingRequests = requests.filter(req => req.status === 'Pending');
+  const [selectedRequest, setSelectedRequest] = useState(null);
 
   const handleStatusChange = async (id, newStatus) => {
     const success = await updateRequestStatus(id, newStatus);
     if (success) {
-      // Refresh the pending requests list
       fetchRequests();
     }
+  };
+
+  const viewRequestDetails = (request) => {
+    setSelectedRequest(request);
+  };
+
+  const closeModal = () => {
+    setSelectedRequest(null);
   };
 
   if (loading) return <div className="loading">Loading requests...</div>;
@@ -61,7 +69,7 @@ function Request_Manager() {
                   </button>
                   <button 
                     className="view-btn"
-                    onClick={() => {/* Add view details functionality */}}
+                    onClick={() => viewRequestDetails(request)}
                   >
                     View
                   </button>
@@ -71,6 +79,104 @@ function Request_Manager() {
           </tbody>
         </table>
       </div>
+
+      {/* Request Details Modal */}
+      {selectedRequest && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-header">
+              <h2>Certificate Request Details</h2>
+              <button className="close-btn" onClick={closeModal}>
+                &times;
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              <div className="request-info">
+                <h3>Request Information</h3>
+                <div className="info-grid">
+                  <div className="info-item">
+                    <label>Request ID:</label>
+                    <span>{selectedRequest.id}</span>
+                  </div>
+                  <div className="info-item">
+                    <label>Status:</label>
+                    <span className={`status-badge ${selectedRequest.status.toLowerCase()}`}>
+                      {selectedRequest.status}
+                    </span>
+                  </div>
+                  <div className="info-item">
+                    <label>Certificate Type:</label>
+                    <span>{selectedRequest.type_of_certificate}</span>
+                  </div>
+                  <div className="info-item">
+                    <label>Date Requested:</label>
+                    <span>{new Date(selectedRequest.created_at).toLocaleString()}</span>
+                  </div>
+                  <div className="info-item">
+                    <label>Purpose:</label>
+                    <span>{selectedRequest.purpose_of_request || 'N/A'}</span>
+                  </div>
+                  <div className="info-item">
+                    <label>Number of Copies:</label>
+                    <span>{selectedRequest.number_of_copies || '1'}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="applicant-info">
+                <h3>Applicant Information</h3>
+                <div className="info-grid">
+                  <div className="info-item">
+                    <label>Full Name:</label>
+                    <span>{`${selectedRequest.last_name}, ${selectedRequest.first_name} ${selectedRequest.middle_name || ''}`}</span>
+                  </div>
+                  <div className="info-item">
+                    <label>Suffix:</label>
+                    <span>{selectedRequest.suffix || 'N/A'}</span>
+                  </div>
+                  <div className="info-item">
+                    <label>Birth Date:</label>
+                    <span>{selectedRequest.birthday ? new Date(selectedRequest.birthday).toLocaleDateString() : 'N/A'}</span>
+                  </div>
+                  <div className="info-item">
+                    <label>Age:</label>
+                    <span>{selectedRequest.birthday ? 
+                      (new Date().getFullYear() - new Date(selectedRequest.birthday).getFullYear()) : 'N/A'}
+                    </span>
+                  </div>
+                  <div className="info-item">
+                    <label>Sex:</label>
+                    <span>{selectedRequest.sex || 'N/A'}</span>
+                  </div>
+                  <div className="info-item">
+                    <label>Civil Status:</label>
+                    <span>{selectedRequest.civil_status || 'N/A'}</span>
+                  </div>
+                  <div className="info-item">
+                    <label>Contact Number:</label>
+                    <span>{selectedRequest.contact_no || 'N/A'}</span>
+                  </div>
+                  <div className="info-item">
+                    <label>Email:</label>
+                    <span>{selectedRequest.email || 'N/A'}</span>
+                  </div>
+                  <div className="info-item">
+                    <label>Address:</label>
+                    <span>{selectedRequest.address || 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button className="close-modal-btn" onClick={closeModal}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

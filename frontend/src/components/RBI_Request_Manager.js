@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "../styles/Request_Manager.css";
 import { useRequests } from "./RBI_Request_Context";
-import RBI_Household_Detail from "./RBI_Household_Detail";
 
 function RBI_Request_Manager() {
   const {
@@ -14,25 +13,23 @@ function RBI_Request_Manager() {
   } = useRequests();
 
   const [expandedHouseholds, setExpandedHouseholds] = useState({});
-  const [selectedHouseholdId, setSelectedHouseholdId] = useState(null);
+  const [selectedHousehold, setSelectedHousehold] = useState(null);
   const [householdMembers, setHouseholdMembers] = useState({});
   const [activeFilter, setActiveFilter] = useState("pending");
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    fetchRbiRequests(activeFilter); // Initial fetch with default filter
+    fetchRbiRequests(activeFilter);
   }, [fetchRbiRequests, activeFilter]);
 
   const handleStatusChange = async (id, newStatus) => {
     const success = await updateRbiStatus(id, newStatus);
     if (success) {
-      // Refresh the current filter view
       fetchRbiRequests(activeFilter);
     }
   };
 
   const toggleHouseholdDetails = async (id) => {
-    // If we're expanding and don't have the members data yet, fetch it
     if (!expandedHouseholds[id] && !householdMembers[id]) {
       try {
         const data = await getHouseholdWithMembers(id);
@@ -53,13 +50,20 @@ function RBI_Request_Manager() {
     }));
   };
 
-  const viewHouseholdDetails = (id) => {
-    setSelectedHouseholdId(id);
+  const viewHouseholdDetails = async (household) => {
+    try {
+      const data = await getHouseholdWithMembers(household.id);
+      setSelectedHousehold({
+        ...household,
+        members: data.members || []
+      });
+    } catch (err) {
+      console.error("Failed to fetch household details:", err);
+    }
   };
 
   const closeModal = () => {
-    setSelectedHouseholdId(null);
-    // Refresh the list after closing the modal to reflect any changes
+    setSelectedHousehold(null);
     fetchRbiRequests(activeFilter);
   };
 
@@ -195,7 +199,7 @@ function RBI_Request_Manager() {
                     )}
                     <button
                       className="view-btn"
-                      onClick={() => viewHouseholdDetails(household.id)}
+                      onClick={() => viewHouseholdDetails(household)}
                       title="View complete household details"
                     >
                       View
@@ -283,12 +287,92 @@ function RBI_Request_Manager() {
         Total Records: {rbiRequests.totalRecords || 0}
       </div>
 
-      {/* Detailed household modal */}
-      {selectedHouseholdId && (
-        <RBI_Household_Detail
-          householdId={selectedHouseholdId}
-          onClose={closeModal}
-        />
+      {/* Household Details Modal */}
+      {selectedHousehold && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-header">
+              <h2>Household Details</h2>
+              <button className="close-btn" onClick={closeModal}>
+                &times;
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <div className="household-info">
+                <h3>Household Head Information</h3>
+                <table className="members-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Sex</th>
+                      <th>Birth Date</th>
+                      <th>Civil Status</th>
+                      <th>Citizenship</th>
+                      <th>Occupation</th>
+                      <th>Email</th>
+                      <th>Address</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{`${selectedHousehold.head_last_name}, ${selectedHousehold.head_first_name} ${selectedHousehold.head_middle_name || ""} ${selectedHousehold.head_suffix || ""}`}</td>
+                      <td>{selectedHousehold.sex}</td>
+                      <td>{new Date(selectedHousehold.birth_date).toLocaleDateString()}</td>
+                      <td>{selectedHousehold.civil_status}</td>
+                      <td>{selectedHousehold.citizenship}</td>
+                      <td>{selectedHousehold.occupation}</td>
+                      <td>{selectedHousehold.email_address}</td>
+                      <td>{`${selectedHousehold.house_unit_no || ""} ${selectedHousehold.street_name || ""}, ${selectedHousehold.subdivision || ""}`}</td>
+                      <td>
+                        <span className={`status-badge ${selectedHousehold.status}`}>
+                          {selectedHousehold.status}
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="members-section">
+                <h3>Household Members ({selectedHousehold.members.length})</h3>
+                {selectedHousehold.members.length > 0 ? (
+                  <table className="members-table">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Sex</th>
+                        <th>Birth Date</th>
+                        <th>Civil Status</th>
+                        <th>Occupation</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedHousehold.members.map((member) => (
+                        <tr key={member.id}>
+                          <td>{`${member.last_name}, ${member.first_name} ${member.middle_name || ""} ${member.suffix || ""}`}</td>
+                          <td>{member.sex}</td>
+                          <td>{new Date(member.birth_date).toLocaleDateString()}</td>
+                          <td>{member.civil_status}</td>
+                          <td>{member.occupation}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <p>No members in this household</p>
+                )}
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button className="close-modal-btn" onClick={closeModal}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
