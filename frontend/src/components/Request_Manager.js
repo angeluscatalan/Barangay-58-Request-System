@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../styles/Request_Manager.css";
-import { useRequests } from "../components/requestContext"; 
+import { useRequests } from "../components/requestContext";
 
 function Request_Manager() {
-  const { 
-    requests, 
-    loading, 
-    error, 
+  const {
+    requests,
+    loading,
+    error,
     updateRequestStatus,
-    fetchRequests 
+    fetchRequests
   } = useRequests();
 
   const pendingRequests = requests.filter(req => req.status === 'Pending');
@@ -55,19 +55,19 @@ function Request_Manager() {
                 <td>{request.type_of_certificate}</td>
                 <td>{new Date(request.created_at).toLocaleDateString()}</td>
                 <td className="actions">
-                  <button 
+                  <button
                     className="approve-btn"
                     onClick={() => handleStatusChange(request.id, "approved")}
                   >
                     Approve
                   </button>
-                  <button 
+                  <button
                     className="reject-btn"
                     onClick={() => handleStatusChange(request.id, "rejected")}
                   >
                     Reject
                   </button>
-                  <button 
+                  <button
                     className="view-btn"
                     onClick={() => viewRequestDetails(request)}
                   >
@@ -90,7 +90,7 @@ function Request_Manager() {
                 &times;
               </button>
             </div>
-            
+
             <div className="modal-body">
               <div className="request-info">
                 <h3>Request Information</h3>
@@ -141,7 +141,7 @@ function Request_Manager() {
                   </div>
                   <div className="info-item">
                     <label>Age:</label>
-                    <span>{selectedRequest.birthday ? 
+                    <span>{selectedRequest.birthday ?
                       (new Date().getFullYear() - new Date(selectedRequest.birthday).getFullYear()) : 'N/A'}
                     </span>
                   </div>

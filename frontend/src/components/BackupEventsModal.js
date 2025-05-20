@@ -8,13 +8,46 @@ const BackupEventsModal = ({ isOpen, onClose, onRestore }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [showPasswordModal, setShowPasswordModal] = useState(true);
+    const [password, setPassword] = useState('');
+    const [passwordError, setPasswordError] = useState('');
 
     useEffect(() => {
         if (isOpen) {
-            fetchBackupEvents();
+            setShowPasswordModal(true);
+            setPassword('');
+            setPasswordError('');
             setSelectedEvents([]); // Reset selections when modal opens
         }
     }, [isOpen]);
+
+    const handlePasswordSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setPasswordError('');
+
+        try {
+            // Verify the admin password
+            const token = localStorage.getItem('token');
+            await axios.post('http://localhost:5000/api/auth/verify-password',
+                { password },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
+
+            setShowPasswordModal(false);
+            fetchBackupEvents();
+        } catch (error) {
+            console.error('Password verification error:', error);
+            setPasswordError(error.response?.data?.error || 'Invalid password');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const fetchBackupEvents = async () => {
         try {
@@ -92,6 +125,45 @@ const BackupEventsModal = ({ isOpen, onClose, onRestore }) => {
     };
 
     if (!isOpen) return null;
+
+    if (showPasswordModal) {
+        return (
+            <div className="backup-modal-overlay">
+                <div className="backup-modal">
+                    <div className="backup-modal-header">
+                        <h2>Confirm Admin Password</h2>
+                        <button className="close-btn" onClick={onClose}>×</button>
+                    </div>
+                    <div className="backup-modal-content">
+                        <form onSubmit={handlePasswordSubmit}>
+                            <div className="password-input-container">
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="Enter your password"
+                                    className="password-input"
+                                />
+                                {passwordError && <div className="error-message">{passwordError}</div>}
+                            </div>
+                            <div className="backup-modal-footer">
+                                <button type="button" className="cancel-btn" onClick={onClose}>
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="verify-btn"
+                                    disabled={loading}
+                                >
+                                    {loading ? 'Verifying...' : 'Verify'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     const filteredEvents = filterEvents();
 

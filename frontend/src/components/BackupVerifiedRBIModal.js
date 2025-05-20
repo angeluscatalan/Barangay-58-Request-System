@@ -8,36 +8,79 @@ const BackupVerifiedRBIModal = ({ isOpen, onClose, onRestore }) => {
     const [error, setError] = useState(null);
     const [selectedHouseholds, setSelectedHouseholds] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-
-    // Helper function to get auth headers
-    const getAuthHeaders = () => {
-        const token = localStorage.getItem('token');
-        return {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        };
-    };
+    const [showPasswordModal, setShowPasswordModal] = useState(true);
+    const [password, setPassword] = useState('');
+    const [passwordError, setPasswordError] = useState('');
 
     useEffect(() => {
         if (isOpen) {
-            fetchBackupHouseholds();
+            setSelectedHouseholds([]); // Reset selections when modal opens
+            setShowPasswordModal(true); // Show password modal when opening
+            setPassword(''); // Reset password
+            setPasswordError(''); // Reset password error
+            setError(null); // Reset any previous errors
         }
     }, [isOpen]);
+
+    const verifyPassword = async () => {
+        try {
+            setLoading(true);
+            setPasswordError('');
+            setError(null); // Reset any previous errors
+
+            const token = localStorage.getItem('token');
+            const response = await axios.post(
+                'http://localhost:5000/api/auth/verify-password',
+                { password },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (response.status === 200) {
+                setShowPasswordModal(false);
+                await fetchBackupHouseholds();
+            }
+        } catch (error) {
+            console.error('Password verification error:', error);
+            setPasswordError('Invalid password');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handlePasswordSubmit = async (e) => {
+        e.preventDefault();
+        if (!password.trim()) {
+            setPasswordError('Password is required');
+            return;
+        }
+        await verifyPassword();
+    };
 
     const fetchBackupHouseholds = async () => {
         try {
             setLoading(true);
+            const token = localStorage.getItem('token');
             const response = await axios.get(
                 'http://localhost:5000/api/rbi/backup/list',
-                getAuthHeaders()
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
             );
             setBackupHouseholds(response.data);
+            setError(null); // Clear any previous errors on success
         } catch (error) {
             console.error('Error fetching backup households:', error);
-            setError('Failed to fetch backup data');
             if (error?.response?.status === 401) {
-                alert("Unauthorized access - please log in again");
+                setShowPasswordModal(true); // Show password modal again if unauthorized
+                setPasswordError('Session expired. Please enter password again.');
+            } else {
+                setError('Failed to fetch backup data. Please try again.');
             }
         } finally {
             setLoading(false);
@@ -71,18 +114,26 @@ const BackupVerifiedRBIModal = ({ isOpen, onClose, onRestore }) => {
 
         try {
             setLoading(true);
+            const token = localStorage.getItem('token');
             await axios.post(
                 'http://localhost:5000/api/rbi/backup/restore',
                 { householdIds: selectedHouseholds },
-                getAuthHeaders()
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
             );
             onRestore();
             onClose();
+            alert('Successfully restored selected households!');
         } catch (error) {
             console.error('Error restoring households:', error);
-            setError('Failed to restore selected households');
             if (error?.response?.status === 401) {
-                console.log("Unauthorized access - please log in again");
+                setShowPasswordModal(true); // Show password modal again if unauthorized
+                setPasswordError('Session expired. Please enter password again.');
+            } else {
+                setError('Failed to restore selected households. Please try again.');
             }
         } finally {
             setLoading(false);
@@ -104,6 +155,45 @@ const BackupVerifiedRBIModal = ({ isOpen, onClose, onRestore }) => {
     };
 
     if (!isOpen) return null;
+
+    if (showPasswordModal) {
+        return (
+            <div className="modal-overlay">
+                <div className="backup-modal">
+                    <div className="backup-modal-header">
+                        <h2>Confirm Admin Password</h2>
+                        <button className="close-btn" onClick={onClose}>×</button>
+                    </div>
+                    <div className="backup-modal-content">
+                        <form onSubmit={handlePasswordSubmit}>
+                            <div className="password-input-container">
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="Enter your password"
+                                    className="password-input"
+                                />
+                                {passwordError && <div className="error-message">{passwordError}</div>}
+                            </div>
+                            <div className="backup-modal-footer">
+                                <button type="button" className="cancel-btn" onClick={onClose}>
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="verify-btn"
+                                    disabled={loading}
+                                >
+                                    {loading ? 'Verifying...' : 'Verify'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="modal-overlay">
@@ -147,7 +237,7 @@ const BackupVerifiedRBIModal = ({ isOpen, onClose, onRestore }) => {
                                     <th>ID</th>
                                     <th>Household Head</th>
                                     <th>Address</th>
-                                    <th>Backup Date</th>
+                                    <th># of Members</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -163,7 +253,7 @@ const BackupVerifiedRBIModal = ({ isOpen, onClose, onRestore }) => {
                                         <td>{household.id}</td>
                                         <td>{`${household.head_last_name}, ${household.head_first_name} ${household.head_middle_name || ''}`}</td>
                                         <td>{`${household.house_unit_no || ''} ${household.street_name || ''}, ${household.subdivision || ''}`}</td>
-                                        <td>{new Date(household.created_at).toLocaleString()}</td>
+                                        <td>{household.members?.length || 1}</td>
                                     </tr>
                                 ))}
                             </tbody>

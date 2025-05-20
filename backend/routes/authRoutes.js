@@ -15,5 +15,10 @@ router.post('/reset-password', authController.resetPassword);
 
 router.get('/me', authController.authenticateToken, authController.getCurrentUser);
 
-  module.exports = router;
-  
+// Add password verification route
+router.post('/verify-password',
+  authController.authenticateToken,
+  authController.verifyPassword
+);
+
+module.exports = router;
