@@ -32,6 +32,7 @@ const formatName = (requestData) => {
 
 // Helper function to calculate age
 const calculateAge = (birthday) => {
+    if (!birthday) return '';
     const birthDate = new Date(birthday);
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
@@ -46,7 +47,12 @@ const calculateAge = (birthday) => {
 
 // Helper function to clean address
 const cleanAddress = (rawAddress) => {
-    return rawAddress ? rawAddress.trim().replace(/\s+/g, ' ') : '';
+    if (!rawAddress) return '';
+    return rawAddress
+        .split(',')
+        .map(part => part.trim())
+        .filter(part => part && part.toLowerCase() !== 'undefined')
+        .join(', ');
 };
 
 // Main controller function to generate PDF
@@ -206,22 +212,37 @@ exports.generatePDF = async (req, res) => {
             undertakingForm.flatten();
             const undertakingPdfBytes = await undertakingDoc.save();
 
-            // Create ZIP with both PDFs
+            // ========== ADD DEBUGGING HERE ==========
+            console.log('Main PDF size:', mainPdfBytes.length, 'bytes');
+            console.log('Undertaking PDF size:', undertakingPdfBytes.length, 'bytes');
+            console.log(`Creating ZIP with:
+                - ${requestData.type_of_certificate}_${requestData.last_name}.pdf (${mainPdfBytes.length} bytes)
+                - Undertaking_${requestData.last_name}.pdf (${undertakingPdfBytes.length} bytes)`);
+
             const zip = new JSZip();
             zip.file(`${requestData.type_of_certificate}_${requestData.last_name}.pdf`, mainPdfBytes);
             zip.file(`Undertaking_${requestData.last_name}.pdf`, undertakingPdfBytes);
 
-            const zipBuffer = await zip.generateAsync({ type: 'nodebuffer' });
+            try {
+                const zipContent = await zip.generateAsync({ type: 'nodebuffer' });
+                console.log('ZIP file created successfully:', zipContent.length, 'bytes');
 
-            res.setHeader('Content-Type', 'application/zip');
-            res.setHeader('Content-Disposition', `attachment; filename=certificates_${requestData.last_name}.zip`);
-            return res.send(zipBuffer);
+                res.setHeader('Content-Type', 'application/zip');
+                res.setHeader('Content-Disposition', `attachment; filename=JobseekerDocuments_${requestData.last_name}.zip`);
+                return res.send(zipContent);
+            } catch (zipError) {
+                console.error('Error creating ZIP file:', zipError);
+                return res.status(500).json({
+                    error: 'Failed to create ZIP file',
+                    details: zipError.message
+                });
+            }
         }
 
-        // For non-Jobseeker certificates, send single PDF
+        // For non-Jobseeker certificates
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename=${requestData.type_of_certificate}_${requestData.last_name}.pdf`);
-        res.send(mainPdfBytes);
+        res.send(Buffer.from(mainPdfBytes));
 
     } catch (error) {
         console.error('Error generating PDF:', error);

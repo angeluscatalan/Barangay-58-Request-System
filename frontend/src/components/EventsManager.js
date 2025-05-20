@@ -57,17 +57,12 @@ function EventsManager() {
     if (!window.confirm("Are you sure you want to delete this event?")) return
 
     try {
-      const response = await axios.delete(`http://localhost:5000/api/events/${id}`)
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`Delete failed: ${errorText}`)
-      }
-
+      await axios.delete(`http://localhost:5000/api/events/${id}`)
       setEvents((prevEvents) => prevEvents.filter((event) => event.id !== id))
+      alert("Event deleted successfully")
     } catch (error) {
       console.error("Delete error:", error)
-      alert(`Delete failed: ${error.message}`)
+      alert(`Failed to delete event: ${error.response?.data?.message || error.message}`)
     }
   }
 
@@ -193,6 +188,11 @@ function EventsManager() {
 
     return filtered;
   };
+
+  const handleAddEvent = (newEvent) => {
+    setEvents(prevEvents => [...prevEvents, newEvent])
+    setShowAddEvent(false)
+  }
 
   if (loading) return <div className="loading">Loading events...</div>
   if (error) return <div className="error">{error}</div>
@@ -389,8 +389,9 @@ function EventsManager() {
             setShowAddEvent(false)
             setEditingEvent(null)
           }}
-          onSubmit={handleEditSubmit}
-          editingEvent={editingEvent}
+          onAddEvent={handleAddEvent}
+          onEditEvent={handleEditSubmit}
+          editData={editingEvent}
         />
       )}
 

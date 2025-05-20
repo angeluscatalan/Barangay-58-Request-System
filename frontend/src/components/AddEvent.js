@@ -10,7 +10,7 @@ function AddEvent({ onClose, onAddEvent, editData = null, onEditEvent }) {
         venue: editData.venue || '',
         description: editData.description || '',
         image: null,
-        image_url: editData.image_url || null  
+        image_url: editData.image_url || null
     } : {
         name: '',
         date: '',
@@ -39,12 +39,12 @@ function AddEvent({ onClose, onAddEvent, editData = null, onEditEvent }) {
                 alert('Image must not be larger than 2MB');
                 return;
             }
-    
+
             setEventData(prev => ({
                 ...prev,
-                image: file 
+                image: file
             }));
-    
+
             const reader = new FileReader();
             reader.onloadend = () => {
                 setImagePreview(reader.result);
@@ -52,63 +52,71 @@ function AddEvent({ onClose, onAddEvent, editData = null, onEditEvent }) {
             reader.readAsDataURL(file);
         }
     };
-    
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         const formData = new FormData();
-        formData.append('name', eventData.name);
-        formData.append('date', eventData.date);
-        formData.append('timeStart', eventData.timeStart);
-        formData.append('timeEnd', eventData.timeEnd);
+        formData.append('event_name', eventData.name);
+        formData.append('event_date', eventData.date);
+        formData.append('time_start', eventData.timeStart);
+        formData.append('time_end', eventData.timeEnd);
         formData.append('venue', eventData.venue);
         formData.append('description', eventData.description);
-        
+
         if (eventData.image) {
             formData.append('image', eventData.image);
         }
-        
+
         try {
-            const url = editData 
-                ? `http://localhost:5000/events/${editData.id}`
-                : 'http://localhost:5000/events';
-                
+            const url = editData
+                ? `http://localhost:5000/api/events/${editData.id}`
+                : 'http://localhost:5000/api/events';
+
             const method = editData ? 'PUT' : 'POST';
-            
+
             const response = await fetch(url, {
                 method,
                 body: formData
                 // Don't set Content-Type header - let the browser set it with boundary
             });
-    
+
             const responseData = await response.json();
-            
+
             if (!response.ok) {
                 throw new Error(responseData.message || 'Request failed');
             }
-    
+
             if (editData) {
                 onEditEvent({
                     ...eventData,
                     id: editData.id,
-                    imageUrl: responseData.imageUrl || eventData.image_url
+                    image_url: responseData.image_url || eventData.image_url,
+                    event_name: eventData.name,
+                    event_date: eventData.date,
+                    time_start: eventData.timeStart,
+                    time_end: eventData.timeEnd
                 });
             } else {
                 onAddEvent({
                     ...eventData,
                     id: responseData.id,
-                    imageUrl: responseData.imageUrl
+                    image_url: responseData.image_url,
+                    event_name: eventData.name,
+                    event_date: eventData.date,
+                    time_start: eventData.timeStart,
+                    time_end: eventData.timeEnd
                 });
             }
-            
+
             onClose();
         } catch (error) {
             console.error('Error:', error);
             alert(`Operation failed: ${error.message}`);
         }
     };
-    
+
     return (
         <div className="add-event-container">
             <div className="add-event-header">
@@ -200,19 +208,19 @@ function AddEvent({ onClose, onAddEvent, editData = null, onEditEvent }) {
                     <div className="image-upload-area">
                         {imagePreview ? (
                             <div className="image-preview">
-                                <img 
-                                    src={typeof imagePreview === 'string' ? imagePreview : URL.createObjectURL(imagePreview)} 
-                                    alt="Event preview" 
+                                <img
+                                    src={typeof imagePreview === 'string' ? imagePreview : URL.createObjectURL(imagePreview)}
+                                    alt="Event preview"
                                 />
                                 <button
                                     type="button"
                                     className="remove-image"
                                     onClick={() => {
                                         setImagePreview(null);
-                                        setEventData(prev => ({ 
-                                            ...prev, 
+                                        setEventData(prev => ({
+                                            ...prev,
                                             image: null,
-                                            image_url: null 
+                                            image_url: null
                                         }));
                                     }}
                                 >
