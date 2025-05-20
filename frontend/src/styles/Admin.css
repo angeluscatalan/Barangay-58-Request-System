@@ -622,6 +622,21 @@ tr:hover {
     font-family: "Inter", sans-serif;
     font-size: 18px;
     color: #333;
+    background-color: #ffe3e2;
+  }
+
+  .mobile-warning {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 90%;
+    text-align: center;
+  }
+
+  .mobile-warning h2 {
+    color: #da1c6f;
+    margin-bottom: 1rem;
   }
 }
 
@@ -636,13 +651,7 @@ tr:hover {
   margin-bottom: 1rem;
 }
 
-.filter-tabs {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
+/* Update the tab-button and active-tab styles to ensure active state is clearly visible */
 .tab-button {
   padding: 6px 12px;
   border: 1px solid #ccc;
@@ -651,6 +660,7 @@ tr:hover {
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 14px;
+  position: relative; /* Add position relative for the indicator */
 }
 
 .tab-button:hover {
@@ -663,6 +673,31 @@ tr:hover {
   /* Pink for active tab */
   color: white;
   border-color: #da1c6f;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Add an active indicator line at the bottom of the active tab */
+.active-tab::after {
+  content: "";
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: #da1c6f;
+  border-radius: 1.5px;
+}
+
+/* Ensure the filter tabs container has proper spacing */
+.filter-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  margin-bottom: 15px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #eee;
+  overflow-x: auto;
 }
 
 /* --- Calendar Container --- */
@@ -864,15 +899,21 @@ select.status-pickup {
   cursor: pointer;
   padding: 5px;
   margin-left: 5px;
+  transition: color 0.2s;
+}
+
+.delete-btn:hover {
+  color: #cc0000;
 }
 
 .print-btn {
   background: none;
   border: none;
-  color: #2196F3;
+  color: #2196f3;
   cursor: pointer;
   padding: 5px;
   margin-left: 5px;
+  transition: color 0.2s;
 }
 
 .print-btn:hover {
@@ -1135,7 +1176,6 @@ tr:hover {
 
 /* Responsive improvements */
 @media (max-width: 768px) {
-
   .dashboard-header,
   .table-header {
     padding: 16px;
@@ -1244,7 +1284,7 @@ tr:hover {
 .compare-btn {
   background: none;
   border: none;
-  color: #4CAF50;
+  color: #4caf50;
   cursor: pointer;
   margin-left: 5px;
 }
@@ -1254,7 +1294,7 @@ tr:hover {
 }
 
 .retrieve-btn {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border: none;
   padding: 8px 15px;
@@ -1268,7 +1308,7 @@ tr:hover {
 }
 
 .retrieve-btn:hover {
-  background-color: #388E3C;
+  background-color: #388e3c;
 }
 
 .retrieve-btn i {
@@ -1606,4 +1646,36 @@ th {
 .bulk-delete-btn:disabled {
   background: #6c757d;
   cursor: not-allowed;
+}
+
+/* Action buttons container */
+.action-buttons {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+/* White background container for Events section */
+.white-background-container {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+/* Tooltip for action buttons */
+.delete-btn[title]:hover::after,
+.print-btn[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 100;
+  margin-top: -30px;
+  margin-left: -20px;
 }

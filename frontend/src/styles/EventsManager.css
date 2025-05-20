@@ -123,7 +123,7 @@
 }
 
 .table-container tr {
-  background: transparent;
+  background: white;
 }
 
 .table-container th {
@@ -210,6 +210,10 @@
   max-height: 90vh;
   overflow-y: auto;
   z-index: 1001;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 /* Calendar container styling */
@@ -273,4 +277,88 @@
 
 .search-input::placeholder {
   color: #999;
+}
+
+/* Edit and Delete buttons */
+.edit-btn,
+.delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-right: 10px;
+  transition: all 0.2s ease;
+}
+
+.edit-btn {
+  color: #0d6efd;
+}
+
+.delete-btn {
+  color: #dc3545;
+}
+
+.edit-btn:hover,
+.delete-btn:hover {
+  transform: scale(1.2);
+}
+
+/* Bulk delete button */
+.bulk-delete-btn {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.bulk-delete-btn:hover {
+  background-color: #c82333;
+}
+
+.bulk-delete-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+/* Retrieve data button */
+.retrieve-btn {
+  background-color: #0d6efd;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.retrieve-btn:hover {
+  background-color: #0b5ed7;
+}
+
+/* View buttons */
+.view-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.view-buttons button {
+  padding: 8px 15px;
+  border: 1px solid #ddd;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.view-buttons button.active {
+  background-color: #da1c6f;
+  color: white;
+  border-color: #da1c6f;
+}
+
+.view-buttons button:hover:not(.active) {
+  background-color: #e9ecef;
 }

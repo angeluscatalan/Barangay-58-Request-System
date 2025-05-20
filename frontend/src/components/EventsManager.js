@@ -7,6 +7,7 @@ import interactionPlugin from "@fullcalendar/interaction"
 import "../styles/EventsManager.css"
 import AddEvent from "./AddEvent"
 import BackupEventsModal from "./BackupEventsModal"
+import DeleteConfirmationModal from "./DeleteConfirmationModal"
 import axios from "axios"
 
 function EventsManager() {
@@ -21,6 +22,9 @@ function EventsManager() {
   const [error, setError] = useState(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [eventToDelete, setEventToDelete] = useState(null)
+  const [showDeleteSelectedModal, setShowDeleteSelectedModal] = useState(false)
 
   const fetchEvents = async () => {
     try {
@@ -53,13 +57,17 @@ function EventsManager() {
     setShowAddEvent(true)
   }
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this event?")) return
+  const handleDelete = (id) => {
+    setEventToDelete(id)
+    setShowDeleteModal(true)
+  }
 
+  const confirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:5000/api/events/${id}`)
-      setEvents((prevEvents) => prevEvents.filter((event) => event.id !== id))
-      alert("Event deleted successfully")
+      await axios.delete(`http://localhost:5000/api/events/${eventToDelete}`)
+      setEvents((prevEvents) => prevEvents.filter((event) => event.id !== eventToDelete))
+      setShowDeleteModal(false)
+      setEventToDelete(null)
     } catch (error) {
       console.error("Delete error:", error)
       alert(`Failed to delete event: ${error.response?.data?.message || error.message}`)
@@ -81,7 +89,7 @@ function EventsManager() {
     const options = {
       year: "numeric",
       month: "long",
-      day: "numeric"
+      day: "numeric",
     }
     return date.toLocaleDateString(undefined, options)
   }
@@ -96,7 +104,7 @@ function EventsManager() {
       hour: "2-digit",
       minute: "2-digit",
       hour12: true,
-      timeZone: "Asia/Manila"
+      timeZone: "Asia/Manila",
     }
     return date.toLocaleString(undefined, options)
   }
@@ -114,9 +122,9 @@ function EventsManager() {
   }))
 
   const handleSelectEvent = (id) => {
-    setSelectedEvents(prev => {
+    setSelectedEvents((prev) => {
       if (prev.includes(id)) {
-        return prev.filter(eventId => eventId !== id)
+        return prev.filter((eventId) => eventId !== id)
       } else {
         return [...prev, id]
       }
@@ -125,22 +133,22 @@ function EventsManager() {
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      setSelectedEvents(events.map(event => event.id))
+      setSelectedEvents(events.map((event) => event.id))
     } else {
       setSelectedEvents([])
     }
   }
 
-  const handleDeleteSelected = async () => {
+  const handleDeleteSelected = () => {
     if (selectedEvents.length === 0) {
       alert("Please select at least one event to delete")
       return
     }
 
-    if (!window.confirm(`Are you sure you want to delete ${selectedEvents.length} selected event(s)?`)) {
-      return
-    }
+    setShowDeleteSelectedModal(true)
+  }
 
+  const confirmDeleteSelected = async () => {
     setIsDeleting(true)
     try {
       for (const id of selectedEvents) {
@@ -148,7 +156,7 @@ function EventsManager() {
       }
       fetchEvents()
       setSelectedEvents([])
-      alert("Successfully deleted selected events")
+      setShowDeleteSelectedModal(false)
     } catch (error) {
       console.error("Error deleting events:", error)
       alert("Failed to delete some events")
@@ -158,39 +166,40 @@ function EventsManager() {
   }
 
   const filterEvents = () => {
-    let filtered = [...events];
+    let filtered = [...events]
 
     // Apply search filter
     if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(event =>
-        (event.event_name || '').toLowerCase().includes(query) ||
-        (event.venue || '').toLowerCase().includes(query) ||
-        (event.description || '').toLowerCase().includes(query)
-      );
+      const query = searchQuery.toLowerCase()
+      filtered = filtered.filter(
+        (event) =>
+          (event.event_name || "").toLowerCase().includes(query) ||
+          (event.venue || "").toLowerCase().includes(query) ||
+          (event.description || "").toLowerCase().includes(query),
+      )
     }
 
     // Apply sorting
     filtered.sort((a, b) => {
       switch (sortBy) {
         case "Date":
-          return new Date(a.event_date || 0) - new Date(b.event_date || 0);
+          return new Date(a.event_date || 0) - new Date(b.event_date || 0)
         case "Name":
-          return (a.event_name || '').localeCompare(b.event_name || '');
+          return (a.event_name || "").localeCompare(b.event_name || "")
         case "Latest":
-          return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+          return new Date(b.created_at || 0) - new Date(a.created_at || 0)
         case "Oldest":
-          return new Date(a.created_at || 0) - new Date(b.created_at || 0);
+          return new Date(a.created_at || 0) - new Date(b.created_at || 0)
         default:
-          return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+          return new Date(b.created_at || 0) - new Date(a.created_at || 0)
       }
-    });
+    })
 
-    return filtered;
-  };
+    return filtered
+  }
 
   const handleAddEvent = (newEvent) => {
-    setEvents(prevEvents => [...prevEvents, newEvent])
+    setEvents((prevEvents) => [...prevEvents, newEvent])
     setShowAddEvent(false)
   }
 
@@ -251,10 +260,7 @@ function EventsManager() {
               <button className="add-request-btn" onClick={() => setShowAddEvent(true)}>
                 <i className="fas fa-plus"></i> Add Event
               </button>
-              <button
-                className="retrieve-btn"
-                onClick={() => setShowBackupModal(true)}
-              >
+              <button className="retrieve-btn" onClick={() => setShowBackupModal(true)}>
                 <i className="fas fa-undo"></i> Retrieve Data
               </button>
             </div>
@@ -281,21 +287,20 @@ function EventsManager() {
                 </tr>
               </thead>
               <tbody>
-                {filterEvents().map((event, index) => {
-                  console.log('Event row:', event);
-                  return (
-                    <tr key={event.id}>
-                      <td>
-                        <input
-                          type="checkbox"
-                          checked={selectedEvents.includes(event.id)}
-                          onChange={() => handleSelectEvent(event.id)}
-                        />
-                      </td>
-                      <td>{index + 1}</td>
-                      <td>
-                        {event.image_url ? (
-                          <div style={{
+                {filterEvents().map((event, index) => (
+                  <tr key={event.id}>
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={selectedEvents.includes(event.id)}
+                        onChange={() => handleSelectEvent(event.id)}
+                      />
+                    </td>
+                    <td>{index + 1}</td>
+                    <td>
+                      {event.image_url ? (
+                        <div
+                          style={{
                             width: "50px",
                             height: "50px",
                             overflow: "hidden",
@@ -303,26 +308,28 @@ function EventsManager() {
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            backgroundColor: "#f8f9fa"
-                          }}>
-                            <img
-                              src={event.image_url}
-                              alt="Event"
-                              style={{
-                                width: "100%",
-                                height: "100%",
-                                objectFit: "cover",
-                                transition: "transform 0.2s ease"
-                              }}
-                              onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = "/placeholder.jpg";
-                              }}
-                              loading="lazy"
-                            />
-                          </div>
-                        ) : (
-                          <div style={{
+                            backgroundColor: "#f8f9fa",
+                          }}
+                        >
+                          <img
+                            src={event.image_url || "/placeholder.svg"}
+                            alt="Event"
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                              transition: "transform 0.2s ease",
+                            }}
+                            onError={(e) => {
+                              e.target.onerror = null
+                              e.target.src = "/placeholder.jpg"
+                            }}
+                            loading="lazy"
+                          />
+                        </div>
+                      ) : (
+                        <div
+                          style={{
                             width: "50px",
                             height: "50px",
                             display: "flex",
@@ -335,31 +342,31 @@ function EventsManager() {
                             borderRadius: "4px",
                             fontSize: "10px",
                             textAlign: "center",
-                            padding: "4px"
-                          }}>
-                            <i className="fas fa-image" style={{ fontSize: "16px", marginBottom: "2px" }}></i>
-                            <span>No image</span>
-                          </div>
-                        )}
-                      </td>
-                      <td>{formatDateTime(event.created_at)}</td>
-                      <td>{event.event_name || "No name"}</td>
-                      <td>{formatDate(event.event_date)}</td>
-                      <td>
-                        {event.time_start} - {event.time_end}
-                      </td>
-                      <td>{event.venue}</td>
-                      <td>
-                        <button className="edit-btn" onClick={() => handleEdit(event)}>
-                          <i className="fas fa-edit"></i>
-                        </button>
-                        <button className="delete-btn" onClick={() => handleDelete(event.id)}>
-                          <i className="fas fa-trash"></i>
-                        </button>
-                      </td>
-                    </tr>
-                  )
-                })}
+                            padding: "4px",
+                          }}
+                        >
+                          <i className="fas fa-image" style={{ fontSize: "16px", marginBottom: "2px" }}></i>
+                          <span>No image</span>
+                        </div>
+                      )}
+                    </td>
+                    <td>{formatDateTime(event.created_at)}</td>
+                    <td>{event.event_name || "No name"}</td>
+                    <td>{formatDate(event.event_date)}</td>
+                    <td>
+                      {event.time_start} - {event.time_end}
+                    </td>
+                    <td>{event.venue}</td>
+                    <td>
+                      <button className="edit-btn" onClick={() => handleEdit(event)}>
+                        <i className="fas fa-edit"></i>
+                      </button>
+                      <button className="delete-btn" onClick={() => handleDelete(event.id)}>
+                        <i className="fas fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -376,7 +383,7 @@ function EventsManager() {
               right: "dayGridMonth,dayGridWeek,dayGridDay",
             }}
             eventClick={(info) => {
-              const event = events.find((e) => e.id === parseInt(info.event.id))
+              const event = events.find((e) => e.id === Number.parseInt(info.event.id))
               if (event) handleEdit(event)
             }}
           />
@@ -395,10 +402,27 @@ function EventsManager() {
         />
       )}
 
-      <BackupEventsModal
-        isOpen={showBackupModal}
-        onClose={() => setShowBackupModal(false)}
-        onRestore={fetchEvents}
+      <BackupEventsModal isOpen={showBackupModal} onClose={() => setShowBackupModal(false)} onRestore={fetchEvents} />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={showDeleteModal}
+        title="Delete Event"
+        message="Are you sure you want to delete this event?"
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          setShowDeleteModal(false)
+          setEventToDelete(null)
+        }}
+      />
+
+      {/* Delete Selected Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={showDeleteSelectedModal}
+        title="Delete Selected Events"
+        message={`Are you sure you want to delete ${selectedEvents.length} selected event(s)?`}
+        onConfirm={confirmDeleteSelected}
+        onCancel={() => setShowDeleteSelectedModal(false)}
       />
     </div>
   )

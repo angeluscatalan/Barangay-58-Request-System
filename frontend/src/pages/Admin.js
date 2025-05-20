@@ -11,9 +11,10 @@ import RBI_Request_Manager from "../components/RBI_Request_Manager"
 import Request_Manager from "../components/Request_Manager"
 import Account_Manager from "../components/Account_Manager"
 import Verified_RBI_List from "../components/Verified_RBI_List"
-import ComparisonModal from "../components/comparisonModal";
+import ComparisonModal from "../components/comparisonModal"
 import AdminDashboard from "../components/AdminDashboard"
 import BackupRequestsModal from "../components/BackupRequestsModal"
+import DeleteConfirmationModal from "../components/DeleteConfirmationModal"
 
 function Admin() {
   const navigate = useNavigate()
@@ -26,55 +27,79 @@ function Admin() {
   const [userAccessLevel, setUserAccessLevel] = useState(null)
   const [selectedRequests, setSelectedRequests] = useState([])
   const [sidebarVisible, setSidebarVisible] = useState(true)
-  const [sortBy, setSortBy] = useState("latest");
-  const [isPrinting, setIsPrinting] = useState({});
-  const [selectedRequest, setSelectedRequest] = useState(null);
-  const [similarRbis, setSimilarRbis] = useState([]);
-  const [showRbiComparison, setShowRbiComparison] = useState(false);
-  const [showBackupModal, setShowBackupModal] = useState(false);
-  const [backupModalType, setBackupModalType] = useState('requests');
+  const [sortBy, setSortBy] = useState("latest")
+  const [isPrinting, setIsPrinting] = useState({})
+  const [selectedRequest, setSelectedRequest] = useState(null)
+  const [similarRbis, setSimilarRbis] = useState([])
+  const [showRbiComparison, setShowRbiComparison] = useState(false)
+  const [showBackupModal, setShowBackupModal] = useState(false)
+  const [backupModalType, setBackupModalType] = useState("requests")
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [requestToDelete, setRequestToDelete] = useState(null)
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false)
+  const [isSmallScreen, setIsSmallScreen] = useState(false)
 
   const { requests, loading: requestsLoading, error: requestsError, fetchRequests, updateRequestStatus } = useRequests()
 
+  // Check screen size on mount and when window resizes
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsSmallScreen(window.innerWidth < 1024)
+    }
+
+    // Initial check
+    checkScreenSize()
+
+    // Add event listener for resize
+    window.addEventListener("resize", checkScreenSize)
+
+    // Cleanup
+    return () => window.removeEventListener("resize", checkScreenSize)
+  }, [])
+
   // Add delete function
-  const handleDeleteRequest = async (id) => {
-    if (window.confirm("Are you sure you want to delete this request?")) {
-      try {
-        const token = localStorage.getItem("token")
-        await axios.delete(`http://localhost:5000/api/requests/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        await fetchRequests() // Refresh the requests list
-        alert("Request successfully deleted!")
-      } catch (error) {
-        console.error("Error deleting request:", error)
-        alert("Failed to delete request")
-      }
+  const handleDeleteRequest = (id) => {
+    setRequestToDelete(id)
+    setShowDeleteModal(true)
+  }
+
+  const confirmDeleteRequest = async () => {
+    try {
+      const token = localStorage.getItem("token")
+      await axios.delete(`http://localhost:5000/api/requests/${requestToDelete}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      await fetchRequests() // Refresh the requests list
+      setShowDeleteModal(false)
+      setRequestToDelete(null)
+    } catch (error) {
+      console.error("Error deleting request:", error)
+      alert("Failed to delete request")
     }
   }
 
   const findSimilarRbis = async (request) => {
     try {
-      setSelectedRequest(request);
-      const token = localStorage.getItem("token");
+      setSelectedRequest(request)
+      const token = localStorage.getItem("token")
       const response = await axios.post(
         "http://localhost:5000/api/rbi/find-similar",
         {
           lastName: request.last_name,
           firstName: request.first_name,
-          middleName: request.middle_name
+          middleName: request.middle_name,
         },
         {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-      setSimilarRbis(response.data);
-      setShowRbiComparison(true);
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      )
+      setSimilarRbis(response.data)
+      setShowRbiComparison(true)
     } catch (error) {
-      console.error("Error finding similar RBIs:", error);
-      alert("Failed to search for similar RBI records");
+      console.error("Error finding similar RBIs:", error)
+      alert("Failed to search for similar RBI records")
     }
-  };
+  }
 
   // Memoize fetchUserData with no dependencies
   const fetchUserData = useCallback(async () => {
@@ -132,60 +157,62 @@ function Admin() {
   const filteredRequests = useMemo(() => {
     // First filter by type, status, and search
     const filtered = approvedRequests.filter((request) => {
-      const matchesType = typeFilter === "All" || request.type_of_certificate === typeFilter;
-      const matchesStatus = statusFilter === "All" || request.status === statusFilter;
+      const matchesType = typeFilter === "All" || request.type_of_certificate === typeFilter
+      const matchesStatus = statusFilter === "All" || request.status === statusFilter
       const matchesSearch =
         searchQuery === "" ||
         `${request.last_name}, ${request.first_name} ${request.middle_name || ""}`
           .toLowerCase()
-          .includes(searchQuery.toLowerCase());
+          .includes(searchQuery.toLowerCase())
 
-      return matchesType && matchesStatus && matchesSearch;
-    });
+      return matchesType && matchesStatus && matchesSearch
+    })
 
     // Then apply sorting
-    return filtered.sort((a, b) => {
-      const dateA = new Date(a.created_at);
-      const dateB = new Date(b.created_at);
+    return filtered
+      .sort((a, b) => {
+        const dateA = new Date(a.created_at)
+        const dateB = new Date(b.created_at)
 
-      switch (sortBy) {
-        case "latest":
-          return dateB - dateA; // Newest first
-        case "oldest":
-          return dateA - dateB; // Oldest first
-        case "lastMonth":
-          // Show only requests from the last 30 days
-          const oneMonthAgo = new Date();
-          oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-          return dateB - dateA; // Sort by newest first within last month
-        case "lastYear":
-          // Show only requests from the last 365 days
-          const oneYearAgo = new Date();
-          oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-          return dateB - dateA; // Sort by newest first within last year
-        default:
-          return dateB - dateA; // Default to latest first
-      }
-    }).filter(request => {
-      // Additional filtering for time-based options
-      const requestDate = new Date(request.created_at);
-      const now = new Date();
+        switch (sortBy) {
+          case "latest":
+            return dateB - dateA // Newest first
+          case "oldest":
+            return dateA - dateB // Oldest first
+          case "lastMonth":
+            // Show only requests from the last 30 days
+            const oneMonthAgo = new Date()
+            oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1)
+            return dateB - dateA // Sort by newest first within last month
+          case "lastYear":
+            // Show only requests from the last 365 days
+            const oneYearAgo = new Date()
+            oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
+            return dateB - dateA // Sort by newest first within last year
+          default:
+            return dateB - dateA // Default to latest first
+        }
+      })
+      .filter((request) => {
+        // Additional filtering for time-based options
+        const requestDate = new Date(request.created_at)
+        const now = new Date()
 
-      if (sortBy === "lastMonth") {
-        const oneMonthAgo = new Date();
-        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-        return requestDate >= oneMonthAgo;
-      }
+        if (sortBy === "lastMonth") {
+          const oneMonthAgo = new Date()
+          oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1)
+          return requestDate >= oneMonthAgo
+        }
 
-      if (sortBy === "lastYear") {
-        const oneYearAgo = new Date();
-        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-        return requestDate >= oneYearAgo;
-      }
+        if (sortBy === "lastYear") {
+          const oneYearAgo = new Date()
+          oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
+          return requestDate >= oneYearAgo
+        }
 
-      return true; // No additional filtering for other sort options
-    });
-  }, [approvedRequests, typeFilter, statusFilter, searchQuery, sortBy]);
+        return true // No additional filtering for other sort options
+      })
+  }, [approvedRequests, typeFilter, statusFilter, searchQuery, sortBy])
 
   // Helper function to get status class
   const getStatusClass = (status) => {
@@ -261,87 +288,117 @@ function Admin() {
   }
 
   // Add bulk delete function
-  const handleBulkDelete = async () => {
+  const handleBulkDelete = () => {
     if (selectedRequests.length === 0) {
       alert("Please select at least one request to delete")
       return
     }
 
-    const confirmMessage = `Are you sure you want to delete ${selectedRequests.length} selected request(s)? This action cannot be undone.`
-    if (window.confirm(confirmMessage)) {
-      try {
-        const token = localStorage.getItem("token")
-        await Promise.all(
-          selectedRequests.map((id) =>
-            axios.delete(`http://localhost:5000/api/requests/${id}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            }),
-          ),
-        )
-        await fetchRequests()
-        setSelectedRequests([])
-        alert(`${selectedRequests.length} request(s) successfully deleted!`)
-      } catch (error) {
-        console.error("Error deleting requests:", error)
-        alert("Failed to delete selected requests")
-      }
+    setShowBulkDeleteModal(true)
+  }
+
+  const confirmBulkDelete = async () => {
+    try {
+      const token = localStorage.getItem("token")
+      await Promise.all(
+        selectedRequests.map((id) =>
+          axios.delete(`http://localhost:5000/api/requests/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ),
+      )
+      await fetchRequests()
+      setSelectedRequests([])
+      setShowBulkDeleteModal(false)
+    } catch (error) {
+      console.error("Error deleting requests:", error)
+      alert("Failed to delete selected requests")
     }
   }
 
- const handlePrintRequest = async (request) => {
-  setIsPrinting(prev => ({ ...prev, [request.id]: true }));
-  try {
-    console.log('Sending request data:', request);
-    const response = await axios.post(
-      'http://localhost:5000/api/certificates/generate-pdf',
-      { 
-        requestData: {
-          ...request,
-          s3_key: request.s3_key // Make sure this is included
-        }
-      },
-      {
-        responseType: 'blob',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      }
-    );
+  const handlePrintRequest = async (request) => {
+    setIsPrinting((prev) => ({ ...prev, [request.id]: true }))
+    try {
+      console.log("Sending request data:", request)
+      const response = await axios.post(
+        "http://localhost:5000/api/certificates/generate-pdf",
+        {
+          requestData: {
+            ...request,
+            s3_key: request.s3_key, // Make sure this is included
+          },
+        },
+        {
+          responseType: "blob",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        },
+      )
 
       // Check if this is a JobseekerCert to handle ZIP differently
-      if (request.type_of_certificate === 'JobseekerCert') {
+      if (request.type_of_certificate === "JobseekerCert") {
         // Create a blob from the ZIP Stream
-        const file = new Blob([response.data], { type: 'application/zip' });
-        const fileURL = URL.createObjectURL(file);
-        const link = document.createElement('a');
-        link.href = fileURL;
-        link.download = `JobseekerDocuments_${request.last_name}.zip`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(fileURL);
+        const file = new Blob([response.data], { type: "application/zip" })
+        const fileURL = URL.createObjectURL(file)
+        const link = document.createElement("a")
+        link.href = fileURL
+        link.download = `JobseekerDocuments_${request.last_name}.zip`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(fileURL)
       } else {
         // Handle regular PDFs as before
-        const file = new Blob([response.data], { type: 'application/pdf' });
-        const fileURL = URL.createObjectURL(file);
-        const link = document.createElement('a');
-        link.href = fileURL;
-        link.download = `${request.type_of_certificate}_${request.last_name}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(fileURL);
+        const file = new Blob([response.data], { type: "application/pdf" })
+        const fileURL = URL.createObjectURL(file)
+        const link = document.createElement("a")
+        link.href = fileURL
+        link.download = `${request.type_of_certificate}_${request.last_name}.pdf`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(fileURL)
       }
     } catch (error) {
-      console.error('Error printing certificate:', error);
-      alert('Failed to generate certificate');
+      console.error("Error printing certificate:", error)
+      alert("Failed to generate certificate")
     } finally {
-      setIsPrinting(prev => ({ ...prev, [request.id]: false }));
+      setIsPrinting((prev) => ({ ...prev, [request.id]: false }))
     }
-  };
+  }
 
   if (requestsLoading) return <div className="loading">Loading...</div>
   if (requestsError) return <div className="error">Error: {requestsError}</div>
+
+  // If on a small screen, show the desktop-only message
+  if (isSmallScreen) {
+    return (
+      <div className="admin-mobile-message">
+        <div className="mobile-warning">
+          <i className="fas fa-desktop" style={{ fontSize: "3rem", color: "#da1c6f", marginBottom: "1rem" }}></i>
+          <h2>Desktop View Required</h2>
+          <p>⚠️ The Admin Page is best viewed on desktop or laptop devices.</p>
+          <p>Please use a device with a larger screen for the optimal experience.</p>
+          <button
+            className="back-button"
+            onClick={() => navigate("/")}
+            style={{
+              marginTop: "1rem",
+              padding: "0.5rem 1rem",
+              backgroundColor: "#da1c6f",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            Return to Home
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <>
@@ -469,8 +526,8 @@ function Admin() {
                         <button
                           className="retrieve-btn"
                           onClick={() => {
-                            setBackupModalType('requests');
-                            setShowBackupModal(true);
+                            setBackupModalType("requests")
+                            setShowBackupModal(true)
                           }}
                         >
                           <i className="fas fa-undo"></i> Retrieve Request Data
@@ -484,9 +541,9 @@ function Admin() {
                               <button
                                 className="compare-btn"
                                 onClick={() => {
-                                  const selectedReq = filteredRequests.find(req => req.id === selectedRequests[0]);
+                                  const selectedReq = filteredRequests.find((req) => req.id === selectedRequests[0])
                                   if (selectedReq) {
-                                    findSimilarRbis(selectedReq);
+                                    findSimilarRbis(selectedReq)
                                   }
                                 }}
                                 title="Compare with RBI records"
@@ -522,7 +579,14 @@ function Admin() {
                         <button
                           key={type}
                           className={`tab-button ${typeFilter === type ? "active-tab" : ""}`}
-                          onClick={() => setTypeFilter(type)}
+                          onClick={() => {
+                            setTypeFilter(type)
+                            // Reset other filters when changing tab type for better UX
+                            if (type !== "All") {
+                              setStatusFilter("All")
+                            }
+                          }}
+                          aria-pressed={typeFilter === type}
                         >
                           {type === "All" ? "All Types" : type === "VerifiedRBI" ? "Verified RBI List" : type}
                         </button>
@@ -550,7 +614,9 @@ function Admin() {
                               <th>
                                 <input
                                   type="checkbox"
-                                  checked={selectedRequests.length === filteredRequests.length}
+                                  checked={
+                                    selectedRequests.length === filteredRequests.length && filteredRequests.length > 0
+                                  }
                                   onChange={handleMasterSelect}
                                 />
                               </th>
@@ -567,6 +633,7 @@ function Admin() {
                               <th>PURPOSE</th>
                               <th>NO. OF COPIES</th>
                               <th>STATUS</th>
+                              <th>ACTIONS</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -605,13 +672,17 @@ function Admin() {
                                     <option value="rejected">Rejected</option>
                                     <option value="for pickup">For Pickup</option>
                                   </select>
+                                </td>
+                                <td className="action-buttons">
                                   <button
                                     className="print-btn"
                                     onClick={() => handlePrintRequest(request)}
                                     title="Print Request"
                                     disabled={isPrinting[request.id]}
                                   >
-                                    <i className={`fas ${isPrinting[request.id] ? 'fa-spinner fa-spin' : 'fa-print'}`}></i>
+                                    <i
+                                      className={`fas ${isPrinting[request.id] ? "fa-spinner fa-spin" : "fa-print"}`}
+                                    ></i>
                                   </button>
                                   <button
                                     className="delete-btn"
@@ -631,7 +702,9 @@ function Admin() {
                 </div>
               </div>
             ) : activeSection === "events" ? (
-              <EventsManager />
+              <div className="white-background-container">
+                <EventsManager />
+              </div>
             ) : activeSection === "req_manager" ? (
               <Request_Manager />
             ) : activeSection === "rbi_manager" ? (
@@ -650,17 +723,34 @@ function Admin() {
         </div>
       </div>
       {showRbiComparison && (
-        <ComparisonModal
-          request={selectedRequest}
-          rbis={similarRbis}
-          onClose={() => setShowRbiComparison(false)}
-        />
+        <ComparisonModal request={selectedRequest} rbis={similarRbis} onClose={() => setShowRbiComparison(false)} />
       )}
       <BackupRequestsModal
         isOpen={showBackupModal}
         onClose={() => setShowBackupModal(false)}
         type={backupModalType}
         onRestore={fetchRequests}
+      />
+
+      {/* Delete Confirmation Modal for single request */}
+      <DeleteConfirmationModal
+        isOpen={showDeleteModal}
+        title="Delete Request"
+        message="Are you sure you want to delete this request?"
+        onConfirm={confirmDeleteRequest}
+        onCancel={() => {
+          setShowDeleteModal(false)
+          setRequestToDelete(null)
+        }}
+      />
+
+      {/* Delete Confirmation Modal for bulk delete */}
+      <DeleteConfirmationModal
+        isOpen={showBulkDeleteModal}
+        title="Delete Selected Requests"
+        message={`Are you sure you want to delete ${selectedRequests.length} selected request(s)? This action cannot be undone.`}
+        onConfirm={confirmBulkDelete}
+        onCancel={() => setShowBulkDeleteModal(false)}
       />
     </>
   )
