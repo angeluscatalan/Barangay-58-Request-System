@@ -1,13 +1,19 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import brgyLogo from "../assets/brgylogo.png"
 import Kap_NoBg from "../assets/Kap_NoBg.png"
 import "../styles/Home.css"
 import Footer from "../components/Footer"
+import LandingModal from "../components/LandingModal.js"
+import bannerImage from "../assets/aaron.png"
 
 function Home() {
-  // Sample project data - replace with actual data from your backend
+   const [showModal, setShowModal] = useState(true)
+   useEffect(() => {
+     setShowModal(true)
+  }, [])
   const projects = [
     {
       id: 1,
@@ -35,6 +41,7 @@ function Home() {
 
   return (
     <div className="home-container">
+      <LandingModal isOpen={showModal} onClose={() => setShowModal(false)} imageSrc={bannerImage} />
       <div className="home-content">
         <div className="home-text">
           <h1 className="home-title">Fast & Easy Barangay Services!</h1>

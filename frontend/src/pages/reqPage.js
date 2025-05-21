@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react" 
 import axios from "axios"
 import RequestTitlesandSteps from "../components/RequestTitlesandSteps"
 import RequestForm from "../components/RequestForm"
@@ -16,8 +16,9 @@ function reqPage() {
     last_name: "",
     first_name: "",
     middle_name: "",
-    suffix: "",
+    suffix_id: null,
     sex: "",
+    sex_other: "",
     birthday: "",
     contact_no: "",
     country_code: "+63",
@@ -25,7 +26,7 @@ function reqPage() {
     unit_no: "",
     street: "",
     subdivision: "",
-    type_of_certificate: "",
+    certificate_id: null,
     purpose_of_request: "",
     number_of_copies: "",
   })
@@ -39,24 +40,72 @@ function reqPage() {
   const [showSuccessPopup, setShowSuccessPopup] = useState(false)
   const [imagePreview, setImagePreview] = useState(null);
   const [showImageUpload, setShowImageUpload] = useState(false);
+  const [suffixes, setSuffixes] = useState([]);
+  const [certificates, setCertificates] = useState([]);
   
+  useEffect(() => {
+  const fetchCertificates = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/requests/certificates');
+      setCertificates(response.data);
+    } catch (error) {
+      console.error("Error fetching certificates:", error);
+    }
+  };
+  fetchCertificates();
+}, []);
+
+useEffect(() => {
+  const fetchSuffixes = async () => {
+  try {
+    const response = await axios.get('http://localhost:5000/api/requests/suffixes', {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    });
+    console.log("Suffixes response:", response.data); // Debug log
+    setSuffixes(response.data);
+  } catch (error) {
+    console.error("Error fetching suffixes:", error);
+  }
+};
+  fetchSuffixes();
+}, []);
 
   // Handle form field changes
   const handleChange = (e) => {
-    let { name, value } = e.target
+  let { name, value } = e.target;
 
-    // Auto-capitalize names
-    if (["last_name", "first_name", "middle_name","unit_no","street","subdivision"].includes(name)) {
-      value = value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase())
-    }
-
-    setFormData({ ...formData, [name]: value })
-
-    // Clear error for this field
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: false }))
-    }
+  // Auto-capitalize names
+  if (["last_name", "first_name", "middle_name","unit_no","street","subdivision"].includes(name)) {
+    value = value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
   }
+
+  // Clear sex_other if not "Other" is selected
+  if (name === "sex" && value !== "4") {
+    setFormData(prev => ({ ...prev, [name]: value, sex_other: "" }));
+  } else {
+    setFormData(prev => ({ ...prev, [name]: value }));
+  }
+
+  // Clear error for this field
+  if (errors[name]) {
+    setErrors(prev => ({ ...prev, [name]: false }));
+  }
+};
+
+   const getSuffixName = (id) => {
+  if (!suffixes.length) return 'Loading...'; // or 'None'
+
+  // Convert the ID to a number
+  const numericId = Number(id); // <--- Add this line
+
+  if (!numericId || numericId === 1) return 'None'; // Use numericId here
+
+  const suffix = suffixes.find(s => s.id === numericId); // <--- Use numericId here
+  return suffix ? suffix.name : 'None';
+};
 
   // Validate the entire form
   const validateForm = () => {
@@ -71,11 +120,12 @@ function reqPage() {
       { key: "middle_name", display: "Middle Name" },
       { key: "unit_no", display: "House/Unit No." },
       { key: "street", display: "Street Name" },
+      { key: "birthday", display: "Birthday" },
       { key: "subdivision", display: "Subdivision/Sitio/Purok" },
       { key: "contact_no", display: "Contact Number" },
       { key: "email", display: "Email Address" },
       { key: "number_of_copies", display: "Number of Copies" },
-      { key: "type_of_certificate", display: "Type of Certificate" },
+      { key: "certificate_id", display: "Type of Certificate" },
     ]
 
     // Check for empty required fields
@@ -115,6 +165,18 @@ function reqPage() {
       }
     }
 
+    if (!formData.sex) {
+    newErrors.sex = true;
+    formValid = false;
+    missingFieldsList.push("Sex");
+  }
+
+   if (formData.sex === "4" && (!formData.sex_other || formData.sex_other.trim() === "")) {
+    newErrors.sex_other = true;
+    formValid = false;
+    missingFieldsList.push("Gender specification");
+  }
+
     // Update state with errors
     setErrors(newErrors)
     setMissingFields(missingFieldsList)
@@ -140,7 +202,6 @@ function reqPage() {
       setShowValidationError(true)
       return
     }
-
     // If all validations pass, show confirmation modal
     setShowConfirmation(true)
   }
@@ -152,7 +213,7 @@ function reqPage() {
         let photoUrl = null;
         
         // Modify this condition to include IDApp
-        if ((formData.type_of_certificate === "ClearanceCert" || formData.type_of_certificate === "IDApp") && imagePreviewFromModal) {
+        if ((formData.certificate_id === 1 || formData.certificate_id === 4) && imagePreviewFromModal) {
             const blob = await fetch(imagePreviewFromModal).then(res => res.blob());
             const imageFormData = new FormData();
             imageFormData.append('image', blob, `${formData.last_name}_${Date.now()}.jpg`);
@@ -168,16 +229,17 @@ function reqPage() {
         }
     // Prepare the request data with both s3_key and photo_url
     const requestData = {
-      ...formData,
-      s3_key: s3Key,
-      photo_url: photoUrl,
-      address: [
-        formData.unit_no,
-        formData.street,
-        formData.subdivision
-      ].filter(Boolean).join(", "),
-      number_of_copies: Number(formData.number_of_copies)
-    };
+  ...formData,
+  s3_key: s3Key,
+  photo_url: photoUrl,
+  address: [
+    formData.unit_no,
+    formData.street,
+    formData.subdivision
+  ].filter(Boolean).join(", "),
+  number_of_copies: Number(formData.number_of_copies),
+  suffix_id: formData.suffix_id // Ensure this is included
+};
 
     // Create the request
     await axios.post('http://localhost:5000/api/requests', requestData);
@@ -190,7 +252,7 @@ function reqPage() {
       last_name: "",
       first_name: "",
       middle_name: "",
-      suffix: "",
+      suffix_id: null,
       sex: "",
       birthday: "",
       contact_no: "",
@@ -199,7 +261,7 @@ function reqPage() {
       unit_no: "",
       street: "",
       subdivision: "",
-      type_of_certificate: "",
+      certificate_id: null,
       purpose_of_request: "",
       number_of_copies: "",
     });
@@ -271,15 +333,17 @@ function reqPage() {
         {/* Form section */}
         <div className={`req-form ${activeSection === "form" ? "active" : ""}`}>
           <RequestForm
-            formData={formData}
-            errors={errors}
-            handleChange={handleChange}
-            getReq={getReq}
-            validatorNum={validatorNum}
-            validatorEmail={validatorEmail}
-            setFormData={setFormData}
-            toggleSection={toggleSection}
-          />
+  formData={formData}
+  errors={errors}
+  handleChange={handleChange}
+  getReq={getReq}
+  validatorNum={validatorNum}
+  validatorEmail={validatorEmail}
+  setFormData={setFormData}
+  toggleSection={toggleSection}
+  suffixes={suffixes}
+  certificates={certificates} // ✅ Add this line
+/>
         </div>
       </div>
 
@@ -288,10 +352,14 @@ function reqPage() {
         isOpen={showConfirmation}
         onClose={() => setShowConfirmation(false)}
         onConfirm={handleConfirmSubmit}
-        formData={formData}
+        formData={{
+          ...formData,
+          suffix: getSuffixName(formData.suffix_id) // Add the suffix name here
+        }}
         formType="request"
         imagePreview={imagePreview}
         setImagePreview={setImagePreview}
+        certificates={certificates}
       />
 
       {/* Validation Error Popup */}

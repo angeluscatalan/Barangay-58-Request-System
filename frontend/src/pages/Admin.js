@@ -40,6 +40,7 @@ function Admin() {
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false)
   const [isSmallScreen, setIsSmallScreen] = useState(false)
   const [showLogoutModal, setShowLogoutModal] = useState(false)
+  const [certificates, setCertificates] = useState([]); // NEW STATE
 
   const { requests, loading: requestsLoading, error: requestsError, fetchRequests, updateRequestStatus } = useRequests()
 
@@ -120,13 +121,28 @@ function Admin() {
       console.error("Error fetching user data:", error)
       navigate("/")
     }
-  }, [navigate]) // Only navigate as dependency
+  }, [navigate])
+
+  // NEW FUNCTION: Fetch certificates data
+  const fetchCertificates = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get("http://localhost:5000/api/requests/certificates", { // **ASSUMPTION:** You have this endpoint
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCertificates(response.data);
+    } catch (error) {
+      console.error("Error fetching certificates:", error);
+      // You might want to display an error message to the user
+    }
+  }, []);
 
   useEffect(() => {
     // Initialize only once on mount
     const initialize = async () => {
       await fetchRequests()
       await fetchUserData()
+      await fetchCertificates(); // Call new fetch function
     }
     initialize()
 
@@ -134,7 +150,7 @@ function Admin() {
     return () => {
       // Cancel any pending requests if needed
     }
-  }, [])
+  }, [fetchRequests, fetchUserData, fetchCertificates]) // Added fetchCertificates to dependencies
 
   const handleSectionChange = (section) => {
     if (section === "acc_manager" && userAccessLevel !== 2) {
@@ -157,9 +173,16 @@ function Admin() {
 
   // Filter requests based on type, status, and search query
   const filteredRequests = useMemo(() => {
+    // First, get the ID of the selected certificate type if a filter is active
+    const selectedCertId = typeFilter === "All" || typeFilter === "VerifiedRBI"
+      ? null
+      : certificates.find(cert => cert.name === typeFilter)?.id; // Find the ID based on the name
+
     // First filter by type, status, and search
     const filtered = approvedRequests.filter((request) => {
-      const matchesType = typeFilter === "All" || request.type_of_certificate === typeFilter
+      // MODIFIED: Use certificate_id for type matching
+      const matchesType = typeFilter === "All" || (selectedCertId !== null && request.certificate_id === selectedCertId);
+
       const matchesStatus = statusFilter === "All" || request.status === statusFilter
       const matchesSearch =
         searchQuery === "" ||
@@ -214,7 +237,7 @@ function Admin() {
 
         return true // No additional filtering for other sort options
       })
-  }, [approvedRequests, typeFilter, statusFilter, searchQuery, sortBy])
+  }, [approvedRequests, typeFilter, statusFilter, searchQuery, sortBy, certificates]) // ADDED 'certificates' to dependencies
 
   // Helper function to get status class
   const getStatusClass = (status) => {
@@ -322,11 +345,18 @@ function Admin() {
     setIsPrinting((prev) => ({ ...prev, [request.id]: true }))
     try {
       console.log("Sending request data:", request)
+      // For printing, you might still need the certificate name.
+      // Make sure your backend's /api/certificates/generate-pdf endpoint
+      // can handle requestData containing certificate_id and look up the name itself,
+      // or you can pass the name here if you look it up on the client side.
+      const certificateNameForPrint = certificates.find(cert => cert.id === request.certificate_id)?.name || "Unknown Certificate";
+
       const response = await axios.post(
         "http://localhost:5000/api/certificates/generate-pdf",
         {
           requestData: {
             ...request,
+            certificate_name: certificateNameForPrint, // Pass the name for PDF generation
             s3_key: request.s3_key, // Make sure this is included
           },
         },
@@ -339,7 +369,8 @@ function Admin() {
       )
 
       // Check if this is a JobseekerCert to handle ZIP differently
-      if (request.type_of_certificate === "JobseekerCert") {
+      // MODIFIED: Use certificateNameForPrint for JobseekerCert check
+      if (certificateNameForPrint === "Barangay Jobseeker") { // Assuming this is the exact name for JobseekerCert
         // Create a blob from the ZIP Stream
         const file = new Blob([response.data], { type: "application/zip" })
         const fileURL = URL.createObjectURL(file)
@@ -356,7 +387,7 @@ function Admin() {
         const fileURL = URL.createObjectURL(file)
         const link = document.createElement("a")
         link.href = fileURL
-        link.download = `${request.type_of_certificate}_${request.last_name}.pdf`
+        link.download = `${certificateNameForPrint}_${request.last_name}.pdf` // Use looked-up name for download
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
@@ -370,7 +401,7 @@ function Admin() {
     }
   }
 
-  if (requestsLoading) return <div className="loading">Loading...</div>
+  if (requestsLoading || certificates.length === 0) return <div className="loading">Loading...</div> // Adjust loading check
   if (requestsError) return <div className="error">Error: {requestsError}</div>
 
   // If on a small screen, show the desktop-only message
@@ -571,8 +602,10 @@ function Admin() {
                   style={{ height: zoomLevel !== 100 ? `calc(100vh - 200px)` : "auto" }}
                 >
                   <div className="filter-tabs">
-                    {["VerifiedRBI", "All", "ClearanceCert", "IDApp", "IndigencyCert", "JobseekerCert", "BrgyCert"].map(
-                      (type) => (
+                    {/* MODIFIED: Dynamically generate tabs based on fetched certificates */}
+                    {["VerifiedRBI", "All"]
+                      .concat(certificates.map(cert => cert.name))
+                      .map((type) => (
                         <button
                           key={type}
                           className={`tab-button ${typeFilter === type ? "active-tab" : ""}`}
@@ -587,8 +620,7 @@ function Admin() {
                         >
                           {type === "All" ? "All Types" : type === "VerifiedRBI" ? "Verified RBI List" : type}
                         </button>
-                      ),
-                    )}
+                      ))}
                   </div>
 
                   <div>
@@ -606,93 +638,89 @@ function Admin() {
                         }}
                       >
                         <table>
-                          <thead>
-                            <tr>
-                              <th>
-                                <input
-                                  type="checkbox"
-                                  checked={
-                                    selectedRequests.length === filteredRequests.length && filteredRequests.length > 0
-                                  }
-                                  onChange={handleMasterSelect}
-                                />
-                              </th>
-                              <th>DATE REQUESTED</th>
-                              <th>NAME</th>
-                              <th>SUFFIX</th>
-                              <th>SEX</th>
-                              <th>BIRTHDAY</th>
-                              <th>AGE</th>
-                              <th>ADDRESS</th>
-                              <th>CONTACT NO.</th>
-                              <th>EMAIL</th>
-                              <th>TYPE OF REQUEST</th>
-                              <th>PURPOSE</th>
-                              <th>NO. OF COPIES</th>
-                              <th>STATUS</th>
-                              <th>ACTIONS</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {filteredRequests.map((request, index) => (
-                              <tr key={index}>
-                                <td>
-                                  <input
-                                    type="checkbox"
-                                    checked={selectedRequests.includes(request.id)}
-                                    onChange={() => handleSelectRequest(request.id)}
-                                  />
-                                </td>
-                                <td>{request.created_at}</td>
-                                <td>{`${request.last_name}, ${request.first_name} ${request.middle_name || ""}`}</td>
-                                <td>{request.suffix}</td>
-                                <td>{request.sex}</td>
-                                <td>{request.birthday ? request.birthday.split("T")[0] : ""}</td>
-                                <td>{calculateAge(request.birthday)}</td>
-                                <td>{request.address}</td>
-                                <td>{request.contact_no}</td>
-                                <td>{request.email}</td>
-                                <td>{request.type_of_certificate}</td>
-                                <td>{request.purpose_of_request}</td>
-                                <td>{request.number_of_copies}</td>
-                                <td>
-                                  <span className={`status-badge ${getStatusClass(request.status)}`}>
-                                    {request.status}
-                                  </span>
-                                  <select
-                                    value={request.status}
-                                    onChange={(e) => updateStatus(request.id, e.target.value)}
-                                    className={getStatusClass(request.status)}
-                                  >
-                                    <option value="pending">Pending</option>
-                                    <option value="approved">Approved</option>
-                                    <option value="rejected">Rejected</option>
-                                    <option value="for pickup">For Pickup</option>
-                                  </select>
-                                </td>
-                                <td className="action-buttons">
-                                  <button
-                                    className="print-btn"
-                                    onClick={() => handlePrintRequest(request)}
-                                    title="Print Request"
-                                    disabled={isPrinting[request.id]}
-                                  >
-                                    <i
-                                      className={`fas ${isPrinting[request.id] ? "fa-spinner fa-spin" : "fa-print"}`}
-                                    ></i>
-                                  </button>
-                                  <button
-                                    className="delete-btn"
-                                    onClick={() => handleDeleteRequest(request.id)}
-                                    title="Delete Request"
-                                  >
-                                    <i className="fas fa-trash-alt"></i>
-                                  </button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+  <thead>
+    <tr>
+      <th><input
+        type="checkbox"
+        checked={
+          selectedRequests.length === filteredRequests.length && filteredRequests.length > 0
+        }
+        onChange={handleMasterSelect}
+      /></th>
+      <th>DATE REQUESTED</th>
+      <th>NAME</th>
+      <th>SUFFIX</th>
+      <th>SEX</th>
+      <th>BIRTHDAY</th>
+      <th>AGE</th>
+      <th>ADDRESS</th>
+      <th>CONTACT NO.</th>
+      <th>EMAIL</th>
+      <th>TYPE OF REQUEST</th>
+      <th>PURPOSE</th>
+      <th>NO. OF COPIES</th>
+      <th>STATUS</th>
+      <th>ACTIONS</th>
+    </tr>
+  </thead>
+  <tbody>
+    {filteredRequests.map((request, index) => (
+      <tr key={index}>
+        <td><input
+          type="checkbox"
+          checked={selectedRequests.includes(request.id)}
+          onChange={() => handleSelectRequest(request.id)}
+        /></td>
+        <td>{request.created_at}</td>
+        <td>{`${request.last_name}, ${request.first_name} ${request.middle_name || ""}`}</td>
+        <td>{request.suffix || ""}</td>
+        <td>{request.sex_display || request.sex_name || ""}</td>
+        <td>{request.birthday ? request.birthday.split("T")[0] : ""}</td>
+        <td>{calculateAge(request.birthday)}</td>
+        <td>{request.address}</td>
+        <td>{request.contact_no}</td>
+        <td>{request.email}</td>
+        <td>{request.certificate_name}</td>
+        <td>{request.purpose_of_request}</td>
+        <td>{request.number_of_copies}</td>
+        <td>
+          <span className={`status-badge ${getStatusClass(request.status)}`}>
+            {request.status}
+          </span>
+          <select
+            value={request.status}
+            onChange={(e) => updateStatus(request.id, e.target.value)}
+            className={getStatusClass(request.status)}
+          >
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="for pickup">For Pickup</option>
+          </select>
+        </td>
+        <td className="action-buttons">
+          <button
+            className="print-btn"
+            onClick={() => handlePrintRequest(request)}
+            title="Print Request"
+            disabled={isPrinting[request.id]}
+          >
+            <i
+              className={`fas ${isPrinting[request.id] ? "fa-spinner fa-spin" : "fa-print"}`}
+            ></i>
+          </button>
+          <button
+            className="delete-btn"
+            onClick={() => handleDeleteRequest(request.id)}
+            title="Delete Request"
+          >
+            <i className="fas fa-trash-alt"></i>
+          </button>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
                       </div>
                     )}
                   </div>

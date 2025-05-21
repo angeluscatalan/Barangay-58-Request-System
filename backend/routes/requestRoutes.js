@@ -2,19 +2,48 @@ const express = require('express');
 const router = express.Router();
 const requestController = require('../controllers/requestController');
 const { check } = require('express-validator');
+const pool = require('../config/db');
 
 const validateRequest = [
-    check('last_name').notEmpty().trim().escape(),
-    check('first_name').notEmpty().trim().escape(),
-    check('sex').isIn(['Male', 'Female']),
-    check('birthday').isISO8601(),
-    check('contact_no').isMobilePhone(),
-    check('email').isEmail().normalizeEmail(),
-    check('address').notEmpty().trim().escape(),
-    check('type_of_certificate').notEmpty().trim().escape(),
-    check('purpose_of_request').notEmpty().trim().escape(),
-    check('number_of_copies').isInt({ min: 1 })
+  check('last_name').notEmpty().trim().escape(),
+  check('first_name').notEmpty().trim().escape(),
+  check('middle_name').optional().trim().escape(),
+  check('suffix_id').optional().isInt().toInt(),
+  check('sex').isInt({ min: 1 }).withMessage('Invalid sex selection'),
+  check('sex_other')
+    .if(check('sex').equals('4'))
+    .notEmpty()
+    .withMessage('Please specify your gender'),
+  check('birthday').isISO8601().toDate(),
+  check('contact_no').isMobilePhone(),
+  check('email').isEmail().normalizeEmail(),
+  check('address').notEmpty().trim().escape(),
+  check('certificate_id').isInt({ min: 1 }).withMessage('Please select a valid certificate type'),
+  check('purpose_of_request').notEmpty().trim().escape(),
+  check('number_of_copies').isInt({ min: 1 })
 ];
+
+router.get('/suffixes', async (req, res) => {
+  console.log('Suffixes endpoint hit'); // Debug log
+  try {
+    const [rows] = await pool.query("SELECT * FROM suffixes ORDER BY id");
+    console.log('Query results:', rows); // Debug log
+    res.json(rows);
+  } catch (error) {
+    console.error("Database error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/certificates', async (req, res) => {
+  try {
+    const [rows] = await pool.query("SELECT * FROM certificates ORDER BY name");
+    res.json(rows);
+  } catch (error) {
+    console.error("Database error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 router.post('/', validateRequest, requestController.createRequest);
 router.get('/', requestController.getRequests);
@@ -22,8 +51,9 @@ router.get('/:id', requestController.getRequestById);
 router.put('/:id', requestController.updateRequestStatus);
 router.delete('/:id', requestController.deleteRequest);
 
-// Add new routes for backup functionality
 router.get('/backup/list', requestController.getBackupRequests);
 router.post('/backup/restore', requestController.restoreRequests);
+
+
 
 module.exports = router;

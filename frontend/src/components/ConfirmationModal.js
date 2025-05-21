@@ -1,5 +1,6 @@
 "use client"
 import { useState } from "react"
+import { getSexDisplay } from "../utils/displayUtils"
 import "../styles/ConfirmationModal.css"
 
 const ConfirmationModal = ({
@@ -10,6 +11,7 @@ const ConfirmationModal = ({
   formType,
   imagePreview,
   setImagePreview,
+    certificates
 }) => {
   const [showImageUpload, setShowImageUpload] = useState(false) // State managed here
 
@@ -26,9 +28,11 @@ const ConfirmationModal = ({
   }
 
   const requiresPhotoUpload = () => {
-  return formData.type_of_certificate === "IDApp" ||
-          formData.type_of_certificate === "ClearanceCert"
-}
+  return formData.certificate_id === 1 || // ID Application
+         formData.certificate_id === 4;   // Clearance (adjust IDs as needed)
+};
+
+  
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -60,8 +64,16 @@ const ConfirmationModal = ({
           </span>
         </div>
         <div className="data-row">
-          <span className="data-label">Sex:</span>
-          <span className="data-value">{formData.sex}</span>
+          <span className="data-label">Suffix:</span>
+          <span className="data-value">
+            {formData.suffix || 'None'} {/* Now uses the pre-computed suffix name */}
+          </span>
+        </div>
+        <div className="data-row">
+          <span className="data-label">Sex/Gender:</span>
+          <span className="data-value">
+            {getSexDisplay(formData.sex, formData.sex_other)}
+          </span>
         </div>
         <div className="data-row">
           <span className="data-label">Birthday:</span>
@@ -89,7 +101,9 @@ const ConfirmationModal = ({
       <div className="data-section">
         <div className="data-row">
           <span className="data-label">Type of Certificate:</span>
-          <span className="data-value">{formData.type_of_certificate}</span>
+          <span className="data-value">
+  {certificates.find(c => c.id == formData.certificate_id)?.name || 'None'}
+</span>
         </div>
         <div className="data-row">
           <span className="data-label">Purpose:</span>
@@ -168,8 +182,10 @@ const ConfirmationModal = ({
           <span className="data-value">{formatDate(formData.birth_date)}</span>
         </div>
         <div className="data-row">
-          <span className="data-label">Sex:</span>
-          <span className="data-value">{formData.sex}</span>
+          <span className="data-label">Sex/Gender:</span>
+          <span className="data-value">
+            {getSexDisplay(formData.sex, formData.sex_other)}
+          </span>
         </div>
         <div className="data-row">
           <span className="data-label">Civil Status:</span>
@@ -209,9 +225,11 @@ const ConfirmationModal = ({
                 <span className="data-label">Birth Date:</span>
                 <span className="data-value">{formatDate(member.birth_date)}</span>
               </div>
-              <div className="data-row">
-                <span className="data-label">Sex:</span>
-                <span className="data-value">{member.sex}</span>
+               <div className="data-row">
+                <span className="data-label">Sex/Gender:</span>
+                <span className="data-value">
+                  {getSexDisplay(member.sex, member.sex_other)}
+                </span>
               </div>
               <div className="data-row">
                 <span className="data-label">Civil Status:</span>
