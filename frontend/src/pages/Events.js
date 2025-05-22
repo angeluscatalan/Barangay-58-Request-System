@@ -1,6 +1,6 @@
 "use client"
 
-import { useContext } from "react"
+import { useContext, useEffect } from "react"
 import "../styles/Events.css"
 import ScrollIcon from "../assets/SDA.png"
 import Announcement from "../assets/Announce.png"
@@ -20,7 +20,20 @@ const Events = () => {
 
 // Inner component that uses context
 const EventsContent = () => {
-  const { publishedEvents, loading, expandedEvent } = useContext(EventsContext)
+  const { publishedEvents, loading, expandedEvent, setExpandedEvent } = useContext(EventsContext)
+  
+  useEffect(() => {
+    // Check if there's a selected event ID in sessionStorage
+    const selectedEventId = sessionStorage.getItem('selectedEventId');
+    if (selectedEventId && publishedEvents.length > 0) {
+      const selectedEvent = publishedEvents.find(event => event.id === parseInt(selectedEventId));
+      if (selectedEvent) {
+        setExpandedEvent(selectedEvent);
+        // Clear the stored ID after expanding the event
+        sessionStorage.removeItem('selectedEventId');
+      }
+    }
+  }, [publishedEvents, setExpandedEvent]);
 
   const scrollToSection = () => {
     document.getElementById("second-section").scrollIntoView({
