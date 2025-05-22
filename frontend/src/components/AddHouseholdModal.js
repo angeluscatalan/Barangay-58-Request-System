@@ -6,14 +6,14 @@ function AddHouseholdModal({ isOpen, onClose, onSave }) {
     head_last_name: '',
     head_first_name: '',
     head_middle_name: '',
-    head_suffix: '', // Initialize as empty string
+    head_suffix: '',
     house_unit_no: '',
     street_name: '',
     subdivision: '',
     birth_place: '',
     birth_date: '',
-    sex: 'Male',
-    civil_status: 'Single',
+    sex: '',
+    civil_status: '',
     citizenship: '',
     citizenship_other: '',
     occupation: '',
@@ -21,9 +21,50 @@ function AddHouseholdModal({ isOpen, onClose, onSave }) {
     members: []
   });
 
+  // Occupation options
+  const occupationOptions = [
+    "Employed",
+    "Unemployed",
+    "Student",
+    "Retired",
+    "Self-employed",
+    "Homemaker",
+    "Unable to Work"
+  ];
+
+  // Suffix options
+  const suffixOptions = [
+    { value: "", label: "None" },
+    { value: "Jr.", label: "Jr." },
+    { value: "Sr.", label: "Sr." },
+    { value: "II", label: "II" },
+    { value: "III", label: "III" },
+    { value: "IV", label: "IV" },
+    { value: "V", label: "V" }
+  ];
+
+  // Sex options
+  const sexOptions = [
+    { value: "", label: "Select Sex" },
+    { value: "1", label: "Male" },
+    { value: "2", label: "Female" },
+    { value: "3", label: "Prefer Not To Say" },
+    { value: "4", label: "Other" }
+  ];
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    // Capitalize first letter for name fields
+    const nameFields = [
+      "head_last_name",
+      "head_first_name",
+      "head_middle_name"
+    ];
+    let newValue = value;
+    if (nameFields.includes(name)) {
+      newValue = value.charAt(0).toUpperCase() + value.slice(1);
+    }
+    setFormData(prev => ({ ...prev, [name]: newValue }));
   };
 
   const handleSubmit = (e) => {
@@ -31,10 +72,12 @@ function AddHouseholdModal({ isOpen, onClose, onSave }) {
     // Prepare the data to be saved
     const dataToSave = {
       ...formData,
-      // If "Other" is selected, use the citizenship_other value
-      citizenship: formData.citizenship === "Other" 
-        ? formData.citizenship_other 
-        : formData.citizenship
+      citizenship: formData.citizenship === "Other"
+        ? formData.citizenship_other
+        : formData.citizenship,
+      head_suffix: formData.head_suffix,
+      sex: formData.sex,
+      occupation: formData.occupation
     };
     onSave(dataToSave);
   };
@@ -88,19 +131,14 @@ function AddHouseholdModal({ isOpen, onClose, onSave }) {
             </div>
             <div className="form-group">
               <label>Suffix</label>
-              {/* Changed from input to select */}
               <select
                 name="head_suffix"
                 value={formData.head_suffix}
                 onChange={handleChange}
               >
-                <option value="">None</option> {/* Option for no suffix */}
-                <option value="Jr.">Jr.</option>
-                <option value="Sr.">Sr.</option>
-                <option value="II">II</option>
-                <option value="III">III</option>
-                <option value="IV">IV</option>
-                <option value="V">V</option>
+                {suffixOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
               </select>
             </div>
           </div>
@@ -124,9 +162,21 @@ function AddHouseholdModal({ isOpen, onClose, onSave }) {
                 onChange={handleChange}
                 required
               >
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
+                {sexOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
               </select>
+              {formData.sex === "4" && (
+                <input
+                  type="text"
+                  name="sex_other"
+                  placeholder="Please specify sex"
+                  value={formData.sex_other || ""}
+                  onChange={handleChange}
+                  required
+                  style={{ marginTop: '8px' }}
+                />
+              )}
             </div>
           </div>
 
@@ -142,7 +192,6 @@ function AddHouseholdModal({ isOpen, onClose, onSave }) {
           </div>
 
           <div className="form-row">
-            <div className="form-row">
             <div className="form-group">
               <label>Civil Status*</label>
               <select
@@ -151,6 +200,7 @@ function AddHouseholdModal({ isOpen, onClose, onSave }) {
                 onChange={handleChange}
                 required
               >
+                <option value="">Select</option>
                 <option value="Single">Single</option>
                 <option value="Married">Married</option>
                 <option value="Widowed">Widowed</option>
@@ -183,21 +233,24 @@ function AddHouseholdModal({ isOpen, onClose, onSave }) {
               )}
             </div>
           </div>
-          </div>
 
           <div className="form-group">
             <label>Occupation*</label>
-            <input
-              type="text"
+            <select
               name="occupation"
               value={formData.occupation}
               onChange={handleChange}
               required
-            />
+            >
+              <option value="">Select Occupation</option>
+              {occupationOptions.map(opt => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
           </div>
 
           <div className="form-group">
-            <label>Email Address</label>
+            <label>Email Address*</label>
             <input
               type="email"
               name="email_address"

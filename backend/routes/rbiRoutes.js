@@ -88,8 +88,7 @@ const validateMember = [
     .withMessage('Last name is required'),
   check('first_name').notEmpty().trim().escape()
     .withMessage('First name is required'),
-  check('middle_name').notEmpty().trim().escape()
-    .withMessage('Middle name is required'),
+  check('middle_name').optional().trim().escape(), // Make middle_name optional
   check('suffix_id').optional().isInt()
     .withMessage('Suffix ID must be an integer'),
   check('birth_place').notEmpty().trim().escape()
@@ -113,8 +112,9 @@ const validateMember = [
   check('citizenship_other').optional().trim().escape(),
   check('occupation').notEmpty().trim().escape()
     .withMessage('Occupation is required'),
-  check('relationship_id').notEmpty().isInt()
-    .withMessage('Relationship to household leader is required and must be an integer'),
+  // Make relationship_id optional for add member modal (if not used in UI)
+  check('relationship_id').optional().isInt()
+    .withMessage('Relationship to household leader must be an integer'),
   check('relationship_other').optional().trim().escape()
 ];
 

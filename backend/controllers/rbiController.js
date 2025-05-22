@@ -306,7 +306,8 @@ exports.updateHousehold = async (req, res) => {
 exports.addHouseholdMember = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+    // Return the first error message for easier frontend debugging
+    return res.status(400).json({ error: errors.array()[0]?.msg || "Invalid input", details: errors.array() });
   }
 
   const { id } = req.params;
@@ -337,6 +338,11 @@ exports.addHouseholdMember = async (req, res) => {
       return res.status(404).json({ error: 'Household not found' });
     }
 
+    // Defensive: ensure required fields are present
+    if (!last_name || !first_name || !birth_place || !birth_date || !sex || !civil_status || !citizenship || !occupation) {
+      return res.status(400).json({ error: "Missing required member fields." });
+    }
+
     const [result] = await pool.execute(
       `INSERT INTO household_members
         (household_id, last_name, first_name, middle_name, suffix_id,
@@ -346,7 +352,7 @@ exports.addHouseholdMember = async (req, res) => {
         id,
         last_name,
         first_name,
-        middle_name,
+        middle_name || null,
         suffix_id || null,
         birth_place,
         birth_date,
