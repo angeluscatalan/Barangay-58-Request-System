@@ -2,8 +2,9 @@
 
 import { useEffect } from "react"
 import "../styles/LandingModal.css"
+import EventsSlideshow from "./EventsSlideshow"
 
-function LandingModal({ isOpen, onClose, imageSrc }) {
+function LandingModal({ isOpen, onClose }) {
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === "Escape") onClose()
@@ -14,18 +15,18 @@ function LandingModal({ isOpen, onClose, imageSrc }) {
 
   if (!isOpen) return null
 
-  // Apply the background color directly in the inline style as well
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div
         className="modal-content"
         onClick={(e) => e.stopPropagation()}
-        style={{ backgroundColor: "#da1c6f" }} // Inline style to ensure the color is applied
+        style={{ backgroundColor: "#fff" }}
       >
         <button className="modal-close" onClick={onClose}>
           &times;
         </button>
-        <img src={imageSrc || "/placeholder.svg"} alt="Landing" className="modal-image" />
+        <h2 className="modal-title">Upcoming Events</h2>
+        <EventsSlideshow />
       </div>
     </div>
   )
