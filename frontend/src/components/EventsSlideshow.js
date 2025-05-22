@@ -75,29 +75,30 @@ function EventsSlideshow() {
     }
 
     return (
-        <div className="events-slideshow">
-            <div className="slideshow-container">
+        <div className="events-slideshow-container">
+            <div className="events-slideshow">
                 {events.map((event, index) => (
                     <div
                         key={event.id}
                         className={`slide ${index === currentSlide ? 'active' : ''}`}
                     >
                         <div className="slide-wrapper">
-                            <img
-                                src={event.image_url || Announcement}
-                                alt={event.event_name}
-                                className="event-image"
-                                onClick={() => {
-                                    // Store the event ID in sessionStorage
-                                    sessionStorage.setItem('selectedEventId', event.id);
-                                    navigate('/Events');
-                                }}
-                                style={{ cursor: 'pointer' }}
-                                onError={(e) => {
-                                    e.target.onerror = null;
-                                    e.target.src = Announcement;
-                                }}
-                            />
+                            <div className="image-container">
+                                <img
+                                    src={event.image_url || Announcement}
+                                    alt={event.event_name}
+                                    className="event-image"
+                                    onClick={() => {
+                                        sessionStorage.setItem('selectedEventId', event.id);
+                                        navigate('/Events');
+                                    }}
+                                    style={{ cursor: 'pointer' }}
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = Announcement;
+                                    }}
+                                />
+                            </div>
                         </div>
                     </div>
                 ))}
