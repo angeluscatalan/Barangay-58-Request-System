@@ -89,19 +89,22 @@ function Admin() {
     try {
       setSelectedRequest(request)
       const token = localStorage.getItem("token")
+      // Use more fields for better matching (address, birthday)
       const response = await axios.post(
         "http://localhost:5000/api/rbi/find-similar",
         {
           lastName: request.last_name,
           firstName: request.first_name,
           middleName: request.middle_name,
+          birthday: request.birthday,
+          address: request.address,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
         },
       )
       setSimilarRbis(response.data)
-      setShowRbiComparison(true)
+      setShowRbiComparison(true) // <-- Ensure this is called after setting similarRbis
     } catch (error) {
       console.error("Error finding similar RBIs:", error)
       alert("Failed to search for similar RBI records")
@@ -282,6 +285,31 @@ function Admin() {
         return ""
     }
   }
+
+  // Helper for suffix display (no "None" if blank or 1)
+  const getSuffixDisplay = (suffixId) => {
+    switch (String(suffixId)) {
+      case "2": return "Jr.";
+      case "3": return "Sr.";
+      case "4": return "I";
+      case "5": return "II";
+      case "6": return "III";
+      case "7": return "IV";
+      case "8": return "V";
+      default: return "";
+    }
+  };
+
+  // Helper for sex display
+  const getSexDisplay = (sex, sexOther) => {
+    switch (String(sex)) {
+      case "1": return "Male";
+      case "2": return "Female";
+      case "3": return "Prefer Not To Say";
+      case "4": return sexOther ? sexOther : "Other";
+      default: return "";
+    }
+  };
 
   // Helper to get status name from status_id
   const getStatusName = (status_id) => {
@@ -722,15 +750,17 @@ function Admin() {
   <tbody>
     {filteredRequests.map((request, index) => (
       <tr key={index}>
-        <td><input
-          type="checkbox"
-          checked={selectedRequests.includes(request.id)}
-          onChange={() => handleSelectRequest(request.id)}
-        /></td>
+        <td>
+          <input
+            type="checkbox"
+            checked={selectedRequests.includes(request.id)}
+            onChange={() => handleSelectRequest(request.id)}
+          />
+        </td>
         <td>{request.created_at}</td>
         <td>{`${request.last_name}, ${request.first_name} ${request.middle_name || ""}`}</td>
-        <td>{request.suffix || ""}</td>
-        <td>{request.sex_display || request.sex_name || ""}</td>
+        <td>{getSuffixDisplay(request.suffix_id || request.suffix)}</td>
+        <td>{getSexDisplay(request.sex, request.sex_other) || request.sex_display || request.sex_name || ""}</td>
         <td>{request.birthday ? request.birthday.split("T")[0] : ""}</td>
         <td>{calculateAge(request.birthday)}</td>
         <td>{request.address}</td>
@@ -827,7 +857,12 @@ function Admin() {
         </div>
       </div>
       {showRbiComparison && (
-        <ComparisonModal request={selectedRequest} rbis={similarRbis} onClose={() => setShowRbiComparison(false)} />
+        <ComparisonModal
+          isOpen={showRbiComparison}
+          request={selectedRequest}
+          rbis={similarRbis}
+          onClose={() => setShowRbiComparison(false)}
+        />
       )}
       <BackupRequestsModal
         isOpen={showBackupModal}

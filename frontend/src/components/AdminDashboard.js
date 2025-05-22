@@ -108,12 +108,31 @@ function AdminDashboard() {
         .slice(0, 5)
 
       // Get recent RBI registrations (last 5)
+      // Try to get household head name if available, fallback to N/A
       const sortedRBI = [...rbiData]
         .sort(
           (a, b) =>
             new Date(b?.created_at || b?.submission_date || 0) - new Date(a?.created_at || a?.submission_date || 0),
         )
         .slice(0, 5)
+        .map(rbi => {
+          // Try to get head name fields, fallback to last_name/first_name/middle_name
+          let last_name = rbi.head_last_name || rbi.last_name || "N/A";
+          let first_name = rbi.head_first_name || rbi.first_name || "";
+          let middle_name = rbi.head_middle_name || rbi.middle_name || "";
+          // If still empty, try members[0] as fallback
+          if ((!last_name || last_name === "N/A") && Array.isArray(rbi.members) && rbi.members.length > 0) {
+            last_name = rbi.members[0].last_name || "N/A";
+            first_name = rbi.members[0].first_name || "";
+            middle_name = rbi.members[0].middle_name || "";
+          }
+          return {
+            ...rbi,
+            display_last_name: last_name,
+            display_first_name: first_name,
+            display_middle_name: middle_name,
+          };
+        });
 
       // Calculate demographic statistics for approved registrations only
       const approvedRegistrations = rbiData.filter((rbi) => rbi?.status?.toLowerCase() === "approved")
@@ -157,13 +176,17 @@ approvedRegistrations.forEach((registration) => {
   totalResidents++
 
   // Process gender (using sex field)
-  const gender = (registration.sex || registration.gender || "").toLowerCase()
-  if (gender === "male" || gender === "m") {
+  let gender = registration.sex || registration.gender || "";
+  if (typeof gender === "number") gender = String(gender);
+  if (typeof gender === "string") gender = gender.toLowerCase();
+
+  // Accept both string and numeric representations
+  if (gender === "male" || gender === "m" || gender === "1") {
     maleCount++
-  } else if (gender === "female" || gender === "f") {
+  } else if (gender === "female" || gender === "f" || gender === "2") {
     femaleCount++
   }
- 
+
   // Calculate age from birth_date if available
   if (registration.birth_date) {
     const birth_date = new Date(registration.birth_date)
@@ -177,7 +200,7 @@ approvedRegistrations.forEach((registration) => {
     }
 
     // Categorize into age brackets
-    if (age <= 0 && age <= 3) {
+    if (age >= 1 && age <= 3) {
       ageBrackets.toddler++
     } else if (age >= 4 && age <= 12) {
       ageBrackets.child++
@@ -198,10 +221,13 @@ approvedRegistrations.forEach((registration) => {
       totalResidents++
 
       // Process member gender
-      const memberGender = (member.sex || member.gender || "").toLowerCase()
-      if (memberGender === "male" || memberGender === "m") {
+      let memberGender = member.sex || member.gender || "";
+      if (typeof memberGender === "number") memberGender = String(memberGender);
+      if (typeof memberGender === "string") memberGender = memberGender.toLowerCase();
+
+      if (memberGender === "male" || memberGender === "m" || memberGender === "1") {
         maleCount++
-      } else if (memberGender === "female" || memberGender === "f") {
+      } else if (memberGender === "female" || memberGender === "f" || memberGender === "2") {
         femaleCount++
       }
       // Calculate age from birth_date for household members
@@ -215,7 +241,7 @@ approvedRegistrations.forEach((registration) => {
           age--
         }
         // Categorize into age brackets
-        if (age <= 0 && age <= 3) {
+        if (age >= 1 && age <= 3) {
           ageBrackets.toddler++
         } else if (age >= 4 && age <= 12) {
           ageBrackets.child++
@@ -417,14 +443,16 @@ approvedRegistrations.forEach((registration) => {
   }
 
   const formatDate = (dateString) => {
-    if (!dateString) return "N/A"
+    if (!dateString) return ""
     const date = new Date(dateString)
-    return date.toLocaleDateString("en-US", {
+    // Format: May 22, 2025, 03:02 PM
+    return date.toLocaleString("en-US", {
       year: "numeric",
       month: "short",
-      day: "numeric",
+      day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
+      hour12: true,
     })
   }
 
@@ -702,7 +730,7 @@ approvedRegistrations.forEach((registration) => {
                       <div key={rbi.id} className="recent-item">
                         <div className="recent-item-header">
                           <span className="recent-item-name">
-                            {rbi.first_name} {rbi.last_name}
+                            {rbi.display_first_name} {rbi.display_middle_name} {rbi.display_last_name}
                           </span>
                           <span className={`status-badge ${rbi.status?.toLowerCase() || "pending"}`}>
                             {rbi.status || "Pending"}

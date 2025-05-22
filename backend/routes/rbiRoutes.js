@@ -13,7 +13,7 @@ const validateCompleteHousehold = [
     .withMessage('First name is required'),
   check('household.head_middle_name').notEmpty().trim().escape()
     .withMessage('Middle name is required'),
-  check('household.head_suffix_id').optional().isInt() // Changed to head_suffix_id, validate as int
+  check('household.head_suffix_id').optional().isInt()
     .withMessage('Head suffix ID must be an integer'),
   check('household.house_unit_no').notEmpty().trim().escape()
     .withMessage('House/Unit no. is required'),
@@ -27,21 +27,20 @@ const validateCompleteHousehold = [
     .withMessage('Invalid birth date format'),
   check('household.sex')
     .notEmpty().withMessage('Sex is required')
-    .isInt().withMessage('Sex must be an integer ID') // Assuming sex is an ID referencing sex_options table
+    .isInt().withMessage('Sex must be an integer ID')
     .custom((value, { req }) => {
-      // If sex is 'Other' (assuming ID for 'Other' is 3 or a specific value), then sex_other is required
-      if (value === 3 && (!req.body.household.sex_other || req.body.household.sex_other.trim() === '')) {
+      // If sex is 'Other' (assuming ID for 'Other' is 4), then sex_other is required
+      if (parseInt(value) === 4 && (!req.body.household.sex_other || req.body.household.sex_other.trim() === '')) {
         throw new Error('Please specify sex when selecting "Other"');
       }
       return true;
     }),
-  check('household.sex_other').optional().trim().escape(), // Added sex_other validation
+  check('household.sex_other').optional().trim().escape(),
   check('household.civil_status').isIn(['Single', 'Married', 'Widowed', 'Separated', 'Divorced'])
     .withMessage('Invalid civil status'),
   check('household.citizenship').notEmpty().trim().escape()
     .withMessage('Citizenship is required'),
-  // Removed custom citizenship validation as 'Other' is not explicitly in the enum based on the provided schema.
-  // If 'Other' is meant to be a direct value for citizenship, adjust the schema or the validation.
+  check('household.citizenship_other').optional().trim().escape(),
   check('household.occupation').notEmpty().trim().escape()
     .withMessage('Occupation is required'),
   check('household.email_address').isEmail().normalizeEmail()
@@ -54,7 +53,7 @@ const validateCompleteHousehold = [
     .withMessage('Member first name is required'),
   check('members.*.middle_name').notEmpty().trim().escape()
     .withMessage('Member middle name is required'),
-  check('members.*.suffix_id').optional().isInt() // Changed to suffix_id, validate as int
+  check('members.*.suffix_id').optional().isInt()
     .withMessage('Member suffix ID must be an integer'),
   check('members.*.birth_place').notEmpty().trim().escape()
     .withMessage('Member birth place is required'),
@@ -62,23 +61,25 @@ const validateCompleteHousehold = [
     .withMessage('Invalid member birth date format'),
   check('members.*.sex')
     .notEmpty().withMessage('Member sex is required')
-    .isInt().withMessage('Member sex must be an integer ID') // Assuming sex is an ID
+    .isInt().withMessage('Member sex must be an integer ID')
     .custom((value, { req, path }) => {
       const index = path.match(/\[(\d+)\]/)[1];
-      // If sex is 'Other' (assuming ID for 'Other' is 3 or a specific value), then sex_other is required
-      if (value === 3 && (!req.body.members[index].sex_other || req.body.members[index].sex_other.trim() === '')) {
+      if (parseInt(value) === 4 && (!req.body.members[index].sex_other || req.body.members[index].sex_other.trim() === '')) {
         throw new Error('Please specify member sex when selecting "Other"');
       }
       return true;
     }),
-  check('members.*.sex_other').optional().trim().escape(), // Added sex_other validation for members
+  check('members.*.sex_other').optional().trim().escape(),
   check('members.*.civil_status').isIn(['Single', 'Married', 'Widowed', 'Separated', 'Divorced'])
     .withMessage('Invalid member civil status'),
   check('members.*.citizenship').notEmpty().trim().escape()
     .withMessage('Member citizenship is required'),
-  // Removed custom citizenship validation for members as 'Other' is not explicitly in the enum.
+  check('members.*.citizenship_other').optional().trim().escape(),
   check('members.*.occupation').notEmpty().trim().escape()
-    .withMessage('Member occupation is required')
+    .withMessage('Member occupation is required'),
+  check('members.*.relationship_id').notEmpty().isInt()
+    .withMessage('Relationship to household leader is required and must be an integer'),
+  check('members.*.relationship_other').optional().trim().escape()
 ];
 
 // ✅ Validate household member for adding/updating
@@ -89,7 +90,7 @@ const validateMember = [
     .withMessage('First name is required'),
   check('middle_name').notEmpty().trim().escape()
     .withMessage('Middle name is required'),
-  check('suffix_id').optional().isInt() // Changed to suffix_id, validate as int
+  check('suffix_id').optional().isInt()
     .withMessage('Suffix ID must be an integer'),
   check('birth_place').notEmpty().trim().escape()
     .withMessage('Birth place is required'),
@@ -97,20 +98,24 @@ const validateMember = [
     .withMessage('Invalid birth date format'),
   check('sex')
     .notEmpty().withMessage('Sex is required')
-    .isInt().withMessage('Sex must be an integer ID') // Assuming sex is an ID
+    .isInt().withMessage('Sex must be an integer ID')
     .custom((value, { req }) => {
-      if (value === 3 && (!req.body.sex_other || req.body.sex_other.trim() === '')) {
+      if (parseInt(value) === 4 && (!req.body.sex_other || req.body.sex_other.trim() === '')) {
         throw new Error('Please specify sex when selecting "Other"');
       }
       return true;
     }),
-  check('sex_other').optional().trim().escape(), // Added sex_other validation
+  check('sex_other').optional().trim().escape(),
   check('civil_status').isIn(['Single', 'Married', 'Widowed', 'Separated', 'Divorced'])
     .withMessage('Invalid civil status'),
   check('citizenship').notEmpty().trim().escape()
     .withMessage('Citizenship is required'),
+  check('citizenship_other').optional().trim().escape(),
   check('occupation').notEmpty().trim().escape()
-    .withMessage('Occupation is required')
+    .withMessage('Occupation is required'),
+  check('relationship_id').notEmpty().isInt()
+    .withMessage('Relationship to household leader is required and must be an integer'),
+  check('relationship_other').optional().trim().escape()
 ];
 
 // ✅ Validate status update

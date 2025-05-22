@@ -21,24 +21,24 @@ exports.createCompleteHousehold = async (req, res) => {
       `INSERT INTO households
         (head_last_name, head_first_name, head_middle_name, head_suffix_id,
          house_unit_no, street_name, subdivision, birth_place, birth_date,
-         sex, civil_status, citizenship, occupation, email_address, sex_other)
+         sex, sex_other, civil_status, citizenship, occupation, email_address)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         household.head_last_name,
         household.head_first_name,
         household.head_middle_name,
-        household.head_suffix_id || null, // Changed from head_suffix to head_suffix_id
+        household.head_suffix_id || null,
         household.house_unit_no,
         household.street_name,
         household.subdivision,
         household.birth_place,
         household.birth_date,
         household.sex,
+        household.sex_other || null,
         household.civil_status,
         household.citizenship,
         household.occupation,
-        household.email_address,
-        household.sex_other || null // Added sex_other
+        household.email_address
       ]
     );
 
@@ -50,21 +50,23 @@ exports.createCompleteHousehold = async (req, res) => {
         await connection.execute(
           `INSERT INTO household_members
             (household_id, last_name, first_name, middle_name, suffix_id,
-             birth_place, birth_date, sex, civil_status, citizenship, occupation, sex_other)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             birth_place, birth_date, sex, sex_other, civil_status, citizenship, occupation, relationship_id, relationship_other)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             householdId,
             member.last_name,
             member.first_name,
             member.middle_name,
-            member.suffix_id || null, // Changed from suffix to suffix_id
+            member.suffix_id || null,
             member.birth_place,
             member.birth_date,
             member.sex,
+            member.sex_other || null,
             member.civil_status,
             member.citizenship,
             member.occupation,
-            member.sex_other || null // Added sex_other
+            member.relationship_id || null,
+            member.relationship_other || null
           ]
         );
       }
@@ -122,9 +124,9 @@ exports.getAllHouseholds = async (req, res) => {
           head_last_name: household.head_last_name,
           head_first_name: household.head_first_name,
           head_middle_name: household.head_middle_name,
-          head_suffix_id: household.head_suffix_id, // Changed to head_suffix_id
+          head_suffix_id: household.head_suffix_id,
           sex: household.sex,
-          sex_other: household.sex_other, // Added sex_other
+          sex_other: household.sex_other,
           birth_date: household.birth_date,
           birth_place: household.birth_place,
           civil_status: household.civil_status,
@@ -135,7 +137,7 @@ exports.getAllHouseholds = async (req, res) => {
           street_name: household.street_name,
           subdivision: household.subdivision,
           status: household.status,
-          members: members.map(member => ({ // Map members to include suffix_id and sex_other
+          members: members.map(member => ({
             id: member.id,
             household_id: member.household_id,
             last_name: member.last_name,
@@ -146,9 +148,11 @@ exports.getAllHouseholds = async (req, res) => {
             civil_status: member.civil_status,
             citizenship: member.citizenship,
             occupation: member.occupation,
-            sex_other: member.sex_other, // Added sex_other
-            suffix_id: member.suffix_id, // Changed to suffix_id
-            sex: member.sex
+            sex_other: member.sex_other,
+            suffix_id: member.suffix_id,
+            sex: member.sex,
+            relationship_id: member.relationship_id,
+            relationship_other: member.relationship_other
           }))
         };
       })
@@ -310,14 +314,16 @@ exports.addHouseholdMember = async (req, res) => {
     last_name,
     first_name,
     middle_name,
-    suffix_id, // Changed to suffix_id
+    suffix_id,
     birth_place,
     birth_date,
     sex,
+    sex_other,
     civil_status,
     citizenship,
     occupation,
-    sex_other // Added sex_other
+    relationship_id,
+    relationship_other
   } = req.body;
 
   try {
@@ -334,21 +340,23 @@ exports.addHouseholdMember = async (req, res) => {
     const [result] = await pool.execute(
       `INSERT INTO household_members
         (household_id, last_name, first_name, middle_name, suffix_id,
-         birth_place, birth_date, sex, civil_status, citizenship, occupation, sex_other)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         birth_place, birth_date, sex, sex_other, civil_status, citizenship, occupation, relationship_id, relationship_other)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         last_name,
         first_name,
         middle_name,
-        suffix_id || null, // Changed to suffix_id
+        suffix_id || null,
         birth_place,
         birth_date,
         sex,
+        sex_other || null,
         civil_status,
         citizenship,
         occupation,
-        sex_other || null // Added sex_other
+        relationship_id || null,
+        relationship_other || null
       ]
     );
 
@@ -363,42 +371,45 @@ exports.addHouseholdMember = async (req, res) => {
   }
 };
 
-// 📌 Update household member
 exports.updateHouseholdMember = async (req, res) => {
   const { id, memberId } = req.params;
   const {
     last_name,
     first_name,
     middle_name,
-    suffix_id, // Changed to suffix_id
+    suffix_id,
     birth_place,
     birth_date,
     sex,
+    sex_other,
     civil_status,
     citizenship,
     occupation,
-    sex_other // Added sex_other
+    relationship_id,
+    relationship_other
   } = req.body;
 
   try {
     const [result] = await pool.query(
       `UPDATE household_members
        SET last_name = ?, first_name = ?, middle_name = ?, suffix_id = ?,
-           birth_place = ?, birth_date = ?, sex = ?, civil_status = ?,
-           citizenship = ?, occupation = ?, sex_other = ?
+           birth_place = ?, birth_date = ?, sex = ?, sex_other = ?, civil_status = ?,
+           citizenship = ?, occupation = ?, relationship_id = ?, relationship_other = ?
        WHERE id = ? AND household_id = ?`,
       [
         last_name,
         first_name,
         middle_name,
-        suffix_id || null, // Changed to suffix_id
+        suffix_id || null,
         birth_place,
         birth_date,
         sex,
+        sex_other || null,
         civil_status,
         citizenship,
         occupation,
-        sex_other || null, // Added sex_other
+        relationship_id || null,
+        relationship_other || null,
         memberId,
         id
       ]
@@ -745,41 +756,44 @@ exports.findSimilarRbis = async (req, res) => {
   try {
     const { lastName, firstName, middleName, birthday, address } = req.body;
 
-    // Search for matching household heads
-    const [householdHeads] = await pool.execute(
-      `SELECT h.* FROM households h
-       WHERE h.head_last_name LIKE ?
-       AND h.head_first_name LIKE ?
-       ${middleName ? 'AND h.head_middle_name LIKE ?' : ''}
-       ${birthday ? 'AND h.birth_date = ?' : ''}
-       ${address ? 'AND CONCAT(h.house_unit_no, " ", h.street_name, ", ", h.subdivision) LIKE ?' : ''}`,
-      [
-        `%${lastName}%`,
-        `%${firstName}%`,
-        ...(middleName ? [`%${middleName}%`] : []),
-        ...(birthday ? [birthday] : []),
-        ...(address ? [`%${address}%`] : [])
-      ]
-    );
+    // Build dynamic query for household heads
+    let headQuery = `SELECT h.* FROM households h WHERE h.head_last_name LIKE ? AND h.head_first_name LIKE ?`;
+    let headParams = [`%${lastName}%`, `%${firstName}%`];
+    if (middleName) {
+      headQuery += ` AND h.head_middle_name LIKE ?`;
+      headParams.push(`%${middleName}%`);
+    }
+    if (birthday) {
+      headQuery += ` AND h.birth_date = ?`;
+      headParams.push(birthday);
+    }
+    if (address) {
+      headQuery += ` AND CONCAT(h.house_unit_no, ' ', h.street_name, ', ', h.subdivision) LIKE ?`;
+      headParams.push(`%${address}%`);
+    }
 
-    // Search for matching household members
-    const [householdMembers] = await pool.execute(
-      `SELECT m.*, h.house_unit_no, h.street_name, h.subdivision, h.status
-       FROM household_members m
-       JOIN households h ON m.household_id = h.id
-       WHERE m.last_name LIKE ?
-       AND m.first_name LIKE ?
-       ${middleName ? 'AND m.middle_name LIKE ?' : ''}
-       ${birthday ? 'AND m.birth_date = ?' : ''}
-       ${address ? 'AND CONCAT(h.house_unit_no, " ", h.street_name, ", ", h.subdivision) LIKE ?' : ''}`,
-      [
-        `%${lastName}%`,
-        `%${firstName}%`,
-        ...(middleName ? [`%${middleName}%`] : []),
-        ...(birthday ? [birthday] : []),
-        ...(address ? [`%${address}%`] : [])
-      ]
-    );
+    const [householdHeads] = await pool.execute(headQuery, headParams);
+
+    // Build dynamic query for household members
+    let memberQuery = `SELECT m.*, h.house_unit_no, h.street_name, h.subdivision, h.status
+      FROM household_members m
+      JOIN households h ON m.household_id = h.id
+      WHERE m.last_name LIKE ? AND m.first_name LIKE ?`;
+    let memberParams = [`%${lastName}%`, `%${firstName}%`];
+    if (middleName) {
+      memberQuery += ` AND m.middle_name LIKE ?`;
+      memberParams.push(`%${middleName}%`);
+    }
+    if (birthday) {
+      memberQuery += ` AND m.birth_date = ?`;
+      memberParams.push(birthday);
+    }
+    if (address) {
+      memberQuery += ` AND CONCAT(h.house_unit_no, ' ', h.street_name, ', ', h.subdivision) LIKE ?`;
+      memberParams.push(`%${address}%`);
+    }
+
+    const [householdMembers] = await pool.execute(memberQuery, memberParams);
 
     // Format results with proper type indicators
     const results = [
@@ -789,15 +803,15 @@ exports.findSimilarRbis = async (req, res) => {
         last_name: h.head_last_name,
         first_name: h.head_first_name,
         middle_name: h.head_middle_name,
-        head_suffix_id: h.head_suffix_id, // Added head_suffix_id
-        sex: h.sex, // Added sex
-        sex_other: h.sex_other, // Added sex_other
+        head_suffix_id: h.head_suffix_id,
+        sex: h.sex,
+        sex_other: h.sex_other,
         birth_date: h.birth_date,
         house_unit_no: h.house_unit_no,
         street_name: h.street_name,
         subdivision: h.subdivision,
         status: h.status,
-        type: 'Household Head'  // Add type identifier
+        type: 'Household Head'
       })),
       // Household members that match
       ...householdMembers.map(m => ({
@@ -805,16 +819,16 @@ exports.findSimilarRbis = async (req, res) => {
         last_name: m.last_name,
         first_name: m.first_name,
         middle_name: m.middle_name,
-        suffix_id: m.suffix_id, // Added suffix_id
-        sex: m.sex, // Added sex
-        sex_other: m.sex_other, // Added sex_other
+        suffix_id: m.suffix_id,
+        sex: m.sex,
+        sex_other: m.sex_other,
         birth_date: m.birth_date,
         house_unit_no: m.house_unit_no,
         street_name: m.street_name,
         subdivision: m.subdivision,
         status: m.status,
         household_id: m.household_id,
-        type: 'Household Member'  // Add type identifier
+        type: 'Household Member'
       }))
     ];
 

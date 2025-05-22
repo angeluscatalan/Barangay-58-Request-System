@@ -11,7 +11,9 @@ const ConfirmationModal = ({
   formType,
   imagePreview,
   setImagePreview,
-  certificates
+  certificates,
+  request, // for comparison modal
+  rbis     // for comparison modal
 }) => {
   const [showImageUpload, setShowImageUpload] = useState(false)
 
@@ -51,6 +53,19 @@ const ConfirmationModal = ({
     }
   };
 
+  const getSuffixDisplay = (suffixId) => {
+    switch (String(suffixId)) {
+      case "2": return "Jr.";
+      case "3": return "Sr.";
+      case "4": return "I";
+      case "5": return "II";
+      case "6": return "III";
+      case "7": return "IV";
+      case "8": return "V";
+      default: return "";
+    }
+  };
+
   const renderRequestData = () => (
     <div className="confirmation-data">
       <h3>Personal Information</h3>
@@ -58,13 +73,7 @@ const ConfirmationModal = ({
         <div className="data-row">
           <span className="data-label">Name:</span>
           <span className="data-value">
-            {formData.first_name} {formData.middle_name} {formData.last_name} {formData.suffix}
-          </span>
-        </div>
-        <div className="data-row">
-          <span className="data-label">Suffix:</span>
-          <span className="data-value">
-            {formData.suffix || 'None'}
+            {formData.first_name} {formData.middle_name} {formData.last_name} {getSuffixDisplay(formData.suffix)}
           </span>
         </div>
         <div className="data-row">
@@ -162,7 +171,7 @@ const ConfirmationModal = ({
         <div className="data-row">
           <span className="data-label">Name:</span>
           <span className="data-value">
-            {formData.head_first_name} {formData.head_middle_name} {formData.head_last_name} {formData.head_suffix}
+            {safeFormData.head_first_name || ""} {safeFormData.head_middle_name || ""} {safeFormData.head_last_name || ""} {getSuffixDisplay(safeFormData.head_suffix)}
           </span>
         </div>
         <div className="data-row">
@@ -212,7 +221,7 @@ const ConfirmationModal = ({
               <div className="data-row">
                 <span className="data-label">Name:</span>
                 <span className="data-value">
-                  {member.first_name} {member.middle_name} {member.last_name} {member.suffix}
+                  {member.first_name} {member.middle_name} {member.last_name} {getSuffixDisplay(member.suffix)}
                 </span>
               </div>
               <div className="data-row">
@@ -248,12 +257,79 @@ const ConfirmationModal = ({
     </div>
   )
 
+  // Comparison modal: show request and similar RBIs if rbis prop is present
+  const renderComparison = () => (
+    <div className="confirmation-data">
+      <h3>Selected Request</h3>
+      <div className="data-section">
+        <div className="data-row">
+          <span className="data-label">Name:</span>
+          <span className="data-value">
+            {request?.last_name}, {request?.first_name} {request?.middle_name} {getSuffixDisplay(request?.suffix_id || request?.suffix)}
+          </span>
+        </div>
+        <div className="data-row">
+          <span className="data-label">Birthday:</span>
+          <span className="data-value">{formatDate(request?.birthday)}</span>
+        </div>
+        <div className="data-row">
+          <span className="data-label">Address:</span>
+          <span className="data-value">{request?.address}</span>
+        </div>
+        {/* ...add more fields as needed... */}
+      </div>
+      <h3>Similar RBI Records</h3>
+      {safeRbis.length === 0 ? (
+        <div>No similar RBI records found.</div>
+      ) :
+        (
+          safeRbis.map((rbi, idx) => (
+            <div key={rbi.id || idx} className="data-section member-section">
+              <div className="data-row">
+                <span className="data-label">Type:</span>
+                <span className="data-value">{rbi.type}</span>
+              </div>
+              <div className="data-row">
+                <span className="data-label">Name:</span>
+                <span className="data-value">
+                  {rbi.last_name}, {rbi.first_name} {rbi.middle_name} {getSuffixDisplay(rbi.suffix_id || rbi.head_suffix_id)}
+                </span>
+              </div>
+              <div className="data-row">
+                <span className="data-label">Birthday:</span>
+                <span className="data-value">{formatDate(rbi.birth_date)}</span>
+              </div>
+              <div className="data-row">
+                <span className="data-label">Address:</span>
+                <span className="data-value">
+                  {rbi.house_unit_no} {rbi.street_name}, {rbi.subdivision}
+                </span>
+              </div>
+              <div className="data-row">
+                <span className="data-label">Sex:</span>
+                <span className="data-value">{getSexDisplay(rbi.sex, rbi.sex_other)}</span>
+              </div>
+              <div className="data-row">
+                <span className="data-label">Status:</span>
+                <span className="data-value">{rbi.status}</span>
+              </div>
+            </div>
+          ))
+        )
+      }
+    </div>
+  )
+
+  // Defensive: use request or formData for display, fallback to empty object
+  const safeFormData = formData || request || {};
+  const safeRbis = rbis || [];
+
   return (
     <div className="modal-overlay">
       <div className="confirmation-modal">
         <div className="modal-header">
           <h2>
-            {showImageUpload ? "Upload Required Photo" : "Please Review Your Information"}
+            {rbis ? "Compare with RBI Records" : showImageUpload ? "Upload Required Photo" : "Please Review Your Information"}
           </h2>
           <button className="close-button" onClick={onClose}>
             &times;
@@ -261,34 +337,43 @@ const ConfirmationModal = ({
         </div>
 
         <div className="modal-body">
-          {showImageUpload ? (
-            renderImageUpload()
-          ) : (
-            <>
-              <p className="review-message">
-                Please review the information below to ensure everything is correct before final submission.
-              </p>
-              {formType === "request" ? renderRequestData() : renderRBIData()}
-            </>
-          )}
+          {rbis
+            ? renderComparison()
+            : showImageUpload
+              ? renderImageUpload()
+              : (
+                <>
+                  <p className="review-message">
+                    Please review the information below to ensure everything is correct before final submission.
+                  </p>
+                  {formType === "request" ? renderRequestData() : renderRBIData()}
+                </>
+              )
+          }
         </div>
 
-        <div className="modal-footer">
-          <button
-            className="back-button"
-            onClick={() => showImageUpload ? setShowImageUpload(false) : onClose()}
-          >
-            {showImageUpload ? "Back to Review" : "Go Back & Edit"}
-          </button>
-
-          <button
-            className="submit-button"
-            onClick={handleContinue}
-            disabled={showImageUpload && !imagePreview}
-          >
-            {showImageUpload ? "Submit Application" : "Continue"}
-          </button>
-        </div>
+        {!rbis && (
+          <div className="modal-footer">
+            <button
+              className="back-button"
+              onClick={() => showImageUpload ? setShowImageUpload(false) : onClose()}
+            >
+              {showImageUpload ? "Back to Review" : "Go Back & Edit"}
+            </button>
+            <button
+              className="submit-button"
+              onClick={handleContinue}
+              disabled={showImageUpload && !imagePreview}
+            >
+              {showImageUpload ? "Submit Application" : "Continue"}
+            </button>
+          </div>
+        )}
+        {rbis && (
+          <div className="modal-footer">
+            <button className="submit-button" onClick={onClose}>Close</button>
+          </div>
+        )}
       </div>
     </div>
   )

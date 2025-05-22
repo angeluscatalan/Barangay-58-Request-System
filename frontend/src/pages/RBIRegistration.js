@@ -19,7 +19,7 @@ import SuccessPopup from "../components/SuccessPopup"
 function RBIRegistration() {
   const [activeSection, setActiveSection] = useState("info")
   const birthdateRef = useRef(null)
-  const [memberCount, setMemberCount] = useState(0)
+  const [memberCount, setMemberCount] = useState(1)
   const [errors, setErrors] = useState({
     household: {},
     members: [],
@@ -42,19 +42,23 @@ function RBIRegistration() {
   birth_place: "",
   birth_date: "",
   sex: "",
+  sex_other: "", // <-- Add this line
   civil_status: "",
   citizenship: "",
   citizenship_other: "", // Add this
   occupation: "",
-  email_address: "",
 });
 
 
   // State for household members
 const [members, setMembers] = useState([{
-  // ... other fields
+  // ...existing code...
   citizenship: "",
-  citizenship_other: "", // Add this field
+  citizenship_other: "",
+  sex_other: "",
+  relationship_id: "", // <-- Add this field
+  relationship_other: "", // <-- Add this field
+  occupation: "",
 }]);
 
   // Update refs when members change
@@ -98,7 +102,10 @@ const handleMemberChange = (index, e) => {
       const updatedMembers = [...prevMembers]
       updatedMembers[index] = {
         ...updatedMembers[index],
-        birth_date: date ? date.toISOString().split("T")[0] : "",
+        // Fix: use date in 'YYYY-MM-DD' local format to avoid timezone issues
+        birth_date: date
+          ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
+          : "",
       }
       return updatedMembers
     })
@@ -131,11 +138,14 @@ const handleMemberChange = (index, e) => {
           birth_place: "",
           birth_date: "",
           sex: "",
+          sex_other: "",
           civil_status: "",
           citizenship: "",
           occupation: "",
           citizenship: "",
           citizenship_other: "",
+          relationship_id: "", // <-- Add this field
+          relationship_other: "", // <-- Add this field
         },
       ])
       setMemberCount(memberCount + 1)
@@ -243,6 +253,10 @@ const validateForm = () => {
       newErrors.household.sex = "This field is required"
       isValid = false
       missingFieldsList.push(householdFieldLabels.sex)
+    } else if (householdData.sex === "4" && (!householdData.sex_other || householdData.sex_other.trim() === "")) {
+      newErrors.household.sex = "Please specify sex"
+      isValid = false
+      missingFieldsList.push("Sex (Specify)")
     }
 
     if (!householdData.civil_status || householdData.civil_status.trim() === "") {
@@ -263,7 +277,7 @@ const validateForm = () => {
     if (!householdData.occupation || householdData.occupation.trim() === "") {
       newErrors.household.occupation = "This field is required"
       isValid = false
-      missingFieldsList.push(householdFieldLabels.occupation)
+      missingFieldsList.push("Occupation")
     }
 
     if (!householdData.email_address || householdData.email_address.trim() === "") {
@@ -288,6 +302,8 @@ const validateForm = () => {
         civil_status: `Member ${index + 1} Civil Status`,
         citizenship: `Member ${index + 1} Citizenship`,
         occupation: `Member ${index + 1} Occupation`,
+        relationship_id: `Member ${index + 1} Relationship to Household Leader`,
+        suffix: `Member ${index + 1} Suffix`,
       }
 
       // Check each member field
@@ -326,6 +342,10 @@ const validateForm = () => {
         newErrors.members[index].sex = "This field is required"
         isValid = false
         missingFieldsList.push(memberFieldLabels.sex)
+      } else if (member.sex === "4" && (!member.sex_other || member.sex_other.trim() === "")) {
+        newErrors.members[index].sex = "Please specify sex"
+        isValid = false
+        missingFieldsList.push(`Member ${index + 1} Sex (Specify)`)
       }
 
       if (!member.civil_status || member.civil_status.trim() === "") {
@@ -350,9 +370,50 @@ const validateForm = () => {
       if (!member.occupation || member.occupation.trim() === "") {
         newErrors.members[index].occupation = "This field is required"
         isValid = false
-        missingFieldsList.push(memberFieldLabels.occupation)
+        missingFieldsList.push(`Member ${index + 1} Occupation`)
+      }
+
+      // Relationship validation
+      if (!member.relationship_id || member.relationship_id === "") {
+        newErrors.members[index].relationship_id = "This field is required";
+        isValid = false;
+        missingFieldsList.push(memberFieldLabels.relationship_id);
+      } else if (member.relationship_id === "9" && (!member.relationship_other || member.relationship_other.trim() === "")) {
+        newErrors.members[index].relationship_id = "Please specify relationship";
+        isValid = false;
+        missingFieldsList.push(`Member ${index + 1} Relationship (Specify)`);
       }
     })
+
+    // Suffix validation for household head
+    if (householdData.head_suffix === "" || householdData.head_suffix === "SUFFIX") {
+      newErrors.household.head_suffix = "Please select a valid suffix option";
+      isValid = false;
+      missingFieldsList.push("Household Head Suffix");
+    }
+
+    members.forEach((member, index) => {
+      const memberFieldLabels = {
+        last_name: `Member ${index + 1} Last Name`,
+        first_name: `Member ${index + 1} First Name`,
+        middle_name: `Member ${index + 1} Middle Name`,
+        birth_place: `Member ${index + 1} Birth Place`,
+        birth_date: `Member ${index + 1} Birth Date`,
+        sex: `Member ${index + 1} Sex`,
+        civil_status: `Member ${index + 1} Civil Status`,
+        citizenship: `Member ${index + 1} Citizenship`,
+        occupation: `Member ${index + 1} Occupation`,
+        relationship_id: `Member ${index + 1} Relationship to Household Leader`,
+        suffix: `Member ${index + 1} Suffix`,
+      }
+
+      // Suffix validation for member
+      if (member.suffix === "" || member.suffix === "SUFFIX") {
+        newErrors.members[index].suffix = "Please select a valid suffix option";
+        isValid = false;
+        missingFieldsList.push(memberFieldLabels.suffix);
+      }
+    });
 
     setErrors(newErrors)
     setMissingFields(missingFieldsList)
@@ -386,25 +447,35 @@ const handleConfirmSubmit = async () => {
   try {
     const formattedHouseholdData = {
       ...householdData,
-      head_suffix_id: householdData.head_suffix && householdData.head_suffix !== "None" ? parseInt(householdData.head_suffix) : null,
+      head_suffix_id:
+        householdData.head_suffix && householdData.head_suffix !== "None" && householdData.head_suffix !== "" && householdData.head_suffix !== "SUFFIX"
+          ? parseInt(householdData.head_suffix)
+          : null,
       sex: householdData.sex,
-      sex_other: householdData.sex === "Other" ? householdData.sex_other : null,
+      sex_other: householdData.sex === "4" ? householdData.sex_other : null, // <-- Use sex_other only if sex is "4"
       citizenship: householdData.citizenship === "Other"
         ? householdData.citizenship_other
         : householdData.citizenship,
+      occupation: householdData.occupation,
       birth_date: householdData.birth_date ? new Date(householdData.birth_date).toISOString().split("T")[0] : null,
     };
     delete formattedHouseholdData.head_suffix;
     const formattedMembers = members.map((member) => {
       const formatted = {
         ...member,
-        suffix_id: member.suffix && member.suffix !== "None" ? parseInt(member.suffix) : null,
+        suffix_id:
+          member.suffix && member.suffix !== "None" && member.suffix !== "" && member.suffix !== "SUFFIX"
+            ? parseInt(member.suffix)
+            : null,
         sex: member.sex,
-        sex_other: member.sex === "Other" ? member.sex_other : null,
+        sex_other: member.sex === "4" ? member.sex_other : null,
         citizenship: member.citizenship === "Other"
           ? member.citizenship_other
           : member.citizenship,
+        occupation: member.occupation,
         birth_date: member.birth_date ? new Date(member.birth_date).toISOString().split("T")[0] : null,
+        relationship_id: member.relationship_id ? parseInt(member.relationship_id) : null,
+        relationship_other: member.relationship_id === "9" ? member.relationship_other : null,
       };
       delete formatted.suffix;
       return formatted;
@@ -439,15 +510,31 @@ const handleConfirmSubmit = async () => {
           street_name: "",
           subdivision: "",
           birth_place: "",
+          birth_date: null,
+          sex: "",
+          sex_other: "",
+          civil_status: "",
+          citizenship: "",
+          citizenship_other: "",
+          occupation: "",
+        })
+        setMembers([{
+          last_name: "",
+          first_name: "",
+          middle_name: "",
+          suffix: "",
+          birth_place: "",
           birth_date: "",
           sex: "",
+          sex_other: "",
           civil_status: "",
           citizenship: "",
           occupation: "",
-          email_address: "",
-        })
-        setMembers([])
-        setMemberCount(0)
+          citizenship_other: "",
+          relationship_id: "",
+          relationship_other: "",
+        }])
+        setMemberCount(1)
         document.getElementById("terms").checked = false
       }
     } catch (error) {
@@ -473,6 +560,28 @@ const handleConfirmSubmit = async () => {
   const toggleSection = (section) => {
     setActiveSection(section)
   }
+
+  const relationshipOptions = [
+    { id: "1", name: "Mother" },
+    { id: "2", name: "Father" },
+    { id: "3", name: "Son" },
+    { id: "4", name: "Daughter" },
+    { id: "5", name: "Brother" },
+    { id: "6", name: "Sister" },
+    { id: "7", name: "Grandmother" },
+    { id: "8", name: "Grandfather" },
+    { id: "9", name: "Others" },
+  ];
+
+  const occupationOptions = [
+    "Employed",
+    "Unemployed",
+    "Student",
+    "Retired",
+    "Self-employed",
+    "Homemaker",
+    "Unable to Work"
+  ];
 
   return (
     <div className="rbi-container">
@@ -640,7 +749,7 @@ const handleConfirmSubmit = async () => {
     <option value="3">Prefer Not To Say</option>
     <option value="4">Other</option>
   </select>
-  {householdData.sex === "Other" && (
+  {householdData.sex === "4" && (
     <input
       type="text"
       name="sex_other"
@@ -659,9 +768,10 @@ const handleConfirmSubmit = async () => {
   <select
     id="head_suffix"
     name="head_suffix"
-    className="rbi-form-select"
+    className={`rbi-form-select ${errors.household.head_suffix ? "input-error" : ""}`}
     value={householdData.head_suffix || ""}
     onChange={handleHouseholdChange}
+    required
   >
     <option value="">SUFFIX</option>
     <option value="1">None</option>
@@ -673,6 +783,9 @@ const handleConfirmSubmit = async () => {
     <option value="7">IV</option>
     <option value="8">V</option>
   </select>
+  {errors.household.head_suffix && (
+    <p className="error-message">*{errors.household.head_suffix}</p>
+  )}
 </div>
                     </div>
 
@@ -803,7 +916,7 @@ const handleConfirmSubmit = async () => {
       className={`rbi-form-input ${errors.household.citizenship ? "input-error" : ""}`}
       value={householdData.citizenship_other || ""}
       onChange={handleHouseholdChange}
-      required={householdData.citizenship === "Other"}
+      required
     />
   )}
   {errors.household.citizenship && (
@@ -812,16 +925,19 @@ const handleConfirmSubmit = async () => {
 </div>
 
                       <div className="form-row">
-                        <input
-                          type="text"
+                        <select
                           id="head_occupation"
                           name="occupation"
-                          placeholder="OCCUPATION"
-                          className={`rbi-form-input ${errors.household.occupation ? "input-error" : ""}`}
-                          value={householdData.occupation}
+                          className={`rbi-form-select ${errors.household.occupation ? "input-error" : ""}`}
+                          value={householdData.occupation || ""}
                           onChange={handleHouseholdChange}
                           required
-                        />
+                        >
+                          <option value="">OCCUPATION</option>
+                          {occupationOptions.map(opt => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
                         {errors.household.occupation && <p className="error-message">*{errors.household.occupation}</p>}
                       </div>
 
@@ -936,7 +1052,7 @@ const handleConfirmSubmit = async () => {
     <option value="3">Prefer Not To Say</option>
     <option value="4">Other</option>
   </select>
-  {member.sex === "Other" && (
+  {member.sex === "4" && (
     <input
       type="text"
       name="sex_other"
@@ -955,9 +1071,10 @@ const handleConfirmSubmit = async () => {
   <select
     id={`member_suffix_${index}`}
     name="suffix"
-    className="rbi-form-select"
+    className={`rbi-form-select ${errors.members[index]?.suffix ? "input-error" : ""}`}
     value={member.suffix || ""}
     onChange={e => handleMemberChange(index, e)}
+    required
   >
     <option value="">SUFFIX</option>
     <option value="1">None</option>
@@ -969,6 +1086,9 @@ const handleConfirmSubmit = async () => {
     <option value="7">IV</option>
     <option value="8">V</option>
   </select>
+  {errors.members[index]?.suffix && (
+    <p className="error-message">*{errors.members[index].suffix}</p>
+  )}
 </div>
                         </div>
 
@@ -1062,17 +1182,52 @@ const handleConfirmSubmit = async () => {
 </div>
 
                           <div className="form-row">
-                            <input
-                              type="text"
+                            <select
+                              id={`member_occupation_${index}`}
                               name="occupation"
-                              placeholder="OCCUPATION"
-                              className={`rbi-form-input ${errors.members[index]?.occupation ? "input-error" : ""}`}
-                              value={member.occupation}
+                              className={`rbi-form-select ${errors.members[index]?.occupation ? "input-error" : ""}`}
+                              value={member.occupation || ""}
                               onChange={(e) => handleMemberChange(index, e)}
                               required
-                            />
+                            >
+                              <option value="">OCCUPATION</option>
+                              {occupationOptions.map(opt => (
+                                <option key={opt} value={opt}>{opt}</option>
+                              ))}
+                            </select>
                             {errors.members[index]?.occupation && (
                               <p className="error-message">*{errors.members[index].occupation}</p>
+                            )}
+                          </div>
+
+                          {/* Relationship to Household Leader */}
+                          <div className="form-row">
+                            <select
+                              id={`member_relationship_${index}`}
+                              name="relationship_id"
+                              className={`rbi-form-select ${errors.members[index]?.relationship_id ? "input-error" : ""}`}
+                              value={member.relationship_id || ""}
+                              onChange={e => handleMemberChange(index, e)}
+                              required
+                            >
+                              <option value="">RELATIONSHIP TO HOUSEHOLD LEADER</option>
+                              {relationshipOptions.map(opt => (
+                                <option key={opt.id} value={opt.id}>{opt.name}</option>
+                              ))}
+                            </select>
+                            {member.relationship_id === "9" && (
+                              <input
+                                type="text"
+                                name="relationship_other"
+                                placeholder="Please specify relationship"
+                                className={`rbi-form-input ${errors.members[index]?.relationship_id ? "input-error" : ""}`}
+                                value={member.relationship_other || ""}
+                                onChange={e => handleMemberChange(index, e)}
+                                required
+                              />
+                            )}
+                            {errors.members[index]?.relationship_id && (
+                              <p className="error-message">*{errors.members[index].relationship_id}</p>
                             )}
                           </div>
                         </div>

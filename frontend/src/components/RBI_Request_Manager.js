@@ -103,6 +103,45 @@ function RBI_Request_Manager() {
     // The search will be cleared by the useEffect hook since we're updating searchTerm
   };
 
+  // Helper functions for display
+  const getSuffixDisplay = (suffixId) => {
+    switch (String(suffixId)) {
+      case "2": return "Jr.";
+      case "3": return "Sr.";
+      case "4": return "I";
+      case "5": return "II";
+      case "6": return "III";
+      case "7": return "IV";
+      case "8": return "V";
+      default: return "";
+    }
+  };
+
+  const getSexDisplay = (sex, sexOther) => {
+    switch (String(sex)) {
+      case "1": return "Male";
+      case "2": return "Female";
+      case "3": return "Prefer Not To Say";
+      case "4": return sexOther ? sexOther : "Other";
+      default: return "";
+    }
+  };
+
+  const getRelationshipDisplay = (relationshipId, relationshipOther) => {
+    switch (String(relationshipId)) {
+      case "1": return "Mother";
+      case "2": return "Father";
+      case "3": return "Son";
+      case "4": return "Daughter";
+      case "5": return "Brother";
+      case "6": return "Sister";
+      case "7": return "Grandmother";
+      case "8": return "Grandfather";
+      case "9": return relationshipOther ? relationshipOther : "Others";
+      default: return "";
+    }
+  };
+
   if (loading && !rbiRequests.records.length) return <div className="loading">Loading RBI registrations...</div>;
   if (error) return <div className="error">Error: {error}</div>;
 
@@ -180,7 +219,7 @@ function RBI_Request_Manager() {
                   <td>{household.id}</td>
                   <td>
                     <div className="household-head">
-                      {`${household.head_last_name}, ${household.head_first_name} ${household.head_middle_name || ""} ${household.head_suffix || ""}`}
+                      {`${household.head_last_name}, ${household.head_first_name} ${household.head_middle_name || ""} ${getSuffixDisplay(household.head_suffix_id)}`}
                       <button
                         className="toggle-btn"
                         onClick={() => toggleHouseholdDetails(household.id)}
@@ -192,76 +231,76 @@ function RBI_Request_Manager() {
                   </td>
                   <td>{`${household.house_unit_no || ""} ${household.street_name || ""}, ${household.subdivision || ""}`}</td>
                   <td className={`status ${household.status}`}>{household.status}</td>
-<td className="actions">
-  {household.status === 'pending' && (
-    <>
-      <button
-        className="approve-btn"
-        onClick={() => handleStatusChange(household.id, "approved")}
-        title="Approve this household and all members"
-      >
-        Approve
-      </button>
-      <button
-        className="reject-btn"
-        onClick={() => handleStatusChange(household.id, "rejected")}
-        title="Reject this household registration"
-      >
-        Reject
-      </button>
-      <button
-        className="interview-btn"
-        onClick={() => handleStatusChange(household.id, "for interview")}
-        title="Mark for further interview"
-      >
-        Interview
-      </button>
-    </>
-  )}
-  {(household.status === 'rejected' || household.status === 'for interview') && (
-    <>
-      <button
-        className="approve-btn"
-        onClick={() => handleStatusChange(household.id, "approved")}
-        title="Approve this household"
-      >
-        Approve
-      </button>
-      <button
-        className="pending-btn"
-        onClick={() => handleStatusChange(household.id, "pending")}
-        title="Return to pending status"
-      >
-        Set Pending
-      </button>
-    </>
-  )}
-  {household.status === 'approved' && (
-    <>
-      <button
-        className="reject-btn"
-        onClick={() => handleStatusChange(household.id, "rejected")}
-        title="Reject this household"
-      >
-        Reject
-      </button>
-      <button
-        className="interview-btn"
-        onClick={() => handleStatusChange(household.id, "for interview")}
-        title="Mark for further interview"
-      >
-        Interview
-      </button>
-    </>
-  )}
-  <button
-    className="view-btn"
-    onClick={() => viewHouseholdDetails(household)}
-    title="View complete household details"
-  >
-    View
-  </button>
-</td>
+                  <td className="actions">
+                    {household.status === 'pending' && (
+                      <>
+                        <button
+                          className="approve-btn"
+                          onClick={() => handleStatusChange(household.id, "approved")}
+                          title="Approve this household and all members"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          className="reject-btn"
+                          onClick={() => handleStatusChange(household.id, "rejected")}
+                          title="Reject this household registration"
+                        >
+                          Reject
+                        </button>
+                        <button
+                          className="interview-btn"
+                          onClick={() => handleStatusChange(household.id, "for interview")}
+                          title="Mark for further interview"
+                        >
+                          Interview
+                        </button>
+                      </>
+                    )}
+                    {(household.status === 'rejected' || household.status === 'for interview') && (
+                      <>
+                        <button
+                          className="approve-btn"
+                          onClick={() => handleStatusChange(household.id, "approved")}
+                          title="Approve this household"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          className="pending-btn"
+                          onClick={() => handleStatusChange(household.id, "pending")}
+                          title="Return to pending status"
+                        >
+                          Set Pending
+                        </button>
+                      </>
+                    )}
+                    {household.status === 'approved' && (
+                      <>
+                        <button
+                          className="reject-btn"
+                          onClick={() => handleStatusChange(household.id, "rejected")}
+                          title="Reject this household"
+                        >
+                          Reject
+                        </button>
+                        <button
+                          className="interview-btn"
+                          onClick={() => handleStatusChange(household.id, "for interview")}
+                          title="Mark for further interview"
+                        >
+                          Interview
+                        </button>
+                      </>
+                    )}
+                    <button
+                      className="view-btn"
+                      onClick={() => viewHouseholdDetails(household)}
+                      title="View complete household details"
+                    >
+                      View
+                    </button>
+                  </td>
                 </tr>
                 {expandedHouseholds[household.id] && (
                   <tr className="member-details">
@@ -279,16 +318,18 @@ function RBI_Request_Manager() {
                                 <th>Birth Date</th>
                                 <th>Civil Status</th>
                                 <th>Occupation</th>
+                                <th>Relationship</th>
                               </tr>
                             </thead>
                             <tbody>
                               {householdMembers[household.id].map((member) => (
                                 <tr key={member.id}>
-                                  <td>{`${member.last_name}, ${member.first_name} ${member.middle_name || ""} ${member.suffix || ""}`}</td>
-                                  <td>{member.sex}</td>
+                                  <td>{`${member.last_name}, ${member.first_name} ${member.middle_name || ""} ${getSuffixDisplay(member.suffix_id)}`}</td>
+                                  <td>{getSexDisplay(member.sex, member.sex_other)}</td>
                                   <td>{new Date(member.birth_date).toLocaleDateString()}</td>
                                   <td>{member.civil_status}</td>
                                   <td>{member.occupation}</td>
+                                  <td>{getRelationshipDisplay(member.relationship_id, member.relationship_other)}</td>
                                 </tr>
                               ))}
                             </tbody>
@@ -374,8 +415,10 @@ function RBI_Request_Manager() {
                   </thead>
                   <tbody>
                     <tr>
-                      <td>{`${selectedHousehold.head_last_name}, ${selectedHousehold.head_first_name} ${selectedHousehold.head_middle_name || ""} ${selectedHousehold.head_suffix || ""}`}</td>
-                      <td>{selectedHousehold.sex}</td>
+                      <td>
+                        {`${selectedHousehold.head_last_name}, ${selectedHousehold.head_first_name} ${selectedHousehold.head_middle_name || ""} ${getSuffixDisplay(selectedHousehold.head_suffix_id)}`}
+                      </td>
+                      <td>{getSexDisplay(selectedHousehold.sex, selectedHousehold.sex_other)}</td>
                       <td>{new Date(selectedHousehold.birth_date).toLocaleDateString()}</td>
                       <td>{selectedHousehold.civil_status}</td>
                       <td>{selectedHousehold.citizenship}</td>
@@ -403,16 +446,18 @@ function RBI_Request_Manager() {
                         <th>Birth Date</th>
                         <th>Civil Status</th>
                         <th>Occupation</th>
+                        <th>Relationship</th>
                       </tr>
                     </thead>
                     <tbody>
                       {selectedHousehold.members.map((member) => (
                         <tr key={member.id}>
-                          <td>{`${member.last_name}, ${member.first_name} ${member.middle_name || ""} ${member.suffix || ""}`}</td>
-                          <td>{member.sex}</td>
+                          <td>{`${member.last_name}, ${member.first_name} ${member.middle_name || ""} ${getSuffixDisplay(member.suffix_id)}`}</td>
+                          <td>{getSexDisplay(member.sex, member.sex_other)}</td>
                           <td>{new Date(member.birth_date).toLocaleDateString()}</td>
                           <td>{member.civil_status}</td>
                           <td>{member.occupation}</td>
+                          <td>{getRelationshipDisplay(member.relationship_id, member.relationship_other)}</td>
                         </tr>
                       ))}
                     </tbody>

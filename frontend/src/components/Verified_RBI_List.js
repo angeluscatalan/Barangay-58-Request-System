@@ -316,6 +316,46 @@ function Verified_RBI_List() {
 
   const filteredRecords = filterRecords();
 
+  // Helper functions for display
+  const getSuffixDisplay = (suffixId) => {
+    switch (String(suffixId)) {
+      case "1": return "None";
+      case "2": return "Jr.";
+      case "3": return "Sr.";
+      case "4": return "I";
+      case "5": return "II";
+      case "6": return "III";
+      case "7": return "IV";
+      case "8": return "V";
+      default: return "";
+    }
+  };
+
+  const getSexDisplay = (sex, sexOther) => {
+    switch (String(sex)) {
+      case "1": return "Male";
+      case "2": return "Female";
+      case "3": return "Prefer Not To Say";
+      case "4": return sexOther ? sexOther : "Other";
+      default: return "";
+    }
+  };
+
+  const getRelationshipDisplay = (relationshipId, relationshipOther) => {
+    switch (String(relationshipId)) {
+      case "1": return "Mother";
+      case "2": return "Father";
+      case "3": return "Son";
+      case "4": return "Daughter";
+      case "5": return "Brother";
+      case "6": return "Sister";
+      case "7": return "Grandmother";
+      case "8": return "Grandfather";
+      case "9": return relationshipOther ? relationshipOther : "Others";
+      default: return "";
+    }
+  };
+
   return (
     <div className="request-manager">
       <h1>Verified RBI List</h1>
@@ -473,8 +513,12 @@ function Verified_RBI_List() {
                   <td onClick={() => toggleHousehold(household.id)}>{household.head_last_name}</td>
                   <td onClick={() => toggleHousehold(household.id)}>{household.head_first_name}</td>
                   <td onClick={() => toggleHousehold(household.id)}>{household.head_middle_name || "N/A"}</td>
-                  <td onClick={() => toggleHousehold(household.id)}>{household.head_suffix || "N/A"}</td>
-                  <td onClick={() => toggleHousehold(household.id)}>{household.sex}</td>
+                  <td onClick={() => toggleHousehold(household.id)}>
+                    {getSuffixDisplay(household.head_suffix_id)}
+                  </td>
+                  <td onClick={() => toggleHousehold(household.id)}>
+                    {getSexDisplay(household.sex, household.sex_other)}
+                  </td>
                   <td onClick={() => toggleHousehold(household.id)}>{new Date(household.birth_date).toLocaleDateString()}</td>
                   <td onClick={() => toggleHousehold(household.id)}>{household.birth_place}</td>
                   <td onClick={() => toggleHousehold(household.id)}>{household.civil_status}</td>
@@ -507,14 +551,16 @@ function Verified_RBI_List() {
                       <td>{member.last_name}</td>
                       <td>{member.first_name}</td>
                       <td>{member.middle_name || "N/A"}</td>
-                      <td>{member.suffix || "N/A"}</td>
-                      <td>{member.sex}</td>
+                      <td>{getSuffixDisplay(member.suffix_id)}</td>
+                      <td>{getSexDisplay(member.sex, member.sex_other)}</td>
                       <td>{new Date(member.birth_date).toLocaleDateString()}</td>
                       <td>{member.birth_place}</td>
                       <td>{member.civil_status}</td>
                       <td>{member.citizenship}</td>
                       <td>{member.occupation}</td>
-                      <td colSpan="5">Member of Household #{household.id}</td>
+                      <td colSpan="5">
+                        Relationship to Household Leader: {getRelationshipDisplay(member.relationship_id, member.relationship_other)}
+                      </td>
                     </tr>
                   ))}
               </React.Fragment>

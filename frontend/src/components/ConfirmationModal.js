@@ -169,7 +169,19 @@ const ConfirmationModal = ({
         <div className="data-row">
           <span className="data-label">Name:</span>
           <span className="data-value">
-            {formData.head_first_name} {formData.head_middle_name} {formData.head_last_name} {formData.head_suffix}
+            {formData.head_first_name} {formData.head_middle_name} {formData.head_last_name} {(() => {
+              // Show suffix label
+              switch (formData.head_suffix) {
+                case "2": return "Jr.";
+                case "3": return "Sr.";
+                case "4": return "I";
+                case "5": return "II";
+                case "6": return "III";
+                case "7": return "IV";
+                case "8": return "V";
+                default: return "";
+              }
+            })()}
           </span>
         </div>
         <div className="data-row">
@@ -198,7 +210,11 @@ const ConfirmationModal = ({
         </div>
         <div className="data-row">
           <span className="data-label">Citizenship:</span>
-          <span className="data-value">{formData.citizenship}</span>
+          <span className="data-value">
+            {formData.citizenship === "Other"
+              ? formData.citizenship_other
+              : formData.citizenship}
+          </span>
         </div>
         <div className="data-row">
           <span className="data-label">Occupation:</span>
@@ -219,7 +235,37 @@ const ConfirmationModal = ({
               <div className="data-row">
                 <span className="data-label">Name:</span>
                 <span className="data-value">
-                  {member.first_name} {member.middle_name} {member.last_name} {member.suffix}
+                  {member.first_name} {member.middle_name} {member.last_name} {(() => {
+                    switch (member.suffix) {
+                      case "2": return "Jr.";
+                      case "3": return "Sr.";
+                      case "4": return "I";
+                      case "5": return "II";
+                      case "6": return "III";
+                      case "7": return "IV";
+                      case "8": return "V";
+                      default: return "";
+                    }
+                  })()}
+                </span>
+              </div>
+              <div className="data-row">
+                <span className="data-label">Relationship to Household Leader:</span>
+                <span className="data-value">
+                  {(() => {
+                    switch (member.relationship_id) {
+                      case "1": return "Mother";
+                      case "2": return "Father";
+                      case "3": return "Son";
+                      case "4": return "Daughter";
+                      case "5": return "Brother";
+                      case "6": return "Sister";
+                      case "7": return "Grandmother";
+                      case "8": return "Grandfather";
+                      case "9": return member.relationship_other || "Others";
+                      default: return "";
+                    }
+                  })()}
                 </span>
               </div>
               <div className="data-row">
@@ -230,7 +276,7 @@ const ConfirmationModal = ({
                 <span className="data-label">Birth Date:</span>
                 <span className="data-value">{formatDate(member.birth_date)}</span>
               </div>
-               <div className="data-row">
+              <div className="data-row">
                 <span className="data-label">Sex/Gender:</span>
                 <span className="data-value">
                   {getSexDisplay(member.sex, member.sex_other)}
@@ -242,7 +288,11 @@ const ConfirmationModal = ({
               </div>
               <div className="data-row">
                 <span className="data-label">Citizenship:</span>
-                <span className="data-value">{member.citizenship}</span>
+                <span className="data-value">
+                  {member.citizenship === "Other"
+                    ? member.citizenship_other
+                    : member.citizenship}
+                </span>
               </div>
               <div className="data-row">
                 <span className="data-label">Occupation:</span>
