@@ -24,8 +24,9 @@ function AdminDashboard() {
     // New statistics
     totalRegisteredFamilies: 0,
     totalRegisteredResidents: 0,
-    genderRatio: { male: 0, female: 0 },
+    genderRatio: { male: 0, female: 0, other: 0, preferNotToSay: 0 },
     ageBrackets: {
+      infant: 0, // 0-11 months
       toddler: 0, // 1-3 years
       child: 0, // 4-12 years
       teenager: 0, // 13-19 years
@@ -157,7 +158,10 @@ function AdminDashboard() {
       let totalResidents = 0
       let maleCount = 0
       let femaleCount = 0
+      let otherCount = 0
+      let preferNotToSayCount = 0
       const ageBrackets = {
+        infant: 0, // 0-11 months
         toddler: 0, // 1-3 years
         child: 0, // 4-12 years
         teenager: 0, // 13-19 years
@@ -166,98 +170,91 @@ function AdminDashboard() {
         seniorCitizen: 0, // 60+ years
       }
 
-      // Process each approved registration
-      // In the fetchDashboardData function, replace the age calculation part with this:
-
-// Process each approved registration for age calculation
-
-approvedRegistrations.forEach((registration) => {
-  // Count the head of family
-  totalResidents++
-
-  // Process gender (using sex field)
-  let gender = registration.sex || registration.gender || "";
-  if (typeof gender === "number") gender = String(gender);
-  if (typeof gender === "string") gender = gender.toLowerCase();
-
-  // Accept both string and numeric representations
-  if (gender === "male" || gender === "m" || gender === "1") {
-    maleCount++
-  } else if (gender === "female" || gender === "f" || gender === "2") {
-    femaleCount++
-  }
-
-  // Calculate age from birth_date if available
-  if (registration.birth_date) {
-    const birth_date = new Date(registration.birth_date)
-    const today = new Date()
-    let age = today.getFullYear() - birth_date.getFullYear()
-    const monthDiff = today.getMonth() - birth_date.getMonth()
-    
-    // Adjust age if birthday hasn't occurred yet this year
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth_date.getDate())) {
-      age--
-    }
-
-    // Categorize into age brackets
-    if (age >= 1 && age <= 3) {
-      ageBrackets.toddler++
-    } else if (age >= 4 && age <= 12) {
-      ageBrackets.child++
-    } else if (age >= 13 && age <= 19) {
-      ageBrackets.teenager++
-    } else if (age >= 20 && age <= 35) {
-      ageBrackets.youngAdult++
-    } else if (age >= 36 && age <= 59) {
-      ageBrackets.adult++
-    } else if (age >= 60) {
-      ageBrackets.seniorCitizen++
-    }
-  }
-
-  // Process household members
-  if (registration.members && Array.isArray(registration.members)) {
-    registration.members.forEach((member) => {
-      totalResidents++
-
-      // Process member gender
-      let memberGender = member.sex || member.gender || "";
-      if (typeof memberGender === "number") memberGender = String(memberGender);
-      if (typeof memberGender === "string") memberGender = memberGender.toLowerCase();
-
-      if (memberGender === "male" || memberGender === "m" || memberGender === "1") {
-        maleCount++
-      } else if (memberGender === "female" || memberGender === "f" || memberGender === "2") {
-        femaleCount++
-      }
-      // Calculate age from birth_date for household members
-      if (member.birth_date) {
-        const birth_date = new Date(member.birth_date)
-        const today = new Date()
-        let age = today.getFullYear() - birth_date.getFullYear()
-        const monthDiff = today.getMonth() - birth_date.getMonth()
-
-        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth_date.getDate())) {
-          age--
+      // Process each approved registration for age calculation
+      approvedRegistrations.forEach((registration) => {
+        totalResidents++
+        let gender = registration.sex || registration.gender || "";
+        if (typeof gender === "number") gender = String(gender);
+        if (typeof gender === "string") gender = gender.toLowerCase();
+        if (gender === "male" || gender === "m" || gender === "1") {
+          maleCount++
+        } else if (gender === "female" || gender === "f" || gender === "2") {
+          femaleCount++
+        } else if (gender === "other" || gender === "3") {
+          otherCount++
+        } else if (gender === "prefer not to say" || gender === "prefer_not_to_say" || gender === "4") {
+          preferNotToSayCount++
         }
-        // Categorize into age brackets
-        if (age >= 1 && age <= 3) {
-          ageBrackets.toddler++
-        } else if (age >= 4 && age <= 12) {
-          ageBrackets.child++
-        } else if (age >= 13 && age <= 19) {
-          ageBrackets.teenager++
-        } else if (age >= 20 && age <= 35) {
-          ageBrackets.youngAdult++
-        } else if (age >= 36 && age <= 59) {
-          ageBrackets.adult++
-        } else if (age >= 60) {
-          ageBrackets.seniorCitizen++
+        if (registration.birth_date) {
+          const birth_date = new Date(registration.birth_date)
+          const today = new Date()
+          let years = today.getFullYear() - birth_date.getFullYear()
+          let months = today.getMonth() - birth_date.getMonth()
+          if (today.getDate() < birth_date.getDate()) months--;
+          if (months < 0) {
+            years--;
+            months += 12;
+          }
+          if (years === 0 && months >= 0 && months < 12) {
+            ageBrackets.infant++
+          } else if (years >= 1 && years <= 3) {
+            ageBrackets.toddler++
+          } else if (years >= 4 && years <= 12) {
+            ageBrackets.child++
+          } else if (years >= 13 && years <= 19) {
+            ageBrackets.teenager++
+          } else if (years >= 20 && years <= 35) {
+            ageBrackets.youngAdult++
+          } else if (years >= 36 && years <= 59) {
+            ageBrackets.adult++
+          } else if (years >= 60) {
+            ageBrackets.seniorCitizen++
+          }
         }
-      }
-    })
-  }
-})
+        if (registration.members && Array.isArray(registration.members)) {
+          registration.members.forEach((member) => {
+            totalResidents++
+            let memberGender = member.sex || member.gender || "";
+            if (typeof memberGender === "number") memberGender = String(memberGender);
+            if (typeof memberGender === "string") memberGender = memberGender.toLowerCase();
+            if (memberGender === "male" || memberGender === "m" || memberGender === "1") {
+              maleCount++
+            } else if (memberGender === "female" || memberGender === "f" || memberGender === "2") {
+              femaleCount++
+            } else if (memberGender === "other" || memberGender === "3") {
+              otherCount++
+            } else if (memberGender === "prefer not to say" || memberGender === "prefer_not_to_say" || memberGender === "4") {
+              preferNotToSayCount++
+            }
+            if (member.birth_date) {
+              const birth_date = new Date(member.birth_date)
+              const today = new Date()
+              let years = today.getFullYear() - birth_date.getFullYear()
+              let months = today.getMonth() - birth_date.getMonth()
+              if (today.getDate() < birth_date.getDate()) months--;
+              if (months < 0) {
+                years--;
+                months += 12;
+              }
+              if (years === 0 && months >= 0 && months < 12) {
+                ageBrackets.infant++
+              } else if (years >= 1 && years <= 3) {
+                ageBrackets.toddler++
+              } else if (years >= 4 && years <= 12) {
+                ageBrackets.child++
+              } else if (years >= 13 && years <= 19) {
+                ageBrackets.teenager++
+              } else if (years >= 20 && years <= 35) {
+                ageBrackets.youngAdult++
+              } else if (years >= 36 && years <= 59) {
+                ageBrackets.adult++
+              } else if (years >= 60) {
+                ageBrackets.seniorCitizen++
+              }
+            }
+          })
+        }
+      })
 
 
       setStats({
@@ -273,7 +270,7 @@ approvedRegistrations.forEach((registration) => {
         // New statistics
         totalRegisteredFamilies,
         totalRegisteredResidents: totalResidents,
-        genderRatio: { male: maleCount, female: femaleCount },
+        genderRatio: { male: maleCount, female: femaleCount, other: otherCount, preferNotToSay: preferNotToSayCount },
         ageBrackets,
       })
 
@@ -301,6 +298,7 @@ approvedRegistrations.forEach((registration) => {
         totalRegisteredResidents: 0,
         genderRatio: { male: 0, female: 0 },
         ageBrackets: {
+          infant: 0,
           toddler: 0,
           child: 0,
           teenager: 0,
@@ -460,9 +458,12 @@ approvedRegistrations.forEach((registration) => {
   const genderData = [
     { name: "Male", value: stats.genderRatio.male },
     { name: "Female", value: stats.genderRatio.female },
+    { name: "Other", value: stats.genderRatio.other },
+    { name: "Prefer not to say", value: stats.genderRatio.preferNotToSay },
   ]
 
   const ageBracketData = [
+    { name: "Infant (0-11mo)", value: stats.ageBrackets.infant },
     { name: "Toddler (1-3)", value: stats.ageBrackets.toddler },
     { name: "Child (4-12)", value: stats.ageBrackets.child },
     { name: "Teen (13-19)", value: stats.ageBrackets.teenager },
@@ -471,13 +472,11 @@ approvedRegistrations.forEach((registration) => {
     { name: "Senior (60+)", value: stats.ageBrackets.seniorCitizen },
   ]
 
-  const GENDER_COLORS = ["#8884d8", "#FF6B6B"]
+  const GENDER_COLORS = ["#8884d8", "#FF6B6B", "#FFD700", "#A9A9A9"] // Add colors for Other and Prefer not to say
   const AGE_COLORS = ["#8884d8", "#83a6ed", "#8dd1e1", "#82ca9d", "#a4de6c", "#d0ed57"]
 
   const renderCSSPieChart = () => {
-    const total = stats.genderRatio.male + stats.genderRatio.female
-
-    // If no data, show a message
+    const total = genderData.reduce((sum, g) => sum + g.value, 0)
     if (total === 0) {
       return (
         <div className="no-data-chart">
@@ -485,49 +484,31 @@ approvedRegistrations.forEach((registration) => {
         </div>
       )
     }
-
-    const malePercentage = (stats.genderRatio.male / total) * 100
-    const femalePercentage = (stats.genderRatio.female / total) * 100
-
+    // Calculate percentages and build conic-gradient
+    let start = 0;
+    let stops = [];
+    genderData.forEach((g, i) => {
+      const percent = total > 0 ? (g.value / total) * 100 : 0;
+      if (percent > 0) {
+        stops.push(`${GENDER_COLORS[i % GENDER_COLORS.length]} ${start}% ${start + percent}%`);
+      }
+      start += percent;
+    });
+    const pieStyle = {
+      background: `conic-gradient(${stops.join(", ")})`,
+    };
     return (
       <div className="css-pie-chart-container">
-        <div className="css-pie-chart">
-          {malePercentage > 0 && (
-            <div
-              className="css-pie-segment male-segment"
-              style={{
-                clipPath: `polygon(50% 50%, 50% 0%, ${malePercentage >= 50 ? "100% 0%" : "50% 0%"}, 100% 50%, 50% 50%)`,
-                backgroundColor: "#8884d8",
-                transform: malePercentage >= 50 ? "none" : "rotate(0deg)",
-                zIndex: 2,
-              }}
-            ></div>
-          )}
-          {femalePercentage > 0 && (
-            <div
-              className="css-pie-segment female-segment"
-              style={{
-                transform: `rotate(${malePercentage * 3.6}deg)`,
-                clipPath: "polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, 50% 0%, 50% 50%)",
-                backgroundColor: "#FF6B6B",
-                zIndex: 1,
-              }}
-            ></div>
-          )}
-        </div>
+        <div className="css-pie-chart" style={pieStyle}></div>
         <div className="css-pie-legend">
-          <div className="legend-item">
-            <span className="legend-color" style={{ backgroundColor: "#8884d8" }}></span>
-            <span>
-              Male: {stats.genderRatio.male} ({Math.round(malePercentage)}%)
-            </span>
-          </div>
-          <div className="legend-item">
-            <span className="legend-color" style={{ backgroundColor: "#FF6B6B" }}></span>
-            <span>
-              Female: {stats.genderRatio.female} ({Math.round(femalePercentage)}%)
-            </span>
-          </div>
+          {genderData.map((g, i) => (
+            <div className="legend-item" key={g.name}>
+              <span className="legend-color" style={{ backgroundColor: GENDER_COLORS[i % GENDER_COLORS.length] }}></span>
+              <span>
+                {g.name}: {g.value} ({total > 0 ? Math.round((g.value / total) * 100) : 0}%)
+              </span>
+            </div>
+          ))}
         </div>
       </div>
     )
@@ -552,6 +533,7 @@ approvedRegistrations.forEach((registration) => {
           {Object.entries(stats.ageBrackets).map(([key, value], index) => {
             const height = (value / maxValue) * 100
             const labels = {
+              infant: "Infant (0-11mo)",
               toddler: "Toddler (1-3)",
               child: "Child (4-12)",
               teenager: "Teen (13-19)",
@@ -797,18 +779,16 @@ approvedRegistrations.forEach((registration) => {
                   )}
                 </div>
                 <div className="chart-summary">
-                  <div className="summary-item">
-                    <span className="summary-label">Male:</span>
-                    <span className="summary-value">{stats.genderRatio.male}</span>
-                  </div>
-                  <div className="summary-item">
-                    <span className="summary-label">Female:</span>
-                    <span className="summary-value">{stats.genderRatio.female}</span>
-                  </div>
+                  {genderData.map((g, i) => (
+                    <div className="summary-item" key={g.name}>
+                      <span className="summary-label">{g.name}:</span>
+                      <span className="summary-value">{g.value}</span>
+                    </div>
+                  ))}
                   <div className="summary-item">
                     <span className="summary-label">Ratio:</span>
                     <span className="summary-value">
-                      {stats.genderRatio.male}:{stats.genderRatio.female}
+                      {genderData.map(g => g.value).join(":")}
                     </span>
                   </div>
                 </div>
@@ -827,6 +807,10 @@ approvedRegistrations.forEach((registration) => {
                   )}
                 </div>
                 <div className="age-brackets-summary">
+                  <div className="age-bracket-item">
+                    <span className="age-bracket-label">Infant (0-11mo):</span>
+                    <span className="age-bracket-value">{stats.ageBrackets.infant}</span>
+                  </div>
                   <div className="age-bracket-item">
                     <span className="age-bracket-label">Toddler (1-3):</span>
                     <span className="age-bracket-value">{stats.ageBrackets.toddler}</span>

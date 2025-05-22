@@ -62,7 +62,38 @@ function DashboardCard({
         </div>
       </div>
 
-      <div className="dashboard-card-content">{children}</div>
+      <div className="dashboard-card-content">
+        {Array.isArray(children)
+          ? children.map((child, idx) => {
+              if (child && child.props && child.props.birth_date) {
+                const birthDate = new Date(child.props.birth_date);
+                const now = new Date();
+                let age = now.getFullYear() - birthDate.getFullYear();
+                const m = now.getMonth() - birthDate.getMonth();
+                if (m < 0 || (m === 0 && now.getDate() < birthDate.getDate())) {
+                  age--;
+                }
+                // If born this year, show months
+                let ageDisplay = age;
+                if (now.getFullYear() === birthDate.getFullYear()) {
+                  let months = now.getMonth() - birthDate.getMonth();
+                  if (now.getDate() < birthDate.getDate()) months--;
+                  months = Math.max(0, months + 1); // 1-12 months
+                  ageDisplay = `${months} month${months !== 1 ? 's' : ''} old`;
+                } else {
+                  ageDisplay = `${age} year${age !== 1 ? 's' : ''} old`;
+                }
+                return (
+                  <div key={idx} className="dashboard-card-child-with-age">
+                    {child}
+                    <span className="dashboard-card-age">Age: {ageDisplay}</span>
+                  </div>
+                );
+              }
+              return child;
+            })
+          : children}
+      </div>
     </div>
   )
 }
