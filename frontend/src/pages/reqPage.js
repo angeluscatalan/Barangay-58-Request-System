@@ -42,6 +42,7 @@ function reqPage() {
   const [showImageUpload, setShowImageUpload] = useState(false);
   const [suffixes, setSuffixes] = useState([]);
   const [certificates, setCertificates] = useState([]);
+  const [statuses, setStatuses] = useState([]); // Add state for statuses if needed in the future
   
   useEffect(() => {
   const fetchCertificates = async () => {
@@ -71,6 +72,19 @@ useEffect(() => {
   }
 };
   fetchSuffixes();
+}, []);
+
+// Fetch statuses (if you want to use them in the future, e.g., for display)
+useEffect(() => {
+  const fetchStatuses = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/requests/statuses');
+      setStatuses(response.data);
+    } catch (error) {
+      // Optionally handle error
+    }
+  };
+  fetchStatuses();
 }, []);
 
   // Handle form field changes
@@ -229,17 +243,18 @@ useEffect(() => {
         }
     // Prepare the request data with both s3_key and photo_url
     const requestData = {
-  ...formData,
-  s3_key: s3Key,
-  photo_url: photoUrl,
-  address: [
-    formData.unit_no,
-    formData.street,
-    formData.subdivision
-  ].filter(Boolean).join(", "),
-  number_of_copies: Number(formData.number_of_copies),
-  suffix_id: formData.suffix_id // Ensure this is included
-};
+      ...formData,
+      s3_key: s3Key,
+      photo_url: photoUrl,
+      address: [
+        formData.unit_no,
+        formData.street,
+        formData.subdivision
+      ].filter(Boolean).join(", "),
+      number_of_copies: Number(formData.number_of_copies),
+      suffix_id: formData.suffix_id // Ensure this is included
+      // Do NOT set status or status_id here; backend will default to pending
+    };
 
     // Create the request
     await axios.post('http://localhost:5000/api/requests', requestData);

@@ -14,6 +14,29 @@ function Request_Manager() {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRequest, setSelectedRequest] = useState(null);
+  const [statuses, setStatuses] = useState([]);
+  const [statusLoading, setStatusLoading] = useState(true);
+  const [statusError, setStatusError] = useState(null);
+
+  // Fetch statuses on component mount
+  useEffect(() => {
+    const fetchStatuses = async () => {
+      try {
+        setStatusLoading(true);
+        const response = await axios.get('http://localhost:5000/api/requests/statuses');
+        console.log('Statuses API response:', response.data); // Debug log
+        setStatuses(response.data);
+        setStatusError(null);
+      } catch (err) {
+        console.error('Error fetching statuses:', err); // Debug log
+        setStatusError('Failed to load status options');
+        setStatuses([]); // Ensure empty array on error
+      } finally {
+        setStatusLoading(false);
+      }
+    };
+    fetchStatuses();
+  }, []);
 
   const filterRequests = () => {
     if (!requests) return [];
@@ -26,27 +49,26 @@ function Request_Manager() {
         request.last_name?.toLowerCase().includes(query) ||
         request.first_name?.toLowerCase().includes(query) ||
         request.middle_name?.toLowerCase().includes(query) ||
-        request.type_of_certificate?.toLowerCase().includes(query) ||
+        request.certificate_name?.toLowerCase().includes(query) ||
         request.purpose_of_request?.toLowerCase().includes(query) ||
         request.status?.toLowerCase().includes(query)
       );
     }
 
-    // Filter for pending requests after search
-    return filtered.filter(req => req.status === 'Pending');
+    // Filter for pending requests (status_id = 1)
+    return filtered.filter(req => req.status_id === 1);
   };
 
   const handleSearch = (e) => {
     e.preventDefault();
-    // Search is handled by filterRequests function
   };
 
   const clearSearch = () => {
     setSearchTerm("");
   };
 
-  const handleStatusChange = async (id, newStatus) => {
-    const success = await updateRequestStatus(id, newStatus);
+  const handleStatusChange = async (id, status_id) => {
+    const success = await updateRequestStatus(id, status_id);
     if (success) {
       fetchRequests();
     }
@@ -95,6 +117,7 @@ function Request_Manager() {
               <th>Name</th>
               <th>Certificate Type</th>
               <th>Date Requested</th>
+              <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -103,21 +126,36 @@ function Request_Manager() {
               <tr key={request.id}>
                 <td>{request.id}</td>
                 <td>{`${request.last_name}, ${request.first_name}`}</td>
-                <td>{request.type_of_certificate}</td>
+                <td>{request.certificate_name}</td>
                 <td>{new Date(request.created_at).toLocaleDateString()}</td>
+                <td>
+                  <span className={`status-badge ${request.status.toLowerCase()}`}>
+                    {request.status}
+                  </span>
+                </td>
                 <td className="actions">
-                  <button
-                    className="approve-btn"
-                    onClick={() => handleStatusChange(request.id, "approved")}
-                  >
-                    Approve
-                  </button>
-                  <button
-                    className="reject-btn"
-                    onClick={() => handleStatusChange(request.id, "rejected")}
-                  >
-                    Reject
-                  </button>
+                  {statusLoading ? (
+                    <div className="status-loading">Loading options...</div>
+                  ) : statusError ? (
+                    <div className="status-error">Status options unavailable</div>
+                  ) : (
+                    <>
+                      <button
+                        className="approve-btn"
+                        onClick={() => handleStatusChange(request.id, statuses.find(s => s.name.toLowerCase() === 'approved')?.id)}
+                        disabled={request.status.toLowerCase() === 'approved'}
+                      >
+                        Approve
+                      </button>
+                      <button
+                        className="reject-btn"
+                        onClick={() => handleStatusChange(request.id, statuses.find(s => s.name.toLowerCase() === 'rejected')?.id)}
+                        disabled={request.status.toLowerCase() === 'rejected'}
+                      >
+                        Reject
+                      </button>
+                    </>
+                  )}
                   <button
                     className="view-btn"
                     onClick={() => viewRequestDetails(request)}
@@ -131,6 +169,7 @@ function Request_Manager() {
         </table>
       </div>
 
+      {/* Rest of your modal code remains the same */}
       {/* Request Details Modal */}
       {selectedRequest && (
         <div className="modal-overlay">
@@ -158,7 +197,7 @@ function Request_Manager() {
                   </div>
                   <div className="info-item">
                     <label>Certificate Type:</label>
-                    <span>{selectedRequest.type_of_certificate}</span>
+                    <span>{selectedRequest.certificate_name}</span>
                   </div>
                   <div className="info-item">
                     <label>Date Requested:</label>
@@ -199,10 +238,6 @@ function Request_Manager() {
                   <div className="info-item">
                     <label>Sex:</label>
                     <span>{selectedRequest.sex || 'N/A'}</span>
-                  </div>
-                  <div className="info-item">
-                    <label>Civil Status:</label>
-                    <span>{selectedRequest.civil_status || 'N/A'}</span>
                   </div>
                   <div className="info-item">
                     <label>Contact Number:</label>

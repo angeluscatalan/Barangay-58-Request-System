@@ -41,6 +41,9 @@ function Admin() {
   const [isSmallScreen, setIsSmallScreen] = useState(false)
   const [showLogoutModal, setShowLogoutModal] = useState(false)
   const [certificates, setCertificates] = useState([]); // NEW STATE
+  const [statuses, setStatuses] = useState([]); // <-- Add state for statuses
+  const [statusLoading, setStatusLoading] = useState(true);
+  const [statusError, setStatusError] = useState(null);
 
   const { requests, loading: requestsLoading, error: requestsError, fetchRequests, updateRequestStatus } = useRequests()
 
@@ -135,6 +138,24 @@ function Admin() {
       console.error("Error fetching certificates:", error);
       // You might want to display an error message to the user
     }
+  }, []);
+
+  // Fetch statuses on mount
+  useEffect(() => {
+    const fetchStatuses = async () => {
+      try {
+        setStatusLoading(true);
+        const response = await axios.get('http://localhost:5000/api/requests/statuses');
+        setStatuses(response.data);
+        setStatusError(null);
+      } catch (err) {
+        setStatusError('Failed to load status options');
+        setStatuses([]);
+      } finally {
+        setStatusLoading(false);
+      }
+    };
+    fetchStatuses();
   }, []);
 
   useEffect(() => {
@@ -256,6 +277,25 @@ function Admin() {
         return ""
     }
   }
+
+  // Helper to get status name from status_id
+  const getStatusName = (status_id) => {
+    const status = statuses.find(s => s.id === status_id);
+    return status ? status.name : '';
+  };
+
+  // Helper to get status class from status_id
+  const getStatusClassById = (status_id) => {
+    const status = statuses.find(s => s.id === status_id);
+    if (!status) return '';
+    switch ((status.name || '').toLowerCase()) {
+      case 'pending': return 'status-pending';
+      case 'approved': return 'status-approved';
+      case 'rejected': return 'status-rejected';
+      case 'for_pickup': return 'status-pickup';
+      default: return '';
+    }
+  };
 
   const handleZoom = (action) => {
     switch (action) {
@@ -684,19 +724,24 @@ function Admin() {
         <td>{request.purpose_of_request}</td>
         <td>{request.number_of_copies}</td>
         <td>
-          <span className={`status-badge ${getStatusClass(request.status)}`}>
-            {request.status}
+          <span className={`status-badge ${getStatusClassById(request.status_id)}`}>
+            {getStatusName(request.status_id)}
           </span>
-          <select
-            value={request.status}
-            onChange={(e) => updateStatus(request.id, e.target.value)}
-            className={getStatusClass(request.status)}
-          >
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-            <option value="for pickup">For Pickup</option>
-          </select>
+          {statusLoading ? (
+            <div className="status-loading">Loading options...</div>
+          ) : statusError ? (
+            <div className="status-error">Status options unavailable</div>
+          ) : (
+            <select
+              value={request.status_id}
+              onChange={e => updateRequestStatus(request.id, Number(e.target.value))}
+              className={getStatusClassById(request.status_id)}
+            >
+              {statuses.map(status => (
+                <option key={status.id} value={status.id}>{status.name}</option>
+              ))}
+            </select>
+          )}
         </td>
         <td className="action-buttons">
           <button

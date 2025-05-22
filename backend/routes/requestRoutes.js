@@ -23,11 +23,10 @@ const validateRequest = [
   check('number_of_copies').isInt({ min: 1 })
 ];
 
+// Basic data endpoints
 router.get('/suffixes', async (req, res) => {
-  console.log('Suffixes endpoint hit'); // Debug log
   try {
     const [rows] = await pool.query("SELECT * FROM suffixes ORDER BY id");
-    console.log('Query results:', rows); // Debug log
     res.json(rows);
   } catch (error) {
     console.error("Database error:", error);
@@ -45,15 +44,17 @@ router.get('/certificates', async (req, res) => {
   }
 });
 
+router.get('/statuses', requestController.getStatuses);
+
+// Request endpoints
 router.post('/', validateRequest, requestController.createRequest);
 router.get('/', requestController.getRequests);
 router.get('/:id', requestController.getRequestById);
-router.put('/:id', requestController.updateRequestStatus);
+router.put('/:id/status', requestController.updateRequestStatus);
 router.delete('/:id', requestController.deleteRequest);
 
+// Backup endpoints
 router.get('/backup/list', requestController.getBackupRequests);
 router.post('/backup/restore', requestController.restoreRequests);
-
-
 
 module.exports = router;

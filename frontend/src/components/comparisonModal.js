@@ -1,130 +1,297 @@
-import React, { useState } from 'react';
+"use client"
+import { useState } from "react"
+import { getSexDisplay } from "../utils/displayUtils"
+import "../styles/ConfirmationModal.css"
 
-function ComparisonModal({ request, rbis, onClose }) {
-  const [expandedRbi, setExpandedRbi] = useState(null);
+const ConfirmationModal = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  formData,
+  formType,
+  imagePreview,
+  setImagePreview,
+  certificates
+}) => {
+  const [showImageUpload, setShowImageUpload] = useState(false)
 
-  const toggleRbiDetails = (rbiId) => {
-    setExpandedRbi(expandedRbi === rbiId ? null : rbiId);
+  if (!isOpen) return null
+
+  const formatDate = (dateString) => {
+    if (!dateString) return ""
+    const date = new Date(dateString)
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
+  }
+
+  const requiresPhotoUpload = () => {
+    return formData.certificate_id === 1 || // ID Application
+           formData.certificate_id === 4;   // Clearance (adjust IDs as needed)
   };
 
-  // Helper function to find household head for a member
-  const findHouseholdHead = (householdId) => {
-    return rbis.find(rbi => rbi.id === householdId && rbi.type === 'Household Head');
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <div className="modal-header">
-          <h3>RBI Record Comparison</h3>
-          <button className="close-btn" onClick={onClose}>
-            <i className="fas fa-times"></i>
-          </button>
+  const handleContinue = () => {
+    if (requiresPhotoUpload() && !showImageUpload) {
+      setShowImageUpload(true);
+    } else {
+      onConfirm(imagePreview);
+    }
+  };
+
+  const renderRequestData = () => (
+    <div className="confirmation-data">
+      <h3>Personal Information</h3>
+      <div className="data-section">
+        <div className="data-row">
+          <span className="data-label">Name:</span>
+          <span className="data-value">
+            {formData.first_name} {formData.middle_name} {formData.last_name} {formData.suffix}
+          </span>
         </div>
-        <div className="comparison-container">
-          <div className="request-details">
-            <h4>Request Information</h4>
-            <table>
-              <tbody>
-                <tr>
-                  <th>Name:</th>
-                  <td>{`${request.last_name}, ${request.first_name} ${request.middle_name || ""}`}</td>
-                </tr>
-                <tr>
-                  <th>Birthdate:</th>
-                  <td>{request.birthday ? new Date(request.birthday).toLocaleDateString() : "N/A"}</td>
-                </tr>
-                <tr>
-                  <th>Address:</th>
-                  <td>{request.address}</td>
-                </tr>
-                <tr>
-                  <th>Contact:</th>
-                  <td>{request.contact_no}</td>
-                </tr>
-                <tr>
-                  <th>Email:</th>
-                  <td>{request.email || "N/A"}</td>
-                </tr>
-                <tr>
-                  <th>Certificate Type:</th>
-                  <td>{request.type_of_certificate || "N/A"}</td>
-                </tr>
-                <tr>
-                  <th>Purpose:</th>
-                  <td>{request.purpose_of_request || "N/A"}</td>
-                </tr>
-                <tr>
-                  <th>Number of Copies:</th>
-                  <td>{request.number_of_copies || "N/A"}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div className="rbi-results">
-            <h4>Matching RBI Records ({rbis.length})</h4>
-            {rbis.length > 0 ? (
-              <div className="rbi-list">
-                {rbis.map((rbi) => (
-                  <div 
-                    key={rbi.id} 
-                    className={`rbi-item ${expandedRbi === rbi.id ? 'expanded' : ''}`}
-                    onClick={() => toggleRbiDetails(rbi.id)}
-                  >
-                    <div className="rbi-summary">
-                      <div className="rbi-name">
-                        {`${rbi.last_name}, ${rbi.first_name} ${rbi.middle_name || ""}`}
-                        {rbi.type && <span className="rbi-type-badge">{rbi.type}</span>}
-                      </div>
-                      <div className="rbi-basic-info">
-                        <span>Birthdate: {rbi.birth_date ? new Date(rbi.birth_date).toLocaleDateString() : "N/A"}</span>
-                        <span>Address: {`${rbi.house_unit_no} ${rbi.street_name}, ${rbi.subdivision}`}</span>
-                        <span>Status: {rbi.status}</span>
-                      </div>
-                    </div>
-                    {expandedRbi === rbi.id && (
-                      <div className="rbi-details">
-                        <table>
-                          <tbody>
-                            <tr>
-                              <th>Full Name:</th>
-                              <td>{`${rbi.last_name}, ${rbi.first_name} ${rbi.middle_name || ""}`}</td>
-                            </tr>
-                            <tr>
-                              <th>Birthdate:</th>
-                              <td>{rbi.birth_date ? new Date(rbi.birth_date).toLocaleDateString() : "N/A"}</td>
-                            </tr>
-                            <tr>
-                              <th>Address:</th>
-                              <td>{`${rbi.house_unit_no} ${rbi.street_name}, ${rbi.subdivision}`}</td>
-                            </tr>
-                            <tr>
-                              <th>Status:</th>
-                              <td>{rbi.status}</td>
-                            </tr>
-                            {rbi.type === 'Household Member' && rbi.household_id && (
-                              <>
-                                <tr>
-                                  <th>Household ID:</th>
-                                  <td>{rbi.household_id}</td>
-                                </tr>
-                              </>
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p>No matching RBI records found</p>
-            )}
-          </div>
+        <div className="data-row">
+          <span className="data-label">Suffix:</span>
+          <span className="data-value">
+            {formData.suffix || 'None'}
+          </span>
+        </div>
+        <div className="data-row">
+          <span className="data-label">Sex/Gender:</span>
+          <span className="data-value">
+            {getSexDisplay(formData.sex, formData.sex_other)}
+          </span>
+        </div>
+        <div className="data-row">
+          <span className="data-label">Birthday:</span>
+          <span className="data-value">{formatDate(formData.birthday)}</span>
+        </div>
+        <div className="data-row">
+          <span className="data-label">Contact Number:</span>
+          <span className="data-value">
+            {formData.country_code} {formData.contact_no}
+          </span>
+        </div>
+        <div className="data-row">
+          <span className="data-label">Email:</span>
+          <span className="data-value">{formData.email}</span>
+        </div>
+        <div className="data-row">
+          <span className="data-label">Address:</span>
+          <span className="data-value">
+            {formData.unit_no}, {formData.street}, {formData.subdivision}
+          </span>
+        </div>
+      </div>
+
+      <h3>Certificate Details</h3>
+      <div className="data-section">
+        <div className="data-row">
+          <span className="data-label">Type of Certificate:</span>
+          <span className="data-value">
+            {certificates.find(c => c.id == formData.certificate_id)?.name || 'None'}
+          </span>
+        </div>
+        <div className="data-row">
+          <span className="data-label">Purpose:</span>
+          <span className="data-value">{formData.purpose_of_request}</span>
+        </div>
+        <div className="data-row">
+          <span className="data-label">Number of Copies:</span>
+          <span className="data-value">{formData.number_of_copies}</span>
         </div>
       </div>
     </div>
-  );
+  )
+
+  const renderImageUpload = () => (
+    <div className="image-upload-section">
+      <h3>Photo Requirement</h3>
+      <div className="upload-instructions">
+        <p>Please upload a clear photo of yourself with a <strong>white background</strong> in either:</p>
+        <ul>
+          <li>1x1 inch size (for ID applications)</li>
+          <li>2x2 inch size (for clearance applications)</li>
+        </ul>
+      </div>
+
+      <div className="upload-area">
+        <label htmlFor="photo-upload" className="upload-label">
+          {imagePreview ? (
+            <div className="image-preview-container">
+              <img src={imagePreview} alt="Preview" className="image-preview" />
+              <span className="change-photo-text">Change Photo</span>
+            </div>
+          ) : (
+            <div className="upload-placeholder">
+              <span className="upload-icon">+</span>
+              <span className="upload-text">Click to upload photo</span>
+            </div>
+          )}
+          <input
+            id="photo-upload"
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="hidden-input"
+          />
+        </label>
+      </div>
+
+      {!imagePreview && (
+        <p className="upload-warning">Photo upload is required to proceed</p>
+      )}
+    </div>
+  )
+
+  const renderRBIData = () => (
+    <div className="confirmation-data">
+      <h3>Household Head Information</h3>
+      <div className="data-section">
+        <div className="data-row">
+          <span className="data-label">Name:</span>
+          <span className="data-value">
+            {formData.head_first_name} {formData.head_middle_name} {formData.head_last_name} {formData.head_suffix}
+          </span>
+        </div>
+        <div className="data-row">
+          <span className="data-label">Address:</span>
+          <span className="data-value">
+            {formData.house_unit_no}, {formData.street_name}, {formData.subdivision}
+          </span>
+        </div>
+        <div className="data-row">
+          <span className="data-label">Birth Place:</span>
+          <span className="data-value">{formData.birth_place}</span>
+        </div>
+        <div className="data-row">
+          <span className="data-label">Birth Date:</span>
+          <span className="data-value">{formatDate(formData.birth_date)}</span>
+        </div>
+        <div className="data-row">
+          <span className="data-label">Sex/Gender:</span>
+          <span className="data-value">
+            {getSexDisplay(formData.sex, formData.sex_other)}
+          </span>
+        </div>
+        <div className="data-row">
+          <span className="data-label">Civil Status:</span>
+          <span className="data-value">{formData.civil_status}</span>
+        </div>
+        <div className="data-row">
+          <span className="data-label">Citizenship:</span>
+          <span className="data-value">{formData.citizenship}</span>
+        </div>
+        <div className="data-row">
+          <span className="data-label">Occupation:</span>
+          <span className="data-value">{formData.occupation}</span>
+        </div>
+        <div className="data-row">
+          <span className="data-label">Email:</span>
+          <span className="data-value">{formData.email_address}</span>
+        </div>
+      </div>
+
+      {formData.members && formData.members.length > 0 && (
+        <>
+          <h3>Household Members</h3>
+          {formData.members.map((member, index) => (
+            <div key={index} className="data-section member-section">
+              <h4>Member {index + 1}</h4>
+              <div className="data-row">
+                <span className="data-label">Name:</span>
+                <span className="data-value">
+                  {member.first_name} {member.middle_name} {member.last_name} {member.suffix}
+                </span>
+              </div>
+              <div className="data-row">
+                <span className="data-label">Birth Place:</span>
+                <span className="data-value">{member.birth_place}</span>
+              </div>
+              <div className="data-row">
+                <span className="data-label">Birth Date:</span>
+                <span className="data-value">{formatDate(member.birth_date)}</span>
+              </div>
+              <div className="data-row">
+                <span className="data-label">Sex/Gender:</span>
+                <span className="data-value">
+                  {getSexDisplay(member.sex, member.sex_other)}
+                </span>
+              </div>
+              <div className="data-row">
+                <span className="data-label">Civil Status:</span>
+                <span className="data-value">{member.civil_status}</span>
+              </div>
+              <div className="data-row">
+                <span className="data-label">Citizenship:</span>
+                <span className="data-value">{member.citizenship}</span>
+              </div>
+              <div className="data-row">
+                <span className="data-label">Occupation:</span>
+                <span className="data-value">{member.occupation}</span>
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+    </div>
+  )
+
+  return (
+    <div className="modal-overlay">
+      <div className="confirmation-modal">
+        <div className="modal-header">
+          <h2>
+            {showImageUpload ? "Upload Required Photo" : "Please Review Your Information"}
+          </h2>
+          <button className="close-button" onClick={onClose}>
+            &times;
+          </button>
+        </div>
+
+        <div className="modal-body">
+          {showImageUpload ? (
+            renderImageUpload()
+          ) : (
+            <>
+              <p className="review-message">
+                Please review the information below to ensure everything is correct before final submission.
+              </p>
+              {formType === "request" ? renderRequestData() : renderRBIData()}
+            </>
+          )}
+        </div>
+
+        <div className="modal-footer">
+          <button
+            className="back-button"
+            onClick={() => showImageUpload ? setShowImageUpload(false) : onClose()}
+          >
+            {showImageUpload ? "Back to Review" : "Go Back & Edit"}
+          </button>
+
+          <button
+            className="submit-button"
+            onClick={handleContinue}
+            disabled={showImageUpload && !imagePreview}
+          >
+            {showImageUpload ? "Submit Application" : "Continue"}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 }
 
-export default ComparisonModal;
+export default ConfirmationModal
