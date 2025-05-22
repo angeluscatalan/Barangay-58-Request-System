@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/EventsSlideshow.css';
 import Announcement from "../assets/Announce.png";
 
 function EventsSlideshow() {
+    const navigate = useNavigate();
     const [events, setEvents] = useState([]);
     const [currentSlide, setCurrentSlide] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -85,6 +87,12 @@ function EventsSlideshow() {
                                 src={event.image_url || Announcement}
                                 alt={event.event_name}
                                 className="event-image"
+                                onClick={() => {
+                                    // Store the event ID in sessionStorage
+                                    sessionStorage.setItem('selectedEventId', event.id);
+                                    navigate('/Events');
+                                }}
+                                style={{ cursor: 'pointer' }}
                                 onError={(e) => {
                                     e.target.onerror = null;
                                     e.target.src = Announcement;
