@@ -16,16 +16,16 @@ function LandingModal({ isOpen, onClose }) {
   if (!isOpen) return null
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="landing-modal-overlay" onClick={onClose}>
       <div
-        className="modal-content"
+        className="landing-modal-content"
         onClick={(e) => e.stopPropagation()}
         style={{ backgroundColor: "#fff" }}
       >
-        <button className="modal-close" onClick={onClose}>
+        <button className="landing-modal-close" onClick={onClose}>
           &times;
         </button>
-        <h2 className="modal-title">Upcoming Events</h2>
+        <h2 className="landing-modal-title">Upcoming Events</h2>
         <EventsSlideshow />
       </div>
     </div>
