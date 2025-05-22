@@ -84,7 +84,6 @@ body {
 }
 
 @keyframes bounce {
-
   0%,
   100% {
     transform: translateY(0);
@@ -161,8 +160,6 @@ body {
   background-color: #d90452;
   border-radius: 3px;
 }
-
-
 
 .events-content {
   display: flex;
@@ -243,7 +240,8 @@ body {
 }
 
 .event-card {
-  width: 300px;
+  width: 280px;
+  height: auto;
   border-radius: 10px;
   overflow: hidden;
   display: flex;
@@ -263,8 +261,9 @@ body {
 
 .event-image-container {
   width: 100%;
-  height: 200px;
+  aspect-ratio: 1/1;
   overflow: hidden;
+  position: relative;
 }
 
 .event-image {
@@ -273,18 +272,16 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   transition: transform 0.3s ease;
 }
 
-.event-card:hover .event-image {
-  transform: scale(1.05);
-}
-
 .event-info {
-  padding: 16px;
+  padding: 20px;
   flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 12px;
 }
 
 .event-title {
@@ -345,27 +342,12 @@ body {
   padding: 20px;
 }
 
-p.event-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(5px);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
 .event-modal {
   background-color: white;
   border-radius: 15px;
   width: 90%;
-  max-width: 800px;
-  max-height: 90vh;
+  max-width: 500px;
+  height: 80vh;
   overflow: auto;
   position: relative;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
@@ -412,7 +394,9 @@ p.event-modal-overlay {
 }
 
 .modal-image-container {
-  width: 55vw;
+  width: 100%;
+  height: 500px;
+  aspect-ratio: auto;
   line-height: 0;
   overflow: hidden;
   margin: 0;
@@ -423,7 +407,6 @@ p.event-modal-overlay {
 }
 
 .modal-image {
-  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -433,8 +416,9 @@ p.event-modal-overlay {
 }
 
 .modal-content {
-  height: 200px;
+  flex: 1;
   padding: 30px;
+  overflow-y: auto;
 }
 
 .modal-title {
@@ -498,21 +482,34 @@ p.event-modal-overlay {
 }
 
 @media (max-width: 768px) {
-  .modal-title {
-    font-size: 1.5rem;
+  .event-modal {
+    height: 95vh;
+    width: 95%;
+    max-width: none;
+  }
+
+  .modal-image-container {
+    height: auto;
+    aspect-ratio: 1/1;
   }
 
   .modal-content {
-    padding: 20px;
+    padding: 15px;
   }
 
-  .modal-description {
-    max-height: 200px;
+  .modal-title {
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+  }
+
+  .modal-details {
+    gap: 10px;
+    margin-bottom: 20px;
   }
 
   .event-card {
     width: 100%;
-    max-width: 300px;
+    max-width: 280px;
   }
 }
 
@@ -529,8 +526,17 @@ p.event-modal-overlay {
     height: 300px;
   }
 
+  .event-modal {
+    height: 90vh;
+  }
+
+  .modal-image-container {
+    height: auto;
+    aspect-ratio: 1/1;
+  }
+
   .modal-content {
-    padding: 15px;
+    padding: 12px;
   }
 }
 
