@@ -637,7 +637,7 @@ const handleConfirmSubmit = async () => {
     <option value="">SEX</option>
     <option value="1">Male</option>
     <option value="2">Female</option>
-    <option value="3">Other</option>
+    <option value="3">Prefer Not To Say</option>
     <option value="4">Other</option>
   </select>
   {householdData.sex === "Other" && (
