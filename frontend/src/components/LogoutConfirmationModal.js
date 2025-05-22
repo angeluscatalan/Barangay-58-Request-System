@@ -1,7 +1,10 @@
 import React from "react"
 
-const LogoutConfirmationModal = ({ isOpen, onConfirm, onCancel }) => {
+const LogoutConfirmationModal = ({ isOpen, onConfirm, onCancel, onClose }) => {
   if (!isOpen) return null
+
+  // Use onCancel or onClose for the cancel button
+  const handleCancel = onCancel || onClose;
 
   return (
     <div className="modal-overlay">
@@ -13,7 +16,7 @@ const LogoutConfirmationModal = ({ isOpen, onConfirm, onCancel }) => {
           <p>Are you sure you want to logout?</p>
         </div>
         <div className="modal-footer">
-          <button className="cancel-btn" onClick={onCancel}>
+          <button className="cancel-btn" onClick={handleCancel}>
             Cancel
           </button>
           <button className="confirm-btn" onClick={onConfirm}>

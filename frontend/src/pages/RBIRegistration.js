@@ -384,23 +384,31 @@ const validateForm = () => {
 
 const handleConfirmSubmit = async () => {
   try {
-    // Format household data
     const formattedHouseholdData = {
       ...householdData,
-      citizenship: householdData.citizenship === "Other" 
-        ? householdData.citizenship_other 
+      head_suffix_id: householdData.head_suffix && householdData.head_suffix !== "None" ? parseInt(householdData.head_suffix) : null,
+      sex: householdData.sex,
+      sex_other: householdData.sex === "Other" ? householdData.sex_other : null,
+      citizenship: householdData.citizenship === "Other"
+        ? householdData.citizenship_other
         : householdData.citizenship,
       birth_date: householdData.birth_date ? new Date(householdData.birth_date).toISOString().split("T")[0] : null,
     };
-
-    // Format members data
-    const formattedMembers = members.map((member) => ({
-      ...member,
-      citizenship: member.citizenship === "Other" 
-        ? member.citizenship_other 
-        : member.citizenship,
-      birth_date: member.birth_date ? new Date(member.birth_date).toISOString().split("T")[0] : null,
-    }));
+    delete formattedHouseholdData.head_suffix;
+    const formattedMembers = members.map((member) => {
+      const formatted = {
+        ...member,
+        suffix_id: member.suffix && member.suffix !== "None" ? parseInt(member.suffix) : null,
+        sex: member.sex,
+        sex_other: member.sex === "Other" ? member.sex_other : null,
+        citizenship: member.citizenship === "Other"
+          ? member.citizenship_other
+          : member.citizenship,
+        birth_date: member.birth_date ? new Date(member.birth_date).toISOString().split("T")[0] : null,
+      };
+      delete formatted.suffix;
+      return formatted;
+    });
 
     // Submit data to API
      const response = await axios.post(
@@ -616,25 +624,56 @@ const handleConfirmSubmit = async () => {
                         )}
                       </div>
 
-                      <div className="form-row">
-                        <select
-                          id="head_suffix"
-                          name="head_suffix"
-                          className="rbi-form-select"
-                          value={householdData.head_suffix || ""}
-                          onChange={handleHouseholdChange}
-                        >
-                          <option value="">SUFFIX</option>
-                          <option value="None">None</option>
-                          <option value="Jr.">Jr.</option>
-                          <option value="Sr.">Sr.</option>
-                          <option value="I">I</option>
-                          <option value="II">II</option>
-                          <option value="III">III</option>
-                          <option value="IV">IV</option>
-                          <option value="V">V</option>
-                        </select>
-                      </div>
+                      {/* Household Head Sex and Suffix */}
+<div className="form-row">
+  <select
+    id="head_sex"
+    name="sex"
+    className={`rbi-form-select ${errors.household.sex ? "input-error" : ""}`}
+    value={householdData.sex || ""}
+    onChange={handleHouseholdChange}
+    required
+  >
+    <option value="">SEX</option>
+    <option value="1">Male</option>
+    <option value="2">Female</option>
+    <option value="3">Other</option>
+    <option value="4">Other</option>
+  </select>
+  {householdData.sex === "Other" && (
+    <input
+      type="text"
+      name="sex_other"
+      placeholder="Please specify sex"
+      className={`rbi-form-input ${errors.household.sex ? "input-error" : ""}`}
+      value={householdData.sex_other || ""}
+      onChange={handleHouseholdChange}
+      required
+    />
+  )}
+  {errors.household.sex && (
+    <p className="error-message">*{errors.household.sex}</p>
+  )}
+</div>
+<div className="form-row">
+  <select
+    id="head_suffix"
+    name="head_suffix"
+    className="rbi-form-select"
+    value={householdData.head_suffix || ""}
+    onChange={handleHouseholdChange}
+  >
+    <option value="">SUFFIX</option>
+    <option value="1">None</option>
+    <option value="2">Jr.</option>
+    <option value="3">Sr.</option>
+    <option value="4">I</option>
+    <option value="5">II</option>
+    <option value="6">III</option>
+    <option value="7">IV</option>
+    <option value="8">V</option>
+  </select>
+</div>
                     </div>
 
                     <div className="rbi-form-address">
@@ -720,24 +759,6 @@ const handleConfirmSubmit = async () => {
                           />
                         </div>
                         {errors.household.birth_date && <p className="error-message">*{errors.household.birth_date}</p>}
-                      </div>
-
-                      <div className="form-row">
-                        <select
-                          id="head_sex"
-                          name="sex"
-                          className={`rbi-form-select ${errors.household.sex ? "input-error" : ""}`}
-                          value={householdData.sex || ""}
-                          onChange={handleHouseholdChange}
-                          required
-                        >
-                          <option value="">SEX</option>
-                          <option value="Male">Male</option>
-                          <option value="Female">Female</option>
-                        </select>
-                        {errors.household.sex && (
-                          <p className="error-message">*{errors.household.sex}</p>
-                        )}
                       </div>
 
                       <div className="form-row">
@@ -899,25 +920,56 @@ const handleConfirmSubmit = async () => {
                             )}
                           </div>
 
-                          <div className="form-row">
-                            <select
-                              id={`member_suffix_${index}`}
-                              name="suffix"
-                              className="rbi-form-select"
-                              value={member.suffix || ""}
-                              onChange={(e) => handleMemberChange(index, e)}
-                            >
-                              <option value="">SUFFIX</option>
-                              <option value="None">None</option>
-                              <option value="Jr.">Jr.</option>
-                              <option value="Sr.">Sr.</option>
-                              <option value="I">I</option>
-                              <option value="II">II</option>
-                              <option value="III">III</option>
-                              <option value="IV">IV</option>
-                              <option value="V">V</option>
-                            </select>
-                          </div>
+                          {/* --- Household Members Sex and Suffix --- */}
+<div className="form-row">
+  <select
+    id={`member_sex_${index}`}
+    name="sex"
+    className={`rbi-form-select ${errors.members[index]?.sex ? "input-error" : ""}`}
+    value={member.sex || ""}
+    onChange={e => handleMemberChange(index, e)}
+    required
+  >
+    <option value="">SEX</option>
+    <option value="1">Male</option>
+    <option value="2">Female</option>
+    <option value="3">Prefer Not To Say</option>
+    <option value="4">Other</option>
+  </select>
+  {member.sex === "Other" && (
+    <input
+      type="text"
+      name="sex_other"
+      placeholder="Please specify sex"
+      className={`rbi-form-input ${errors.members[index]?.sex ? "input-error" : ""}`}
+      value={member.sex_other || ""}
+      onChange={e => handleMemberChange(index, e)}
+      required
+    />
+  )}
+  {errors.members[index]?.sex && (
+    <p className="error-message">*{errors.members[index].sex}</p>
+  )}
+</div>
+<div className="form-row">
+  <select
+    id={`member_suffix_${index}`}
+    name="suffix"
+    className="rbi-form-select"
+    value={member.suffix || ""}
+    onChange={e => handleMemberChange(index, e)}
+  >
+    <option value="">SUFFIX</option>
+    <option value="1">None</option>
+    <option value="2">Jr.</option>
+    <option value="3">Sr.</option>
+    <option value="4">I</option>
+    <option value="5">II</option>
+    <option value="6">III</option>
+    <option value="7">IV</option>
+    <option value="8">V</option>
+  </select>
+</div>
                         </div>
 
                         <div className="member-other-info">
@@ -957,23 +1009,7 @@ const handleConfirmSubmit = async () => {
                               <p className="error-message">*{errors.members[index].birth_date}</p>
                             )}
                           </div>
-                          <div className="form-row">
-                            <select
-                              id={`member_sex_${index}`}
-                              name="sex"
-                              className={`rbi-form-select ${errors.members[index]?.sex ? "input-error" : ""}`}
-                              value={member.sex || ""}
-                              onChange={(e) => handleMemberChange(index, e)}
-                              required
-                            >
-                              <option value="">SEX</option>
-                              <option value="Male">Male</option>
-                              <option value="Female">Female</option>
-                            </select>
-                            {errors.members[index]?.sex && (
-                              <p className="error-message">*{errors.members[index].sex}</p>
-                            )}
-                          </div>
+                        
 
                           <div className="form-row">
                             <select

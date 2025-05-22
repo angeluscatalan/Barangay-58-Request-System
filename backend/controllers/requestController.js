@@ -32,6 +32,11 @@ const validateSexId = async (sexId) => {
 };
 
 const backupRequest = async (connection, requestData) => {
+  // Remove any existing backup for this original_id
+  await connection.execute(
+    "DELETE FROM backup_requests WHERE original_id = ?",
+    [requestData.id]
+  );
   await connection.execute(
     `INSERT INTO backup_requests 
      (last_name, first_name, middle_name, suffix_id, sex, sex_other, birthday, 
@@ -150,7 +155,6 @@ exports.createRequest = async (req, res) => {
       [result.insertId]
     );
 
-    await backupRequest(connection, request[0]);
     await connection.commit();
     res.status(201).json({ success: true, request: request[0] });
   } catch (error) {
@@ -342,7 +346,7 @@ exports.getBackupRequests = async (req, res) => {
 };
 
 exports.restoreRequests = async (req, res) => {
-  const { requestIds } = req.body;
+  const { requestIds, status_id } = req.body;
   const connection = await pool.getConnection();
 
   try {
@@ -360,13 +364,15 @@ exports.restoreRequests = async (req, res) => {
       }
 
       const requestData = backupRequestRows[0];
+      // If status_id is provided in the restore call, use it; otherwise use the backup's status_id
+      const restoreStatusId = status_id || requestData.status_id;
 
       await connection.execute(
         `INSERT INTO requests 
          (last_name, first_name, middle_name, suffix_id, sex, sex_other, birthday,
           contact_no, email, address, certificate_id,
           purpose_of_request, number_of_copies, status_id, created_at, photo_url, s3_key)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           requestData.last_name,
           requestData.first_name,
@@ -381,7 +387,7 @@ exports.restoreRequests = async (req, res) => {
           requestData.certificate_id,
           requestData.purpose_of_request,
           requestData.number_of_copies,
-          requestData.status_id,
+          restoreStatusId,
           requestData.created_at,
           requestData.photo_url,
           requestData.s3_key

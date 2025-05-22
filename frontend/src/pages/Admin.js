@@ -16,6 +16,7 @@ import AdminDashboard from "../components/AdminDashboard"
 import BackupRequestsModal from "../components/BackupRequestsModal"
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal"
 import LogoutConfirmationModal from "../components/LogoutConfirmationModal"
+import BulkDeleteConfirmationModal from "../components/BulkDeleteConfirmationModal"
 
 function Admin() {
   const navigate = useNavigate()
@@ -186,9 +187,13 @@ function Admin() {
     await updateRequestStatus(id, newStatus)
   }
 
-  // Filter to show only approved/pickup requests by default
+  // Filter to show only non-pending requests (hide pending)
   const approvedRequests = useMemo(
-    () => requests.filter((request) => request.status !== "Pending" && request.status !== "Rejected"),
+    () => requests.filter((request) => {
+      // Exclude 'Pending' requests so they only appear after status is changed
+      const statusName = (request.status || '').toLowerCase();
+      return statusName !== 'pending';
+    }),
     [requests],
   )
 
@@ -382,64 +387,75 @@ function Admin() {
   }
 
   const handlePrintRequest = async (request) => {
-    setIsPrinting((prev) => ({ ...prev, [request.id]: true }))
-    try {
-      console.log("Sending request data:", request)
-      // For printing, you might still need the certificate name.
-      // Make sure your backend's /api/certificates/generate-pdf endpoint
-      // can handle requestData containing certificate_id and look up the name itself,
-      // or you can pass the name here if you look it up on the client side.
-      const certificateNameForPrint = certificates.find(cert => cert.id === request.certificate_id)?.name || "Unknown Certificate";
-
-      const response = await axios.post(
-        "http://localhost:5000/api/certificates/generate-pdf",
-        {
-          requestData: {
-            ...request,
-            certificate_name: certificateNameForPrint, // Pass the name for PDF generation
-            s3_key: request.s3_key, // Make sure this is included
-          },
-        },
-        {
-          responseType: "blob",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        },
-      )
-
-      // Check if this is a JobseekerCert to handle ZIP differently
-      // MODIFIED: Use certificateNameForPrint for JobseekerCert check
-      if (certificateNameForPrint === "Barangay Jobseeker") { // Assuming this is the exact name for JobseekerCert
-        // Create a blob from the ZIP Stream
-        const file = new Blob([response.data], { type: "application/zip" })
-        const fileURL = URL.createObjectURL(file)
-        const link = document.createElement("a")
-        link.href = fileURL
-        link.download = `JobseekerDocuments_${request.last_name}.zip`
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        URL.revokeObjectURL(fileURL)
-      } else {
-        // Handle regular PDFs as before
-        const file = new Blob([response.data], { type: "application/pdf" })
-        const fileURL = URL.createObjectURL(file)
-        const link = document.createElement("a")
-        link.href = fileURL
-        link.download = `${certificateNameForPrint}_${request.last_name}.pdf` // Use looked-up name for download
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        URL.revokeObjectURL(fileURL)
-      }
-    } catch (error) {
-      console.error("Error printing certificate:", error)
-      alert("Failed to generate certificate")
-    } finally {
-      setIsPrinting((prev) => ({ ...prev, [request.id]: false }))
+  setIsPrinting((prev) => ({ ...prev, [request.id]: true }));
+  try {
+    console.log("Sending request data:", request);
+    
+    // Find the certificate details based on certificate_id
+    const certificate = certificates.find(cert => cert.id === request.certificate_id);
+    if (!certificate) {
+      throw new Error("Certificate type not found");
     }
+
+    // Map frontend certificate names to backend types
+    const certificateTypeMap = {
+      'Barangay Clearance': 'ClearanceCert',
+      'Certificate of Indigency': 'IndigencyCert',
+      'Barangay Jobseeker': 'JobseekerCert',
+      'Barangay ID': 'IDApp',
+      'Barangay Certificate': 'BrgyCert'
+    };
+
+    const backendCertificateType = certificateTypeMap[certificate.name] || 
+                                 certificate.name.replace(/\s+/g, '');
+
+    const response = await axios.post(
+      "http://localhost:5000/api/certificates/generate-pdf",
+      {
+        requestData: {
+          ...request,
+          type_of_certificate: backendCertificateType,
+          s3_key: request.s3_key,
+        },
+      },
+      {
+        responseType: "blob",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
+    // Handle ZIP for Jobseeker certificates
+    if (certificate.name === "Barangay Jobseeker") {
+      const file = new Blob([response.data], { type: "application/zip" });
+      const fileURL = URL.createObjectURL(file);
+      const link = document.createElement("a");
+      link.href = fileURL;
+      link.download = `JobseekerDocuments_${request.last_name}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(fileURL);
+    } else {
+      // Handle regular PDFs
+      const file = new Blob([response.data], { type: "application/pdf" });
+      const fileURL = URL.createObjectURL(file);
+      const link = document.createElement("a");
+      link.href = fileURL;
+      link.download = `${certificate.name.replace(/\s+/g, '_')}_${request.last_name}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(fileURL);
+    }
+  } catch (error) {
+    console.error("Error printing certificate:", error);
+    alert(`Failed to generate certificate: ${error.message}`);
+  } finally {
+    setIsPrinting((prev) => ({ ...prev, [request.id]: false }));
   }
+};
 
   if (requestsLoading || certificates.length === 0) return <div className="loading">Loading...</div> // Adjust loading check
   if (requestsError) return <div className="error">Error: {requestsError}</div>
@@ -734,7 +750,25 @@ function Admin() {
           ) : (
             <select
               value={request.status_id}
-              onChange={e => updateRequestStatus(request.id, Number(e.target.value))}
+              onChange={async e => {
+                const selectedStatusId = Number(e.target.value);
+                const rejectedStatus = statuses.find(s => s.name.toLowerCase() === 'rejected');
+                if (selectedStatusId === rejectedStatus?.id) {
+                  // Delete request (backend should move to backup_requests and delete file)
+                  try {
+                    const token = localStorage.getItem("token");
+                    await axios.delete(`http://localhost:5000/api/requests/${request.id}`, {
+                      headers: { Authorization: `Bearer ${token}` },
+                    });
+                    fetchRequests();
+                  } catch (err) {
+                    alert('Failed to reject and delete request.');
+                  }
+                } else {
+                  await updateRequestStatus(request.id, selectedStatusId);
+                  fetchRequests();
+                }
+              }}
               className={getStatusClassById(request.status_id)}
             >
               {statuses.map(status => (
@@ -799,39 +833,27 @@ function Admin() {
         isOpen={showBackupModal}
         onClose={() => setShowBackupModal(false)}
         type={backupModalType}
+        statuses={statuses} // Pass statuses to modal
         onRestore={fetchRequests}
       />
-
-      {/* Delete Confirmation Modal for single request */}
       <DeleteConfirmationModal
         isOpen={showDeleteModal}
-        title="Delete Request"
-        message="Are you sure you want to delete this request?"
+        onClose={() => setShowDeleteModal(false)}
         onConfirm={confirmDeleteRequest}
-        onCancel={() => {
-          setShowDeleteModal(false)
-          setRequestToDelete(null)
-        }}
       />
-
-      {/* Delete Confirmation Modal for bulk delete */}
-      <DeleteConfirmationModal
-        isOpen={showBulkDeleteModal}
-        title="Delete Selected Requests"
-        message={`Are you sure you want to delete ${selectedRequests.length} selected request(s)? This action cannot be undone.`}
-        onConfirm={confirmBulkDelete}
-        onCancel={() => setShowBulkDeleteModal(false)}
-      />
-
       <LogoutConfirmationModal
         isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
         onConfirm={() => {
-          // Clear all auth-related items
           localStorage.removeItem("token")
-          localStorage.removeItem("access_level")
           navigate("/")
         }}
-        onCancel={() => setShowLogoutModal(false)}
+      />
+      <BulkDeleteConfirmationModal
+        isOpen={showBulkDeleteModal}
+        onClose={() => setShowBulkDeleteModal(false)}
+        onConfirm={confirmBulkDelete}
+        count={selectedRequests.length}
       />
     </>
   )

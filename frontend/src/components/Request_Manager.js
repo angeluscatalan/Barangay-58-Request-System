@@ -68,9 +68,20 @@ function Request_Manager() {
   };
 
   const handleStatusChange = async (id, status_id) => {
-    const success = await updateRequestStatus(id, status_id);
-    if (success) {
-      fetchRequests();
+    const rejectedStatus = statuses.find(s => s.name.toLowerCase() === 'rejected');
+    if (status_id === rejectedStatus?.id) {
+      // Delete request (backend should move to backup_requests and delete file)
+      try {
+        await axios.delete(`http://localhost:5000/api/requests/${id}`);
+        fetchRequests();
+      } catch (err) {
+        alert('Failed to reject and delete request.');
+      }
+    } else {
+      const success = await updateRequestStatus(id, status_id);
+      if (success) {
+        fetchRequests();
+      }
     }
   };
 

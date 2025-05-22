@@ -225,9 +225,10 @@ useEffect(() => {
     try {
         let s3Key = null;
         let photoUrl = null;
-        
-        // Modify this condition to include IDApp
-        if ((formData.certificate_id === 1 || formData.certificate_id === 4) && imagePreviewFromModal) {
+        // Use certificate name for robustness
+        const cert = certificates.find(c => c.id == formData.certificate_id);
+        const requiresPhoto = cert && (cert.name === "Barangay Clearance" || cert.name === "Barangay ID");
+        if (requiresPhoto && imagePreviewFromModal) {
             const blob = await fetch(imagePreviewFromModal).then(res => res.blob());
             const imageFormData = new FormData();
             imageFormData.append('image', blob, `${formData.last_name}_${Date.now()}.jpg`);
@@ -237,7 +238,6 @@ useEffect(() => {
                 imageFormData,
                 { headers: { 'Content-Type': 'multipart/form-data' } }
             );
-            
             s3Key = uploadResponse.data.s3Key;
             photoUrl = uploadResponse.data.imageUrl;
         }

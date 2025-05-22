@@ -28,10 +28,14 @@ const ConfirmationModal = ({
   }
 
   const requiresPhotoUpload = () => {
-  return formData.certificate_id === 1 || // ID Application
-         formData.certificate_id === 4;   // Clearance (adjust IDs as needed)
-};
-
+    if (!certificates || !Array.isArray(certificates)) return false;
+    const cert = certificates.find(c => c.id == formData.certificate_id);
+    if (!cert) return false;
+    return (
+      cert.name === "Barangay Clearance" ||
+      cert.name === "Barangay ID"
+    );
+  };
   
 
   const handleImageChange = (e) => {
@@ -46,7 +50,8 @@ const ConfirmationModal = ({
   };
 
   const handleContinue = () => {
-    if (requiresPhotoUpload() && !showImageUpload) {
+    // Only check for photo upload if formType is 'request'
+    if (formType === 'request' && requiresPhotoUpload() && !showImageUpload) {
       setShowImageUpload(true);
     } else {
       onConfirm(imagePreview); // Pass the imagePreview data URL to onConfirm

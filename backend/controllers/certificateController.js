@@ -127,6 +127,33 @@ const embedImageInPdf = async (pdfDoc, imageBytes) => {
   }
 };
 
+// Helper to fit text in a PDF field with max font size, using widget rectangle for width
+const fitTextToField = (field, value, pdfDoc, maxFontSize = 12, minFontSize = 7) => {
+    // Get the widget annotation rectangle to determine field width
+    let width = 150; // Default fallback width
+    try {
+        const widget = field.acroField.getWidgets()[0];
+        if (widget && widget.getRectangle) {
+            const rect = widget.getRectangle();
+            if (rect && rect[2] > rect[0]) {
+                width = rect[2] - rect[0];
+            }
+        }
+    } catch (e) {
+        // Fallback to default width if widget/rectangle is missing
+    }
+    let fontSize = maxFontSize;
+    const font = pdfDoc.getForm().getDefaultFont();
+    // Estimate text width: average char width * fontSize * value.length
+    while (fontSize > minFontSize) {
+        const estimatedWidth = value.length * fontSize * 0.6;
+        if (estimatedWidth < width - 2) break;
+        fontSize--;
+    }
+    field.setFontSize(fontSize);
+    field.setText(value);
+};
+
 // Main controller function to generate PDF
 exports.generatePDF = async (req, res) => {
     try {
@@ -221,15 +248,18 @@ exports.generatePDF = async (req, res) => {
             try {
                 const field = form.getTextField(fieldName);
                 if (field) {
-                    field.setText(value);
-
+                    // Clamp font size for name and address fields
+                    if (fieldName.toLowerCase().includes('name') || fieldName.toLowerCase().includes('address')) {
+                        fitTextToField(field, value, pdfDoc, 12, 7);
+                    } else {
+                        field.setText(value);
+                    }
                     // Remove border from the widget
                     const widget = field.acroField.getWidgets()[0];
                     if (widget) {
                         widget.dict.delete('Border');
                         widget.dict.delete('BS');
                     }
-
                     console.log(`✓ Filled ${fieldName} with: ${value} and removed borders`);
                 } else {
                     console.log(`✗ Field not found: ${fieldName}`);
@@ -314,7 +344,7 @@ exports.generatePDF = async (req, res) => {
             y: adjustedY,
             width: imagePosition.width,
             height: imagePosition.height,
-            opacity: 0.5
+            opacity: 0
         });
         
     } catch (imageError) {

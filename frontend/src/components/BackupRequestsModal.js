@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../styles/BackupRequestsModal.css';
 
-const BackupRequestsModal = ({ isOpen, onClose, onRestore }) => {
+const BackupRequestsModal = ({ isOpen, onClose, onRestore, statuses = [] }) => {
     const [backupRequests, setBackupRequests] = useState([]);
     const [selectedRequests, setSelectedRequests] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -71,10 +71,15 @@ const BackupRequestsModal = ({ isOpen, onClose, onRestore }) => {
             return;
         }
 
+        // Find the status_id for 'pending'
+        const pendingStatus = statuses.find(s => (s.name || '').toLowerCase() === 'pending');
+        const pendingStatusId = pendingStatus ? pendingStatus.id : null;
+
         try {
             setLoading(true);
             await axios.post('http://localhost:5000/api/requests/backup/restore', {
-                requestIds: selectedRequests
+                requestIds: selectedRequests,
+                ...(pendingStatusId && { status_id: pendingStatusId })
             });
             onRestore(); // Callback to refresh main requests list
             onClose(); // Close modal after successful restore
@@ -112,7 +117,7 @@ const BackupRequestsModal = ({ isOpen, onClose, onRestore }) => {
         const searchTermLower = searchTerm.toLowerCase();
         return backupRequests.filter(request => {
             const fullName = `${request.last_name}, ${request.first_name} ${request.middle_name || ''}`.toLowerCase();
-            const type = request.type_of_certificate.toLowerCase();
+            const type = request.certificate_name.toLowerCase();
             const purpose = request.purpose_of_request.toLowerCase();
 
             return fullName.includes(searchTermLower) ||
@@ -228,7 +233,7 @@ const BackupRequestsModal = ({ isOpen, onClose, onRestore }) => {
                                                 </td>
                                                 <td>{request.created_at}</td>
                                                 <td>{`${request.last_name}, ${request.first_name} ${request.middle_name || ''}`}</td>
-                                                <td>{request.type_of_certificate}</td>
+                                                <td>{request.certificate_name}</td>
                                                 <td>{request.purpose_of_request}</td>
                                             </tr>
                                         ))}
@@ -255,4 +260,4 @@ const BackupRequestsModal = ({ isOpen, onClose, onRestore }) => {
     );
 };
 
-export default BackupRequestsModal; 
+export default BackupRequestsModal;
