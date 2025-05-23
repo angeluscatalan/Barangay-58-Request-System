@@ -21,4 +21,5 @@ router.post('/verify-password',
   authController.verifyPassword
 );
 
+
 module.exports = router;

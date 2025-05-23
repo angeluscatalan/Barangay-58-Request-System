@@ -34,7 +34,7 @@ app.use(cors({
 // Mount feature-specific routes first
 app.use("/api/rbi", rbiRoutes);
 app.use("/api/events", eventRoutes);
-app.use("/api/auth", authRoutes);
+app.use("/api/auth", authRoutes); // <-- This line ensures /api/auth/* routes are available
 app.use("/api/requests", requestRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/certificates", certificateRoutes);

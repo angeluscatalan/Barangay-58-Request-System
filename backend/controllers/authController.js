@@ -40,6 +40,9 @@ const verificationCodes = {};
 
 // Password Reset Functions
 exports.forgotPassword = async (req, res) => {
+    console.log('🚀 forgotPassword function called');
+    console.log('📧 Request body:', req.body);
+    
     const { email } = req.body;
   
     try {
@@ -48,12 +51,14 @@ exports.forgotPassword = async (req, res) => {
         return res.status(400).json({ success: false, message: "Email is required" });
       }
   
-      // Check if email exists
+      // Check if email exists - FIXED: Now checking both username AND email columns
       const [admin] = await pool.execute(
-        "SELECT id, username, password, access_level FROM admin WHERE username = ?", 
-        [email]
-    );
+        "SELECT id, username, email, password, access_level FROM admin WHERE email = ? OR username = ?", 
+        [email, email]
+      );
   
+      console.log('🔍 Database query result:', admin.length > 0 ? 'User found' : 'No user found');
+      
       if (admin.length === 0) {
         return res.status(404).json({ success: false, message: "Email not found" });
       }
@@ -65,6 +70,9 @@ exports.forgotPassword = async (req, res) => {
         expiresAt: Date.now() + 15 * 60 * 1000, // 15 minutes expiry
         adminId: admin[0].id
       };
+  
+      console.log('📧 Sending email to:', email);
+      console.log('🔢 Generated code:', code);
   
       // Send email
       await transporter.sendMail({
@@ -78,13 +86,15 @@ exports.forgotPassword = async (req, res) => {
         `
       });
   
+      console.log('✅ Email sent successfully');
+      
       res.json({ 
         success: true,
         message: "Verification code sent to email"
       });
   
     } catch (error) {
-      console.error("Forgot password error:", error);
+      console.error("❌ Forgot password error:", error);
       res.status(500).json({ 
         success: false,
         message: "Failed to process password reset",
