@@ -103,9 +103,18 @@ exports.createEvent = async (req, res) => {
     }
 };
 
-// Get all events
+// Get all events with pagination
 exports.getEvents = async (req, res) => {
     try {
+        // Parse pagination params
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 9;
+        const offset = (page - 1) * limit;
+
+        // Get total count for pagination
+        const [[{ total }]] = await pool.query(`SELECT COUNT(*) as total FROM archive_events`);
+
+        // Get paginated events
         const [rows] = await pool.query(`
             SELECT 
                 id, 
@@ -119,8 +128,15 @@ exports.getEvents = async (req, res) => {
                 CONVERT_TZ(created_at, 'UTC', 'Asia/Manila') as created_at
             FROM archive_events
             ORDER BY created_at DESC
-        `);
-        res.status(200).json(rows);
+            LIMIT ? OFFSET ?
+        `, [limit, offset]);
+
+        res.status(200).json({
+            events: rows,
+            total,
+            page,
+            totalPages: Math.ceil(total / limit)
+        });
     } catch (error) {
         console.error('Error fetching events:', error);
         res.status(500).json({
@@ -152,13 +168,10 @@ exports.updateEvent = async (req, res) => {
         }
 
         let imageUrl = existingEvent[0].image_url;
+        // Only upload a new image if a new file is uploaded
         if (req.file) {
-            // Upload new image
             imageUrl = await uploadImageToS3(req.file);
-            // Delete old image if exists
-            if (existingEvent[0].image_url) {
-                await deleteImageFromS3(existingEvent[0].image_url);
-            }
+            // Do NOT delete the old image from S3 (keep it)
         }
 
         // Update the event
@@ -243,10 +256,7 @@ exports.deleteEvent = async (req, res) => {
             ]
         );
 
-        // Delete image from S3 if exists
-        if (event[0].image_url) {
-            await deleteImageFromS3(event[0].image_url);
-        }
+        // Do NOT delete image from S3
 
         // Delete from main table
         await connection.execute(

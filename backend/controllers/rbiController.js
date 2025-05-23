@@ -760,91 +760,100 @@ exports.deleteHouseholdMember = async (req, res) => {
 
 exports.findSimilarRbis = async (req, res) => {
   try {
-    const { lastName, firstName, middleName, birthday, address } = req.body;
+    const { lastName, firstName } = req.body;
 
-    // Build dynamic query for household heads
-    let headQuery = `SELECT h.* FROM households h WHERE h.head_last_name LIKE ? AND h.head_first_name LIKE ?`;
-    let headParams = [`%${lastName}%`, `%${firstName}%`];
-    if (middleName) {
-      headQuery += ` AND h.head_middle_name LIKE ?`;
-      headParams.push(`%${middleName}%`);
-    }
-    if (birthday) {
-      headQuery += ` AND h.birth_date = ?`;
-      headParams.push(birthday);
-    }
-    if (address) {
-      headQuery += ` AND CONCAT(h.house_unit_no, ' ', h.street_name, ', ', h.subdivision) LIKE ?`;
-      headParams.push(`%${address}%`);
+    if (!lastName) {
+      return res.status(400).json({ error: 'Last name is required' });
     }
 
-    const [householdHeads] = await pool.execute(headQuery, headParams);
+    // Search for (last + first) OR just last name
+    let headQuery = `
+      SELECT 
+        h.id,
+        h.head_last_name as last_name,
+        h.head_first_name as first_name,
+        h.head_middle_name as middle_name,
+        h.head_suffix_id as suffix_id,
+        h.sex,
+        h.sex_other,
+        h.birth_date,
+        h.house_unit_no,
+        h.street_name,
+        h.subdivision,
+        h.status,
+        'Household Head' as type
+      FROM households h
+      WHERE 
+        (
+          h.head_last_name LIKE CONCAT('%', ?, '%')
+          AND h.head_first_name LIKE CONCAT('%', ?, '%')
+        )
+        OR (
+          h.head_last_name LIKE CONCAT('%', ?, '%')
+        )
+    `;
+    let headParams = [lastName, firstName || '', lastName];
 
-    // Build dynamic query for household members
-    let memberQuery = `SELECT m.*, h.house_unit_no, h.street_name, h.subdivision, h.status
+    let memberQuery = `
+      SELECT 
+        m.id,
+        m.last_name,
+        m.first_name,
+        m.middle_name,
+        m.suffix_id,
+        m.sex,
+        m.sex_other,
+        m.birth_date,
+        h.house_unit_no,
+        h.street_name,
+        h.subdivision,
+        h.status,
+        'Household Member' as type,
+        m.household_id
       FROM household_members m
       JOIN households h ON m.household_id = h.id
-      WHERE m.last_name LIKE ? AND m.first_name LIKE ?`;
-    let memberParams = [`%${lastName}%`, `%${firstName}%`];
-    if (middleName) {
-      memberQuery += ` AND m.middle_name LIKE ?`;
-      memberParams.push(`%${middleName}%`);
-    }
-    if (birthday) {
-      memberQuery += ` AND m.birth_date = ?`;
-      memberParams.push(birthday);
-    }
-    if (address) {
-      memberQuery += ` AND CONCAT(h.house_unit_no, ' ', h.street_name, ', ', h.subdivision) LIKE ?`;
-      memberParams.push(`%${address}%`);
-    }
+      WHERE 
+        (
+          m.last_name LIKE CONCAT('%', ?, '%')
+          AND m.first_name LIKE CONCAT('%', ?, '%')
+        )
+        OR (
+          m.last_name LIKE CONCAT('%', ?, '%')
+        )
+    `;
+    let memberParams = [lastName, firstName || '', lastName];
 
+    const [householdHeads] = await pool.execute(headQuery, headParams);
     const [householdMembers] = await pool.execute(memberQuery, memberParams);
 
-    // Format results with proper type indicators
     const results = [
-      // Household heads that match
       ...householdHeads.map(h => ({
-        id: h.id,
-        last_name: h.head_last_name,
-        first_name: h.head_first_name,
-        middle_name: h.head_middle_name,
-        head_suffix_id: h.head_suffix_id,
-        sex: h.sex,
-        sex_other: h.sex_other,
-        birth_date: h.birth_date,
-        house_unit_no: h.house_unit_no,
-        street_name: h.street_name,
-        subdivision: h.subdivision,
-        status: h.status,
+        ...h,
         type: 'Household Head'
       })),
-      // Household members that match
       ...householdMembers.map(m => ({
-        id: m.id,
-        last_name: m.last_name,
-        first_name: m.first_name,
-        middle_name: m.middle_name,
-        suffix_id: m.suffix_id,
-        sex: m.sex,
-        sex_other: m.sex_other,
-        birth_date: m.birth_date,
-        house_unit_no: m.house_unit_no,
-        street_name: m.street_name,
-        subdivision: m.subdivision,
-        status: m.status,
-        household_id: m.household_id,
+        ...m,
         type: 'Household Member'
       }))
     ];
 
+    // Debug output
+    console.log('Search parameters:', { lastName, firstName });
+    console.log('Found records:', results);
+
     res.status(200).json(results);
   } catch (error) {
-    console.error('Error finding similar RBIs:', error);
-    res.status(500).json({ error: 'Failed to search for similar RBI records' });
+    console.error('Error finding similar RBIs:', {
+      message: error.message,
+      sqlMessage: error.sqlMessage,
+      sql: error.sql
+    });
+    res.status(500).json({ 
+      error: 'Failed to search for similar RBI records',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
-
 // Get backup RBIs
 const getBackupRBIs = async (req, res) => {
   try {
