@@ -14,16 +14,23 @@ function EventsSlideshow() {
             try {
                 const response = await fetch('http://localhost:5000/api/events');
                 if (!response.ok) throw new Error('Failed to fetch events');
-                const allEvents = await response.json();
+                const data = await response.json();
+                
+                // Ensure we have an array of events
+                if (!Array.isArray(data.events)) {
+                    setEvents([]);
+                    return;
+                }
 
                 // Sort by created_at date and get latest 3
-                const latestEvents = allEvents
+                const latestEvents = [...data.events]
                     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
                     .slice(0, 3);
 
                 setEvents(latestEvents);
             } catch (error) {
                 console.error('Error fetching events:', error);
+                setEvents([]);
             } finally {
                 setLoading(false);
             }

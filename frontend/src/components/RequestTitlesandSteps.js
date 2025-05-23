@@ -60,17 +60,17 @@ function RequestTitlesandSteps() {
         <div className="contact-methods">
           <div className="reqContactNumber">
             <img src={numberIcon || "/placeholder.svg"} alt="numberIcon" />
-            <h2>0905xxxxxxx</h2>
+            <h2>09568231987</h2>
           </div>
 
           <div className="reqContactFacebook">
             <img src={facebookIcon || "/placeholder.svg"} alt="facebookIcon" />
-            <h2>Baranggay 58</h2>
+            <h2>Barangay 58</h2>
           </div>
 
           <div className="reqContactEmail">
             <img src={emailIcon || "/placeholder.svg"} alt="emailIcon" />
-            <h2>baranggay58.pasay.city@gmail.com</h2>
+            <h2>brgy58zone7pasay@gmail.com</h2>
           </div>
         </div>
       </div>

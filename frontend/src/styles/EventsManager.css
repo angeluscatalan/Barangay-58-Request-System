@@ -11,7 +11,7 @@
 
 /* Add this new style for the events-section container */
 .events-section {
-  background-color: white;
+  background-color: white !important;
   border-radius: 10px;
   padding: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -23,6 +23,7 @@
 }
 
 .table-header {
+  background-color: white !important;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -359,6 +360,7 @@
 
 /* View buttons */
 .view-buttons {
+  background-color: white !important;
   display: flex;
   gap: 10px;
   margin-bottom: 20px;

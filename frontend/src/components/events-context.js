@@ -16,7 +16,7 @@ export const EventsProvider = ({ children }) => {
                 const response = await fetch("http://localhost:5000/api/events") // <---- ADD /api HERE
                 if (!response.ok) throw new Error("Failed to fetch events")
                 const data = await response.json()
-                setPublishedEvents(data)
+                setPublishedEvents(data.events)
             } catch (error) {
                 console.error("Error fetching events:", error)
             } finally {

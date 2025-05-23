@@ -30,10 +30,12 @@ function EventsManager() {
     try {
       setLoading(true)
       const response = await axios.get("http://localhost:5000/api/events")
-      setEvents(response.data)
+      const eventsData = response.data.events || [];
+      setEvents(Array.isArray(eventsData) ? eventsData : []);
     } catch (error) {
       console.error("Error fetching events:", error)
       setError("Failed to fetch events")
+      setEvents([]);
     } finally {
       setLoading(false)
     }

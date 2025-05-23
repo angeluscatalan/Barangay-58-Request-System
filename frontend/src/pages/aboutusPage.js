@@ -3,6 +3,7 @@ import BarangayPlaceholder from "../assets/facade.jpg"
 import Feast from "../assets/Feast.jpg"
 import opHours from "../assets/opHours.png"
 import location from "../assets/location.png"
+import { Clock, MapPin, Phone } from "lucide-react"
 import "../styles/aboutusPage.css"
 import Footer from "../components/Footer"
 
@@ -70,17 +71,20 @@ function AboutUs() {
       <div className="barangayDetails">
         <div className="opHours">
           <h1>Operating Hours</h1>
-          <img src={opHours || "/placeholder.svg"} alt="Operation Hours"></img>
+          <div className="icon-container">
+            <Clock size={48} strokeWidth={1.5} className="info-icon" />
+          </div>
           <ul>
-            <li> Monday - Friday: 8:00 AM – 5:00 PM</li>
-            <li>Saturday: 8:00 AM – 12:00 PM</li>
-            <li>Closed on Sundays & Public Holidays</li>
+            <li>24/7 Operation</li>
+            <li>Monday - Saturday: 9:00 AM – 6:00 PM (Office Hours)</li>
           </ul>
         </div>
 
         <div className="location">
           <h1>Location</h1>
-          <img src={location || "/placeholder.svg"} alt="Location"></img>
+          <div className="icon-container">
+            <MapPin size={48} strokeWidth={1.5} className="info-icon" />
+          </div>
           <ul>
             <li>
               <strong>Building Name:</strong> Barangay 58, Zone 7 Barangay Hall
@@ -90,6 +94,24 @@ function AboutUs() {
             </li>
             <li>
               <strong>ZIP Code:</strong> 1300
+            </li>
+          </ul>
+        </div>
+
+        <div className="contact">
+          <h1>Contact Us</h1>
+          <div className="icon-container">
+            <Phone size={48} strokeWidth={1.5} className="info-icon" />
+          </div>
+          <ul>
+            <li>
+              <strong>Phone:</strong> 09568231987
+            </li>
+            <li>
+              <strong>Email:</strong> brgy58zone7pasay@gmail.com
+            </li>
+            <li>
+              <strong>Facebook:</strong> Barangay 58
             </li>
           </ul>
         </div>

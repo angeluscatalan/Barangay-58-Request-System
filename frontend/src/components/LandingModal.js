@@ -20,13 +20,14 @@ function LandingModal({ isOpen, onClose }) {
       <div
         className="landing-modal-content"
         onClick={(e) => e.stopPropagation()}
-        style={{ backgroundColor: "#fff" }}
       >
         <button className="landing-modal-close" onClick={onClose}>
           &times;
         </button>
-        <h2 className="landing-modal-title">Lastest Events!</h2>
-        <EventsSlideshow />
+        <h2 className="landing-modal-title">Latest Events</h2>
+        <div className="landing-modal-body">
+          <EventsSlideshow />
+        </div>
       </div>
     </div>
   )

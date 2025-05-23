@@ -27,10 +27,43 @@ const EventsContent = () => {
 
   // Lazy load Facebook iframe on scroll
   const [loadIframe, setLoadIframe] = useState(false)
+  
+  // Add Facebook SDK initialization
+  useEffect(() => {
+    // Add Facebook SDK
+    const loadFacebookSDK = () => {
+      // Remove the FB check since we want to reinitialize
+      window.fbAsyncInit = function() {
+        FB.init({
+          xfbml: true,
+          version: 'v18.0'
+        });
+      };
+
+      // Load the SDK asynchronously
+      (function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s);
+        js.id = id;
+        js.src = 'https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v18.0';
+        fjs.parentNode.insertBefore(js, fjs);
+      }(document, 'script', 'facebook-jssdk'));
+    };
+
+    loadFacebookSDK();
+  }, []);
+
   useEffect(() => {
     const onScroll = () => {
       if (window.scrollY > 300 && !loadIframe) {
-        setLoadIframe(true)
+        setLoadIframe(true);
+        // Parse XFBML after setting loadIframe
+        setTimeout(() => {
+          if (window.FB) {
+            window.FB.XFBML.parse();
+          }
+        }, 1000);
       }
     }
     window.addEventListener("scroll", onScroll)
@@ -98,16 +131,24 @@ const EventsContent = () => {
         <div className="embed-container">
           <h2>Barangay 58 Facebook Updates</h2>
           <div className="events-content">
-            {/* Lazy load Facebook iframe */}
-            {loadIframe && (
-              <iframe
-                src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fprofile.php%3Fid%3D61552676805291&tabs=timeline&width=500&height=350&small_header=true&adapt_container_width=true&hide_cover=true&show_facepile=false&appId"
-                scrolling="no"
-                frameBorder="0"
-                allowFullScreen={true}
-              ></iframe>
-            )}
-            {!loadIframe && (
+            {loadIframe ? (
+              <div className="fb-page-container">
+                <div 
+                  className="fb-page" 
+                  data-href="https://www.facebook.com/profile.php?id=61552676805291"
+                  data-tabs="timeline"
+                  data-width="500"
+                  data-height="350"
+                  data-small-header="true"
+                  data-adapt-container-width="true"
+                  data-hide-cover="true"
+                  data-show-facepile="false">
+                  <blockquote cite="https://www.facebook.com/profile.php?id=61552676805291" className="fb-xfbml-parse-ignore">
+                    <a href="https://www.facebook.com/profile.php?id=61552676805291">Barangay 58</a>
+                  </blockquote>
+                </div>
+              </div>
+            ) : (
               <div style={{ minHeight: 350, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <span style={{ color: "#888" }}>Scroll down to load Facebook updates...</span>
               </div>
@@ -154,7 +195,7 @@ const EventsContent = () => {
           </div>
         )}
 
-        <section className="events-section">
+        <section className="public-events-section">
           <div className={`event-cards-container ${expandedEvent ? "has-expanded-event" : ""}`}>
             {loading ? (
               <div className="loading-container">

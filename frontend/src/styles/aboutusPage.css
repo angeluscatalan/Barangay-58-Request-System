@@ -236,7 +236,8 @@ body {
 }
 
 .opHours,
-.location {
+.location,
+.contact {
   flex: 1;
   min-width: 300px;
   max-width: 500px;
@@ -245,35 +246,58 @@ body {
   align-items: center;
   justify-content: flex-start;
   background-image: url("../assets/detailsContainer.png");
-  background-size: contain;
+  background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  padding: 90px 50px;
+  padding: 40px 30px;
   border-radius: 10px;
-  min-height: 500px;
+  min-height: 350px;
+  max-height: 400px;
   text-align: center;
+  margin-top: 40px;
   margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .opHours h1,
-.location h1 {
+.location h1,
+.contact h1 {
   font-family: "Montserrat", sans-serif;
   font-size: 1.6rem;
   color: #000000;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   width: 100%;
 }
 
 .opHours img,
-.location img {
-  width: 30%;
-  max-width: 200px;
+.location img,
+.contact img {
+  width: 25%;
+  max-width: 100px;
   height: auto;
   border-radius: 10px;
+  margin-bottom: 15px;
+}
+
+.icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.info-icon {
+  color: #da1c6f;
+  transition: transform 0.2s ease;
+}
+
+.info-icon:hover {
+  transform: scale(1.1);
 }
 
 .opHours ul,
-.location ul {
+.location ul,
+.contact ul {
   width: 100%;
   max-width: 400px;
   padding: 0;
@@ -283,7 +307,8 @@ body {
 }
 
 .opHours li,
-.location li {
+.location li,
+.contact li {
   font-family: "Manrope", sans-serif;
   font-size: 1.2rem;
   color: #333;
@@ -457,19 +482,26 @@ body {
   }
 
   .opHours,
-  .location {
-    padding: 70px 30px;
-    min-height: 400px;
+  .location,
+  .contact {
+    padding: 30px 20px;
+    min-height: 300px;
+    max-height: 350px;
   }
 
   .opHours h1,
-  .location h1 {
+  .location h1,
+  .contact h1 {
     font-size: 1.2rem;
+    margin-bottom: 15px;
   }
 
-  .opHours li,
-  .location li {
-    font-size: 0.9rem;
+  .opHours img,
+  .location img,
+  .contact img {
+    width: 20%;
+    max-width: 80px;
+    margin-bottom: 10px;
   }
 
   .barangayMV h1 {

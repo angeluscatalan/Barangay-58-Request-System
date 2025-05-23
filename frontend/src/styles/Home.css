@@ -235,6 +235,7 @@ button:hover {
 }
 
 .welcome-heading {
+  width: 70vw;
   font-family: "Montserrat", sans-serif;
   font-weight: 800;
   font-size: clamp(1.8rem, 5vw, 2.5rem);
@@ -242,8 +243,8 @@ button:hover {
 }
 
 .welcome-text p {
+  text-align: justify;
   width: 40vw;
-  max-width: 50vw;
   font-family: "Manrope", sans-serif;
   font-size: clamp(0.9rem, 2vw, 1.1rem);
   line-height: 1.6;

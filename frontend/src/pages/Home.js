@@ -93,7 +93,7 @@ function Home() {
       <div className="welcome-message-container">
         <div className="welcome-message">
           <div className="welcome-text">
-            <h2 className="welcome-heading">Mabuhay!</h2>
+            <h2 className="welcome-heading">Magandang Buhay!</h2>
             <p>
               It is with great pride that I welcome you to the online home of Barangay 58. This website was created to
               serve you better—making services more accessible and announcements easier to find.
@@ -101,7 +101,7 @@ function Home() {
             <p>Thank you for being an active part of our growing digital community!</p>
             <div className="captain-info">
               <p>— Hon. Andrea Amor "AA" D. Mercado</p>
-              <p className="captain-title">Barangay Captain</p>
+              <p className="captain-title">Barangay Chairwoman</p>
             </div>
           </div>
           <div className="captain-image-container">

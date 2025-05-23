@@ -70,10 +70,10 @@ const Footer = () => {
                   <i className="fas fa-map-marker-alt"></i> 312B Taylo Street, Pasay City
                 </li>
                 <li>
-                  <i className="fas fa-phone"></i> 0905xxxxxxx
+                  <i className="fas fa-phone"></i> 09568231987
                 </li>
                 <li>
-                  <i className="fas fa-envelope"></i> baranggay58.pasay.city@gmail.com
+                  <i className="fas fa-envelope"></i> brgy58zone7pasay@gmail.com
                 </li>
               </ul>
             </div>

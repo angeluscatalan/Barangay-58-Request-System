@@ -178,6 +178,33 @@ body {
   height: 350px;
 }
 
+.fb-page-container {
+  width: 100%;
+  max-width: 500px;
+  min-height: 350px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.fb-page {
+  width: 100% !important;
+  background-color: transparent;
+}
+
+.fb-page iframe {
+  width: 100% !important;
+  max-width: 500px;
+  min-height: 350px;
+}
+
+.fb-xfbml-parse-ignore {
+  display: none;
+}
+
 .upcoming-events-title {
   font-size: clamp(1.5rem, 5vw, 2.2rem);
   font-weight: 800;
@@ -201,7 +228,7 @@ body {
   border-radius: 3px;
 }
 
-.events-section {
+.public-events-section {
   background-color: #ffe3e2 !important;
   display: flex;
   justify-content: center;
@@ -210,8 +237,8 @@ body {
   padding-bottom: 40px;
 }
 
-.events-section,
-.events-section>* {
+.public-events-section,
+.public-events-section>* {
   background-color: #ffe3e2;
 }
 
