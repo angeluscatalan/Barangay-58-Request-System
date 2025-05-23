@@ -16,6 +16,8 @@ const ConfirmationModal = ({
   rbis     // for comparison modal
 }) => {
   const [showImageUpload, setShowImageUpload] = useState(false)
+  // Add search state for RBI matches
+  const [rbiSearch, setRbiSearch] = useState("");
 
   if (!isOpen) return null
 
@@ -28,6 +30,16 @@ const ConfirmationModal = ({
       day: "numeric",
     })
   }
+
+  const formatAddress = (data) => {
+  const parts = [];
+  if (data?.house_unit_no) parts.push(data.house_unit_no);
+  if (data?.street_name) parts.push(data.street_name);
+  if (data?.subdivision) parts.push(data.subdivision);
+  return parts.join(', ') || 'N/A';
+};
+
+const safeRbis = Array.isArray(rbis) ? rbis : [];
 
   const requiresPhotoUpload = () => {
     return formData.certificate_id === 1 || // ID Application
@@ -258,14 +270,34 @@ const ConfirmationModal = ({
   )
 
   // Comparison modal: show request and similar RBIs if rbis prop is present
-  const renderComparison = () => (
+ const renderComparison = () => {
+
+
+  const formatAddress = (rbi) => {
+    const parts = [];
+    if (rbi.house_unit_no) parts.push(rbi.house_unit_no);
+    if (rbi.street_name) parts.push(rbi.street_name);
+    if (rbi.subdivision) parts.push(rbi.subdivision);
+    return parts.join(', ') || 'N/A';
+  };
+
+  // Filtered RBI matches based on search bar
+  const filteredRbis = rbiSearch
+    ? safeRbis.filter(
+        rbi =>
+          (rbi.last_name || "").toLowerCase().includes(rbiSearch.toLowerCase()) ||
+          (rbi.first_name || "").toLowerCase().includes(rbiSearch.toLowerCase())
+      )
+    : safeRbis;
+
+  return (
     <div className="confirmation-data">
       <h3>Selected Request</h3>
       <div className="data-section">
         <div className="data-row">
           <span className="data-label">Name:</span>
           <span className="data-value">
-            {request?.last_name}, {request?.first_name} {request?.middle_name} {getSuffixDisplay(request?.suffix_id || request?.suffix)}
+            {request?.last_name}, {request?.first_name} {request?.middle_name || ''}
           </span>
         </div>
         <div className="data-row">
@@ -274,55 +306,68 @@ const ConfirmationModal = ({
         </div>
         <div className="data-row">
           <span className="data-label">Address:</span>
-          <span className="data-value">{request?.address}</span>
+          <span className="data-value">{request?.address || 'N/A'}</span>
         </div>
-        {/* ...add more fields as needed... */}
       </div>
+      
       <h3>Similar RBI Records</h3>
-      {safeRbis.length === 0 ? (
-        <div>No similar RBI records found.</div>
-      ) :
-        (
-          safeRbis.map((rbi, idx) => (
-            <div key={rbi.id || idx} className="data-section member-section">
-              <div className="data-row">
-                <span className="data-label">Type:</span>
-                <span className="data-value">{rbi.type}</span>
-              </div>
-              <div className="data-row">
-                <span className="data-label">Name:</span>
-                <span className="data-value">
-                  {rbi.last_name}, {rbi.first_name} {rbi.middle_name} {getSuffixDisplay(rbi.suffix_id || rbi.head_suffix_id)}
-                </span>
-              </div>
-              <div className="data-row">
-                <span className="data-label">Birthday:</span>
-                <span className="data-value">{formatDate(rbi.birth_date)}</span>
-              </div>
-              <div className="data-row">
-                <span className="data-label">Address:</span>
-                <span className="data-value">
-                  {rbi.house_unit_no} {rbi.street_name}, {rbi.subdivision}
-                </span>
-              </div>
-              <div className="data-row">
-                <span className="data-label">Sex:</span>
-                <span className="data-value">{getSexDisplay(rbi.sex, rbi.sex_other)}</span>
-              </div>
-              <div className="data-row">
-                <span className="data-label">Status:</span>
-                <span className="data-value">{rbi.status}</span>
-              </div>
+      {/* Search bar for RBI matches */}
+      <div style={{ marginBottom: "1rem" }}>
+        <input
+          type="text"
+          placeholder="Search matching RBI records..."
+          value={rbiSearch}
+          onChange={e => setRbiSearch(e.target.value)}
+          style={{
+            padding: "0.5rem",
+            width: "100%",
+            maxWidth: 350,
+            borderRadius: 4,
+            border: "1px solid #ccc"
+          }}
+        />
+      </div>
+      {filteredRbis.length === 0 ? (
+        <div className="no-results">
+          No similar RBI records found.
+          <div className="search-criteria">
+            <p>Search was performed with:</p>
+            <ul>
+              <li>Last Name: {request?.last_name}</li>
+              <li>First Name: {request?.first_name}</li>
+            </ul>
+          </div>
+        </div>
+      ) : (
+        filteredRbis.map((rbi, idx) => (
+          <div key={rbi.id || idx} className="data-section member-section">
+            <div className="data-row">
+              <span className="data-label">Type:</span>
+              <span className="data-value">{rbi.type || 'Record'}</span>
             </div>
-          ))
-        )
-      }
+            <div className="data-row">
+              <span className="data-label">Name:</span>
+              <span className="data-value">
+                {rbi.last_name}, {rbi.first_name} {rbi.middle_name || ''}
+              </span>
+            </div>
+            <div className="data-row">
+              <span className="data-label">Birthday:</span>
+              <span className="data-value">{formatDate(rbi.birth_date)}</span>
+            </div>
+            <div className="data-row">
+              <span className="data-label">Address:</span>
+              <span className="data-value">{formatAddress(rbi)}</span>
+            </div>
+          </div>
+        ))
+      )}
     </div>
-  )
+  );
+};
 
   // Defensive: use request or formData for display, fallback to empty object
   const safeFormData = formData || request || {};
-  const safeRbis = rbis || [];
 
   return (
     <div className="modal-overlay">

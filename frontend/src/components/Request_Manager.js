@@ -24,13 +24,16 @@ function Request_Manager() {
       try {
         setStatusLoading(true);
         const response = await axios.get('http://localhost:5000/api/requests/statuses');
-        console.log('Statuses API response:', response.data); // Debug log
+        // console.log('Statuses API response:', response.data); // Remove debug log in production
         setStatuses(response.data);
         setStatusError(null);
       } catch (err) {
-        console.error('Error fetching statuses:', err); // Debug log
-        setStatusError('Failed to load status options');
-        setStatuses([]); // Ensure empty array on error
+        // Only log in development
+        if (process.env.NODE_ENV === "development") {
+          console.error('Error fetching statuses:', err);
+        }
+        setStatusError('Failed to load status options. Please check your connection or try again later.');
+        setStatuses([]);
       } finally {
         setStatusLoading(false);
       }
@@ -121,6 +124,12 @@ function Request_Manager() {
       </div>
 
       <div className="table-container">
+        {statusError && (
+          <div className="status-error-banner">
+            {statusError}
+            <button onClick={() => window.location.reload()}>Retry</button>
+          </div>
+        )}
         <table>
           <thead>
             <tr>

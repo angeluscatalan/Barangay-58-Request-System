@@ -89,22 +89,19 @@ function Admin() {
     try {
       setSelectedRequest(request)
       const token = localStorage.getItem("token")
-      // Use more fields for better matching (address, birthday)
+      // Only send fields expected by backend
       const response = await axios.post(
         "http://localhost:5000/api/rbi/find-similar",
         {
           lastName: request.last_name,
           firstName: request.first_name,
-          middleName: request.middle_name,
-          birthday: request.birthday,
-          address: request.address,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
         },
       )
       setSimilarRbis(response.data)
-      setShowRbiComparison(true) // <-- Ensure this is called after setting similarRbis
+      setShowRbiComparison(true)
     } catch (error) {
       console.error("Error finding similar RBIs:", error)
       alert("Failed to search for similar RBI records")

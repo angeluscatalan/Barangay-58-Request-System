@@ -1,6 +1,6 @@
 "use client"
 
-import { useContext, useEffect } from "react"
+import { useContext, useEffect, useState } from "react"
 import "../styles/Events.css"
 import ScrollIcon from "../assets/SDA.png"
 import Announcement from "../assets/Announce.png"
@@ -21,7 +21,9 @@ const Events = () => {
 // Inner component that uses context
 const EventsContent = () => {
   const { publishedEvents, loading, expandedEvent, setExpandedEvent } = useContext(EventsContext)
-  
+  const [currentPage, setCurrentPage] = useState(1)
+  const EVENTS_PER_PAGE = 9
+
   useEffect(() => {
     // Check if there's a selected event ID in sessionStorage
     const selectedEventId = sessionStorage.getItem('selectedEventId');
@@ -40,6 +42,13 @@ const EventsContent = () => {
       behavior: "smooth",
     })
   }
+
+  // Pagination logic
+  const totalPages = Math.ceil(publishedEvents.length / EVENTS_PER_PAGE)
+  const paginatedEvents = publishedEvents.slice(
+    (currentPage - 1) * EVENTS_PER_PAGE,
+    currentPage * EVENTS_PER_PAGE
+  )
 
   return (
     <>
@@ -94,7 +103,58 @@ const EventsContent = () => {
                 <p>No events available at the moment. Check back soon!</p>
               </div>
             ) : (
-              publishedEvents.map((event) => <EventCard key={event.id} event={event} defaultImage={Announcement} />)
+              <>
+                <div
+                  className="events-grid"
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3, 1fr)",
+                    gap: "1.5rem",
+                  }}
+                >
+                  {paginatedEvents.map((event) => (
+                    <EventCard key={event.id} event={event} defaultImage={Announcement} />
+                  ))}
+                </div>
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="pagination-controls" style={{ marginTop: "2rem", textAlign: "center" }}>
+                    <button
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      style={{ marginRight: "1rem" }}
+                    >
+                      Previous
+                    </button>
+                    {Array.from({ length: totalPages }, (_, idx) => (
+                      <button
+                        key={idx + 1}
+                        onClick={() => setCurrentPage(idx + 1)}
+                        className={currentPage === idx + 1 ? "active-page" : ""}
+                        style={{
+                          margin: "0 0.25rem",
+                          fontWeight: currentPage === idx + 1 ? "bold" : "normal",
+                          background: currentPage === idx + 1 ? "#da1c6f" : "#fff",
+                          color: currentPage === idx + 1 ? "#fff" : "#000",
+                          border: "1px solid #da1c6f",
+                          borderRadius: "4px",
+                          padding: "0.3rem 0.8rem",
+                          cursor: "pointer"
+                        }}
+                      >
+                        {idx + 1}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      style={{ marginLeft: "1rem" }}
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </section>
