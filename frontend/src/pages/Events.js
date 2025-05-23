@@ -138,10 +138,10 @@ const EventsContent = () => {
                   data-href="https://www.facebook.com/profile.php?id=61552676805291"
                   data-tabs="timeline"
                   data-width="500"
-                  data-height="350"
+                  data-height="500"
                   data-small-header="true"
                   data-adapt-container-width="true"
-                  data-hide-cover="true"
+                  data-hide-cover="false"
                   data-show-facepile="false">
                   <blockquote cite="https://www.facebook.com/profile.php?id=61552676805291" className="fb-xfbml-parse-ignore">
                     <a href="https://www.facebook.com/profile.php?id=61552676805291">Barangay 58</a>
@@ -207,26 +207,11 @@ const EventsContent = () => {
                 <p>No events available at the moment. Check back soon!</p>
               </div>
             ) : (
-              <>
-              <center>
-
-              <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
-                <div
-                  className="events-grid"
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(3, 1fr)",
-                    gap: "1.5rem",
-                  }}
-                >
-                  {paginatedEvents.map((event) => (
-                    <EventCard key={event.id} event={event} defaultImage={Announcement} />
-                  ))}
-                </div>
+              <div className="events-grid">
+                {paginatedEvents.map((event) => (
+                  <EventCard key={event.id} event={event} defaultImage={Announcement} />
+                ))}
               </div>
-
-                </center>
-              </>
             )}
           </div>
         </section>
