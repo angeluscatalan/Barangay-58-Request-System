@@ -137,6 +137,7 @@ function Request_Manager() {
               <th>Name</th>
               <th>Certificate Type</th>
               <th>Date Requested</th>
+              <th>Control Number</th> {/* Add this column */}
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -148,6 +149,7 @@ function Request_Manager() {
                 <td>{`${request.last_name}, ${request.first_name}`}</td>
                 <td>{request.certificate_name}</td>
                 <td>{new Date(request.created_at).toLocaleDateString()}</td>
+                <td>{request.control_id || 'Pending'}</td> {/* Add this column */}
                 <td>
                   <span className={`status-badge ${request.status.toLowerCase()}`}>
                     {request.status}

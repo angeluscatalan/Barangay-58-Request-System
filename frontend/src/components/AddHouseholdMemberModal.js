@@ -84,6 +84,16 @@ function AddHouseholdMemberModal({ isOpen, onClose, onSave, householdId }) {
       "Prefer Not To Say": 3,
       "Other": 4
     };
+    // Validate required fields
+    const requiredFields = ['last_name', 'first_name', 'birth_date', 'sex'];
+    const missingFields = requiredFields.filter(field => !memberData[field]);
+    
+    if (missingFields.length > 0) {
+      console.log('Missing required fields:', missingFields);
+      alert(`Please fill in all required fields: ${missingFields.join(', ')}`);
+      return;
+    }
+
     const dataToSave = {
       ...memberData,
       citizenship: memberData.citizenship === "Other"
@@ -92,10 +102,12 @@ function AddHouseholdMemberModal({ isOpen, onClose, onSave, householdId }) {
       suffix_id:
         memberData.suffix && suffixMap[memberData.suffix] !== null && suffixMap[memberData.suffix] !== undefined
           ? parseInt(suffixMap[memberData.suffix], 10)
-          : undefined,
+          : null,
       sex: sexMap[memberData.sex] !== undefined ? Number(sexMap[memberData.sex]) : memberData.sex,
-      occupation: memberData.occupation
+      occupation: memberData.occupation || null
     };
+    
+    console.log('Data to be submitted:', dataToSave);
     delete dataToSave.suffix;
     if (dataToSave.citizenship !== "Other") {
       delete dataToSave.citizenship_other;

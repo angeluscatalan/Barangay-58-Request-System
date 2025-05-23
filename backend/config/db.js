@@ -11,6 +11,7 @@ const pool = mysql.createPool({
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
+    multipleStatements: true,
     ssl: process.env.NODE_ENV === 'production' ? {
         rejectUnauthorized: true,
         ca: fs.readFileSync(path.resolve(__dirname, '../certs/global-bundle.pem'))

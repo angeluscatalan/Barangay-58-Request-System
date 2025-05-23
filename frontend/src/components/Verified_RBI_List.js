@@ -222,52 +222,50 @@ function Verified_RBI_List() {
   };
 
   const handleAddHouseholdMember = async (memberData) => {
+    const sexMap = {
+      "1": 1,
+      "2": 2,
+      "3": 3,
+      "4": 4,
+      "Male": 1,
+      "Female": 2,
+      "Prefer Not To Say": 3,
+      "Other": 4
+    };
+
+    const suffixMap = {
+      "": 1, // 1 represents 'None' in the database
+      "Jr.": 2,
+      "Sr.": 3,
+      "I": 4,
+      "II": 5,
+      "III": 6,
+      "IV": 7,
+      "V": 8
+    };
+
+    let payload = {
+      ...memberData,
+      sex: sexMap[memberData.sex] ? Number(sexMap[memberData.sex]) : undefined,
+      suffix_id: suffixMap[memberData.suffix] || 1, // Default to 1 (None) if not found
+      occupation: memberData.occupation || null
+    };
+
+    // Remove unnecessary fields
+    delete payload.suffix;
+    if (payload.citizenship !== "Other") {
+      delete payload.citizenship_other;
+    }
+
+    // Remove empty string fields (backend may reject them)
+    Object.keys(payload).forEach(
+      key => (payload[key] === "" || payload[key] === undefined) && delete payload[key]
+    );
+
+    console.log('Attempting to send payload:', payload);
+
     try {
       const token = localStorage.getItem("token");
-      // Map suffix string to suffix_id (match backend expectations)
-      const suffixMap = {
-        "": null,
-        "Jr.": 2,
-        "Sr.": 3,
-        "I": 4,
-        "II": 5,
-        "III": 6,
-        "IV": 7,
-        "V": 8
-      };
-      // Accept sex as string or number, but backend expects 1/2/3/4
-      const sexMap = {
-        "1": 1,
-        "2": 2,
-        "3": 3,
-        "4": 4,
-        "Male": 1,
-        "Female": 2,
-        "Prefer Not To Say": 3,
-        "Other": 4
-      };
-      // Remove empty/undefined fields and map suffix/sex
-      const payload = {
-        ...memberData,
-        suffix_id:
-          memberData.suffix && suffixMap[memberData.suffix] !== null && suffixMap[memberData.suffix] !== undefined
-            ? Number(suffixMap[memberData.suffix])
-            : null,
-        sex:
-          memberData.sex && sexMap[memberData.sex] !== undefined
-            ? Number(sexMap[memberData.sex])
-            : undefined,
-        occupation: memberData.occupation
-      };
-      delete payload.suffix;
-      if (payload.citizenship !== "Other") {
-        delete payload.citizenship_other;
-      }
-      // Remove empty string fields (backend may reject them)
-      Object.keys(payload).forEach(
-        key => (payload[key] === "" || payload[key] === undefined) && delete payload[key]
-      );
-
       const response = await axios.post(
         `http://localhost:5000/api/rbi/${selectedHouseholdId}/members`,
         payload,
@@ -281,6 +279,10 @@ function Verified_RBI_List() {
       }
     } catch (error) {
       console.error("Error adding household member:", error);
+      console.log("Request payload:", payload);
+      console.log("Error response:", error.response?.data);
+      console.log("Error status:", error.response?.status);
+      console.log("Error headers:", error.response?.headers);
       alert(
         error.response?.data?.error ||
         "Failed to add household member. Please check all required fields."
