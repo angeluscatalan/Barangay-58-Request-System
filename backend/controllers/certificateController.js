@@ -156,9 +156,28 @@ const fitTextToField = (field, value, pdfDoc, maxFontSize = 12, minFontSize = 7)
 
 // Main controller function to generate PDF
 exports.generatePDF = async (req, res) => {
+    
     try {
         const { requestData } = req.body;
+
+        if (!requestData.control_id) {
+      console.warn('WARNING: No control_id in request data');
+      console.log('Full status info:', {
+        status_id: requestData.status_id,
+        status: requestData.status,
+        is_approved: requestData.status_id === 2 // Assuming 2 is approved
+      });
+    }
+
+
+        console.log('=== REQUEST DATA RECEIVED ===');
+console.log('Control ID in requestData:', requestData.control_id);
+console.log('Full requestData:', JSON.stringify(requestData, null, 2));
+         console.log('Received request data:', JSON.stringify(requestData, null, 2)); // Detailed log
         console.log('Received request data:', requestData);
+          if (!requestData.control_id) {
+      console.warn('WARNING: No control_id in request data');
+    }
 
         // Get the template path
         const templatePath = getTemplatePath(requestData.type_of_certificate);
@@ -186,6 +205,9 @@ exports.generatePDF = async (req, res) => {
             console.log(`- ${field.getName()} (${field.constructor.name})`);
         });
 
+        // Debug: Log the control number being applied
+        console.log('Control ID to apply:', requestData.control_id);
+
         // Get current date
         const currentDate = new Date();
         const formattedDate = currentDate.toLocaleDateString('en-US', {
@@ -204,6 +226,7 @@ exports.generatePDF = async (req, res) => {
                 'month': currentDate.toLocaleString('default', { month: 'long' }),
                 'year': currentDate.getFullYear().toString(),
                 'full_name': formatName(requestData),
+                'control_id': requestData.control_id || '',
                 'age': calculateAge(requestData.birthday).toString()
             },
             'JobseekerCert': {
@@ -211,9 +234,11 @@ exports.generatePDF = async (req, res) => {
                 'address': cleanAddress(requestData.address),
                 'month': currentDate.toLocaleString('default', { month: 'long' }),
                 'day': currentDate.getDate().toString(),
+                'control_id': requestData.control_id || '',
                 'age': calculateAge(requestData.birthday).toString()
             },
             'IDApp': {
+                'control_id': requestData.control_id || '',
                 'full_name': formatName(requestData)
             },
             'BrgyCert': {
@@ -224,6 +249,7 @@ exports.generatePDF = async (req, res) => {
                 'day': currentDate.getDate().toString(),
                 'month': currentDate.toLocaleString('default', { month: 'long' }),
                 'year': currentDate.getFullYear().toString(),
+                'control_id': requestData.control_id || 'N/A',
                 'date': formattedDate
             },
             // Default mapping (for other certificate types)
@@ -234,9 +260,27 @@ exports.generatePDF = async (req, res) => {
                 'Text15': requestData.purpose_of_request,
                 'Text16': currentDate.getDate().toString(),
                 'Text17': currentDate.toLocaleString('default', { month: 'long' }),
+                'control_id': requestData.control_id || '',
                 'Text19': currentDate.getFullYear().toString()
             }
         };
+
+        const controlFieldName = {
+    'IDApp': 'control_id',
+    'BrgyCert': 'control_id',
+    'ClearanceCert': 'Text20',
+    'IndigencyCert': 'control_number'
+}[requestData.type_of_certificate];
+
+if (controlFieldName) {
+    const field = form.getField(controlFieldName);
+    if (field) {
+        field.setText(requestData.control_id || '');
+        console.log(`Successfully set control ID in ${controlFieldName}`);
+    } else {
+        console.error(`Field ${controlFieldName} not found in PDF`);
+    }
+}
 
         // Get the appropriate mapping based on certificate type
         const mappingToUse = fieldMappings[requestData.type_of_certificate] || fieldMappings.default;

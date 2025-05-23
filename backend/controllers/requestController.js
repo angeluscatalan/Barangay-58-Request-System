@@ -243,33 +243,119 @@ exports.updateRequestStatus = async (req, res) => {
     return res.status(400).json({ error: 'Invalid status_id' });
   }
 
+  const connection = await pool.getConnection();
+  
   try {
+    await connection.beginTransaction();
+
+    // Get the current request with certificate name
+    const [requestRows] = await connection.query(`
+      SELECT r.*, c.name as certificate_name 
+      FROM requests r 
+      JOIN certificates c ON r.certificate_id = c.id 
+      WHERE r.id = ?`, 
+      [id]
+    );
+    
+    if (requestRows.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ error: 'Request not found' });
+    }
+
+    const request = requestRows[0];
+
     // Validate status_id exists
-    const [statusRows] = await pool.query(
-      "SELECT id FROM request_statuses WHERE id = ?",
+    const [statusRows] = await connection.query(
+      "SELECT name FROM request_statuses WHERE id = ?",
       [status_id]
     );
     
     if (statusRows.length === 0) {
+      await connection.rollback();
       return res.status(400).json({ error: 'Invalid status_id' });
     }
 
-    const [result] = await pool.query(
-      `UPDATE requests SET status_id = ? WHERE id = ?`,
-      [status_id, id]
-    );
+    const statusName = statusRows[0].name.toLowerCase();
+    let controlId = request.control_id;
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: 'Request not found' });
+    // Only generate control number if being approved and doesn't have one yet
+    if (statusName === 'approved' && !controlId) {
+      // MySQL approach using LAST_INSERT_ID()
+      const [seqResult] = await connection.query(
+        `UPDATE certificate_sequences 
+         SET last_id = LAST_INSERT_ID(last_id + 1) 
+         WHERE certificate_type = ?;
+         SELECT LAST_INSERT_ID() as last_id;`,
+        [request.certificate_name]
+      );
+
+      // The result contains both the update and select results
+      const lastId = seqResult[1][0].last_id;
+      const currentYear = new Date().getFullYear();
+      const paddedId = lastId.toString().padStart(4, '0');
+      controlId = `${currentYear}-${paddedId}`;
+
+      // Update the request with control_id
+      await connection.query(
+        "UPDATE requests SET control_id = ?, status_id = ? WHERE id = ?",
+        [controlId, status_id, id]
+      );
+    } else {
+      // Just update status if not approving or already has control_id
+      await connection.query(
+        "UPDATE requests SET status_id = ? WHERE id = ?",
+        [status_id, id]
+      );
     }
 
-    res.json({ success: true, message: 'Status updated successfully' });
+    // Get updated request data to return
+    const [updatedRequest] = await connection.query(
+      `SELECT r.*, rs.name as status 
+       FROM requests r
+       LEFT JOIN request_statuses rs ON r.status_id = rs.id
+       WHERE r.id = ?`,
+      [id]
+    );
+
+    if (statusName === 'approved' && !controlId) {
+  console.log('Generating new control ID for request:', id);
+  // ... your existing code ...
+  console.log('Generated control ID:', controlId);
+  
+  await connection.query(
+    "UPDATE requests SET control_id = ?, status_id = ? WHERE id = ?",
+    [controlId, status_id, id]
+  );
+  
+  // Verify the update worked
+  const [verify] = await connection.query(
+    "SELECT control_id FROM requests WHERE id = ?", 
+    [id]
+
+    
+    
+  );
+  console.log('Verified control_id in database:', verify[0].control_id);
+}
+    console.log('Updated request to return:', updatedRequest[0].control_id); // Add this
+
+
+    await connection.commit();
+
+    res.json({ 
+      success: true, 
+      message: 'Status updated successfully',
+      request: updatedRequest[0]
+    });
   } catch (error) {
+    await connection.rollback();
     console.error('Database error:', error);
     res.status(500).json({
       error: 'Database operation failed',
       details: error.message
     });
+  } finally {
+    connection.release();
   }
 };
 

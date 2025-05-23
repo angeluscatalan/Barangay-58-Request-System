@@ -414,6 +414,12 @@ function Admin() {
   const handlePrintRequest = async (request) => {
   setIsPrinting((prev) => ({ ...prev, [request.id]: true }));
   try {
+     console.log("Request data being sent:", {
+      ...request,
+      control_id: request.control_id // Ensure this is included
+    });
+
+    
     console.log("Sending request data:", request);
     
     // Find the certificate details based on certificate_id
@@ -440,6 +446,7 @@ function Admin() {
         requestData: {
           ...request,
           type_of_certificate: backendCertificateType,
+          control_id: request.control_id,
           s3_key: request.s3_key,
         },
       },
@@ -733,6 +740,7 @@ function Admin() {
         }
         onChange={handleMasterSelect}
       /></th>
+      <th>Control Number</th> {/* Add this column */}
       <th>DATE REQUESTED</th>
       <th>NAME</th>
       <th>SUFFIX</th>
@@ -759,6 +767,7 @@ function Admin() {
             onChange={() => handleSelectRequest(request.id)}
           />
         </td>
+        <td>{request.control_id || 'Pending'}</td> {/* Add this column */}
         <td>{request.created_at}</td>
         <td>{`${request.last_name}, ${request.first_name} ${request.middle_name || ""}`}</td>
         <td>{getSuffixDisplay(request.suffix_id || request.suffix)}</td>
