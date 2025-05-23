@@ -31,48 +31,48 @@ function RBIRegistration() {
   const [showSuccessPopup, setShowSuccessPopup] = useState(false)
 
   // Household head information
- const [householdData, setHouseholdData] = useState({
-  head_last_name: "",
-  head_first_name: "",
-  head_middle_name: "",
-  head_suffix: "",
-  house_unit_no: "",
-  street_name: "",
-  subdivision: "",
-  birth_place: "",
-  birth_date: "",
-  sex: "",
-  sex_other: "", // <-- Add this line
-  civil_status: "",
-  citizenship: "",
-  citizenship_other: "", // Add this
-  occupation: "",
-});
+  const [householdData, setHouseholdData] = useState({
+    head_last_name: "",
+    head_first_name: "",
+    head_middle_name: "",
+    head_suffix: "",
+    house_unit_no: "",
+    street_name: "",
+    subdivision: "",
+    birth_place: "",
+    birth_date: "",
+    sex: "",
+    sex_other: "", // <-- Add this line
+    civil_status: "",
+    citizenship: "",
+    citizenship_other: "", // Add this
+    occupation: "",
+  });
 
 
   // State for household members
-const [members, setMembers] = useState([{
-  // ...existing code...
-  citizenship: "",
-  citizenship_other: "",
-  sex_other: "",
-  relationship_id: "", // <-- Add this field
-  relationship_other: "", // <-- Add this field
-  occupation: "",
-}]);
+  const [members, setMembers] = useState([{
+    // ...existing code...
+    citizenship: "",
+    citizenship_other: "",
+    sex_other: "",
+    relationship_id: "", // <-- Add this field
+    relationship_other: "", // <-- Add this field
+    occupation: "",
+  }]);
 
   // Update refs when members change
   useEffect(() => {
     memberRefs.current = memberRefs.current.slice(0, members.length)
   }, [members])
 
-const handleHouseholdChange = (e) => {
-  let { name, value } = e.target;
-  if (["head_last_name", "head_first_name", "head_middle_name", "birth_place","house_unit_no","street_name","subdivision"].includes(name)) {
-    value = value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
-  }
-  setHouseholdData({ ...householdData, [name]: value });
-};
+  const handleHouseholdChange = (e) => {
+    let { name, value } = e.target;
+    if (["head_last_name", "head_first_name", "head_middle_name", "birth_place", "house_unit_no", "street_name", "subdivision"].includes(name)) {
+      value = value.charAt(0).toUpperCase() + value.slice(1);
+    }
+    setHouseholdData({ ...householdData, [name]: value });
+  };
 
 
   const handleHouseholdDateChange = (date) => {
@@ -80,22 +80,22 @@ const handleHouseholdChange = (e) => {
     setHouseholdData({ ...householdData, birth_date: date })
   }
 
-const handleMemberChange = (index, e) => {
-  const { name, value } = e.target;
-  const updatedMembers = [...members];
-  let processedValue = value;
+  const handleMemberChange = (index, e) => {
+    const { name, value } = e.target;
+    const updatedMembers = [...members];
+    let processedValue = value;
 
-  if (["last_name", "first_name", "middle_name", "birth_place"].includes(name)) {
-    processedValue = value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
-  }
+    if (["last_name", "first_name", "middle_name", "birth_place"].includes(name)) {
+      processedValue = value.charAt(0).toUpperCase() + value.slice(1);
+    }
 
-  updatedMembers[index] = {
-    ...updatedMembers[index],
-    [name]: processedValue,
+    updatedMembers[index] = {
+      ...updatedMembers[index],
+      [name]: processedValue,
+    };
+
+    setMembers(updatedMembers);
   };
-
-  setMembers(updatedMembers);
-};
 
   const handleMemberDateChange = (index, date) => {
     setMembers((prevMembers) => {
@@ -174,13 +174,13 @@ const handleMemberChange = (index, e) => {
   }
 
   // Update the validateForm function to properly check for empty birth_date
-const validateForm = () => {
-  let isValid = true;
-  const newErrors = {
-    household: {},
-    members: members.map(() => ({})),
-  };
-  const missingFieldsList = [];
+  const validateForm = () => {
+    let isValid = true;
+    const newErrors = {
+      household: {},
+      members: members.map(() => ({})),
+    };
+    const missingFieldsList = [];
 
     // Validate household head data
     const householdFieldLabels = {
@@ -266,14 +266,14 @@ const validateForm = () => {
     }
 
     if (!householdData.citizenship || householdData.citizenship.trim() === "") {
-    newErrors.household.citizenship = "This field is required";
-    isValid = false;
-    missingFieldsList.push("Citizenship");
-  } else if (householdData.citizenship === "Other" && (!householdData.citizenship_other || householdData.citizenship_other.trim() === "")) {
-    newErrors.household.citizenship = "Please specify your citizenship";
-    isValid = false;
-    missingFieldsList.push("Citizenship (Specify)");
-  }
+      newErrors.household.citizenship = "This field is required";
+      isValid = false;
+      missingFieldsList.push("Citizenship");
+    } else if (householdData.citizenship === "Other" && (!householdData.citizenship_other || householdData.citizenship_other.trim() === "")) {
+      newErrors.household.citizenship = "Please specify your citizenship";
+      isValid = false;
+      missingFieldsList.push("Citizenship (Specify)");
+    }
     if (!householdData.occupation || householdData.occupation.trim() === "") {
       newErrors.household.occupation = "This field is required"
       isValid = false
@@ -355,16 +355,16 @@ const validateForm = () => {
       }
 
       members.forEach((member, index) => {
-    if (!member.citizenship || member.citizenship.trim() === "") {
-      newErrors.members[index].citizenship = "This field is required";
-      isValid = false;
-      missingFieldsList.push(`Member ${index + 1} Citizenship`);
-    } else if (member.citizenship === "Other" && (!member.citizenship_other || member.citizenship_other.trim() === "")) {
-      newErrors.members[index].citizenship = "Please specify citizenship";
-      isValid = false;
-      missingFieldsList.push(`Member ${index + 1} Citizenship (Specify)`);
-    }
-  });
+        if (!member.citizenship || member.citizenship.trim() === "") {
+          newErrors.members[index].citizenship = "This field is required";
+          isValid = false;
+          missingFieldsList.push(`Member ${index + 1} Citizenship`);
+        } else if (member.citizenship === "Other" && (!member.citizenship_other || member.citizenship_other.trim() === "")) {
+          newErrors.members[index].citizenship = "Please specify citizenship";
+          isValid = false;
+          missingFieldsList.push(`Member ${index + 1} Citizenship (Specify)`);
+        }
+      });
 
 
       if (!member.occupation || member.occupation.trim() === "") {
@@ -443,57 +443,57 @@ const validateForm = () => {
     setShowConfirmation(true)
   }
 
-const handleConfirmSubmit = async () => {
-  try {
-    const formattedHouseholdData = {
-      ...householdData,
-      head_suffix_id:
-        householdData.head_suffix && householdData.head_suffix !== "None" && householdData.head_suffix !== "" && householdData.head_suffix !== "SUFFIX"
-          ? parseInt(householdData.head_suffix)
-          : null,
-      sex: householdData.sex,
-      sex_other: householdData.sex === "4" ? householdData.sex_other : null, // <-- Use sex_other only if sex is "4"
-      citizenship: householdData.citizenship === "Other"
-        ? householdData.citizenship_other
-        : householdData.citizenship,
-      occupation: householdData.occupation,
-      birth_date: householdData.birth_date ? new Date(householdData.birth_date).toISOString().split("T")[0] : null,
-    };
-    delete formattedHouseholdData.head_suffix;
-    const formattedMembers = members.map((member) => {
-      const formatted = {
-        ...member,
-        suffix_id:
-          member.suffix && member.suffix !== "None" && member.suffix !== "" && member.suffix !== "SUFFIX"
-            ? parseInt(member.suffix)
+  const handleConfirmSubmit = async () => {
+    try {
+      const formattedHouseholdData = {
+        ...householdData,
+        head_suffix_id:
+          householdData.head_suffix && householdData.head_suffix !== "None" && householdData.head_suffix !== "" && householdData.head_suffix !== "SUFFIX"
+            ? parseInt(householdData.head_suffix)
             : null,
-        sex: member.sex,
-        sex_other: member.sex === "4" ? member.sex_other : null,
-        citizenship: member.citizenship === "Other"
-          ? member.citizenship_other
-          : member.citizenship,
-        occupation: member.occupation,
-        birth_date: member.birth_date ? new Date(member.birth_date).toISOString().split("T")[0] : null,
-        relationship_id: member.relationship_id ? parseInt(member.relationship_id) : null,
-        relationship_other: member.relationship_id === "9" ? member.relationship_other : null,
+        sex: householdData.sex,
+        sex_other: householdData.sex === "4" ? householdData.sex_other : null, // <-- Use sex_other only if sex is "4"
+        citizenship: householdData.citizenship === "Other"
+          ? householdData.citizenship_other
+          : householdData.citizenship,
+        occupation: householdData.occupation,
+        birth_date: householdData.birth_date ? new Date(householdData.birth_date).toISOString().split("T")[0] : null,
       };
-      delete formatted.suffix;
-      return formatted;
-    });
+      delete formattedHouseholdData.head_suffix;
+      const formattedMembers = members.map((member) => {
+        const formatted = {
+          ...member,
+          suffix_id:
+            member.suffix && member.suffix !== "None" && member.suffix !== "" && member.suffix !== "SUFFIX"
+              ? parseInt(member.suffix)
+              : null,
+          sex: member.sex,
+          sex_other: member.sex === "4" ? member.sex_other : null,
+          citizenship: member.citizenship === "Other"
+            ? member.citizenship_other
+            : member.citizenship,
+          occupation: member.occupation,
+          birth_date: member.birth_date ? new Date(member.birth_date).toISOString().split("T")[0] : null,
+          relationship_id: member.relationship_id ? parseInt(member.relationship_id) : null,
+          relationship_other: member.relationship_id === "9" ? member.relationship_other : null,
+        };
+        delete formatted.suffix;
+        return formatted;
+      });
 
-    // Submit data to API
-     const response = await axios.post(
-      "http://localhost:5000/api/rbi",
-      {
-        household: formattedHouseholdData,
-        members: formattedMembers,
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
+      // Submit data to API
+      const response = await axios.post(
+        "http://localhost:5000/api/rbi",
+        {
+          household: formattedHouseholdData,
+          members: formattedMembers,
         },
-      }
-    );
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
 
       if (response.status === 200 || response.status === 201) {
@@ -734,59 +734,59 @@ const handleConfirmSubmit = async () => {
                       </div>
 
                       {/* Household Head Sex and Suffix */}
-<div className="form-row">
-  <select
-    id="head_sex"
-    name="sex"
-    className={`rbi-form-select ${errors.household.sex ? "input-error" : ""}`}
-    value={householdData.sex || ""}
-    onChange={handleHouseholdChange}
-    required
-  >
-    <option value="">SEX</option>
-    <option value="1">Male</option>
-    <option value="2">Female</option>
-    <option value="3">Prefer Not To Say</option>
-    <option value="4">Other</option>
-  </select>
-  {householdData.sex === "4" && (
-    <input
-      type="text"
-      name="sex_other"
-      placeholder="Please specify sex"
-      className={`rbi-form-input ${errors.household.sex ? "input-error" : ""}`}
-      value={householdData.sex_other || ""}
-      onChange={handleHouseholdChange}
-      required
-    />
-  )}
-  {errors.household.sex && (
-    <p className="error-message">*{errors.household.sex}</p>
-  )}
-</div>
-<div className="form-row">
-  <select
-    id="head_suffix"
-    name="head_suffix"
-    className={`rbi-form-select ${errors.household.head_suffix ? "input-error" : ""}`}
-    value={householdData.head_suffix || ""}
-    onChange={handleHouseholdChange}
-    required
-  >
-    <option value="">SUFFIX</option>
-    <option value="1">None</option>
-    <option value="2">Jr.</option>
-    <option value="3">Sr.</option>
-    <option value="4">I</option>
-    <option value="5">II</option>
-    <option value="6">III</option>
-    <option value="7">IV</option>
-    <option value="8">V</option>
-  </select>
-  {errors.household.head_suffix && (
-    <p className="error-message">*{errors.household.head_suffix}</p>
-  )}
-</div>
+                      <div className="form-row">
+                        <select
+                          id="head_sex"
+                          name="sex"
+                          className={`rbi-form-select ${errors.household.sex ? "input-error" : ""}`}
+                          value={householdData.sex || ""}
+                          onChange={handleHouseholdChange}
+                          required
+                        >
+                          <option value="">SEX</option>
+                          <option value="1">Male</option>
+                          <option value="2">Female</option>
+                          <option value="3">Prefer Not To Say</option>
+                          <option value="4">Other</option>
+                        </select>
+                        {householdData.sex === "4" && (
+                          <input
+                            type="text"
+                            name="sex_other"
+                            placeholder="Please specify sex"
+                            className={`rbi-form-input ${errors.household.sex ? "input-error" : ""}`}
+                            value={householdData.sex_other || ""}
+                            onChange={handleHouseholdChange}
+                            required
+                          />
+                        )}
+                        {errors.household.sex && (
+                          <p className="error-message">*{errors.household.sex}</p>
+                        )}
+                      </div>
+                      <div className="form-row">
+                        <select
+                          id="head_suffix"
+                          name="head_suffix"
+                          className={`rbi-form-select ${errors.household.head_suffix ? "input-error" : ""}`}
+                          value={householdData.head_suffix || ""}
+                          onChange={handleHouseholdChange}
+                          required
+                        >
+                          <option value="">SUFFIX</option>
+                          <option value="1">None</option>
+                          <option value="2">Jr.</option>
+                          <option value="3">Sr.</option>
+                          <option value="4">I</option>
+                          <option value="5">II</option>
+                          <option value="6">III</option>
+                          <option value="7">IV</option>
+                          <option value="8">V</option>
+                        </select>
+                        {errors.household.head_suffix && (
+                          <p className="error-message">*{errors.household.head_suffix}</p>
+                        )}
+                      </div>
                     </div>
 
                     <div className="rbi-form-address">
@@ -896,33 +896,33 @@ const handleConfirmSubmit = async () => {
                       </div>
 
                       <div className="form-row">
-  <select
-    id="head_citizenship"
-    name="citizenship"
-    className={`rbi-form-select ${errors.household.citizenship ? "input-error" : ""}`}
-    value={householdData.citizenship || ""}
-    onChange={handleHouseholdChange}
-    required
-  >
-    <option value="">CITIZENSHIP</option>
-    <option value="Filipino">Filipino</option>
-    <option value="Other">Other</option>
-  </select>
-  {householdData.citizenship === "Other" && (
-    <input
-      type="text"
-      name="citizenship_other"
-      placeholder="Please specify citizenship"
-      className={`rbi-form-input ${errors.household.citizenship ? "input-error" : ""}`}
-      value={householdData.citizenship_other || ""}
-      onChange={handleHouseholdChange}
-      required
-    />
-  )}
-  {errors.household.citizenship && (
-    <p className="error-message">*{errors.household.citizenship}</p>
-  )}
-</div>
+                        <select
+                          id="head_citizenship"
+                          name="citizenship"
+                          className={`rbi-form-select ${errors.household.citizenship ? "input-error" : ""}`}
+                          value={householdData.citizenship || ""}
+                          onChange={handleHouseholdChange}
+                          required
+                        >
+                          <option value="">CITIZENSHIP</option>
+                          <option value="Filipino">Filipino</option>
+                          <option value="Other">Other</option>
+                        </select>
+                        {householdData.citizenship === "Other" && (
+                          <input
+                            type="text"
+                            name="citizenship_other"
+                            placeholder="Please specify citizenship"
+                            className={`rbi-form-input ${errors.household.citizenship ? "input-error" : ""}`}
+                            value={householdData.citizenship_other || ""}
+                            onChange={handleHouseholdChange}
+                            required
+                          />
+                        )}
+                        {errors.household.citizenship && (
+                          <p className="error-message">*{errors.household.citizenship}</p>
+                        )}
+                      </div>
 
                       <div className="form-row">
                         <select
@@ -1037,59 +1037,59 @@ const handleConfirmSubmit = async () => {
                           </div>
 
                           {/* --- Household Members Sex and Suffix --- */}
-<div className="form-row">
-  <select
-    id={`member_sex_${index}`}
-    name="sex"
-    className={`rbi-form-select ${errors.members[index]?.sex ? "input-error" : ""}`}
-    value={member.sex || ""}
-    onChange={e => handleMemberChange(index, e)}
-    required
-  >
-    <option value="">SEX</option>
-    <option value="1">Male</option>
-    <option value="2">Female</option>
-    <option value="3">Prefer Not To Say</option>
-    <option value="4">Other</option>
-  </select>
-  {member.sex === "4" && (
-    <input
-      type="text"
-      name="sex_other"
-      placeholder="Please specify sex"
-      className={`rbi-form-input ${errors.members[index]?.sex ? "input-error" : ""}`}
-      value={member.sex_other || ""}
-      onChange={e => handleMemberChange(index, e)}
-      required
-    />
-  )}
-  {errors.members[index]?.sex && (
-    <p className="error-message">*{errors.members[index].sex}</p>
-  )}
-</div>
-<div className="form-row">
-  <select
-    id={`member_suffix_${index}`}
-    name="suffix"
-    className={`rbi-form-select ${errors.members[index]?.suffix ? "input-error" : ""}`}
-    value={member.suffix || ""}
-    onChange={e => handleMemberChange(index, e)}
-    required
-  >
-    <option value="">SUFFIX</option>
-    <option value="1">None</option>
-    <option value="2">Jr.</option>
-    <option value="3">Sr.</option>
-    <option value="4">I</option>
-    <option value="5">II</option>
-    <option value="6">III</option>
-    <option value="7">IV</option>
-    <option value="8">V</option>
-  </select>
-  {errors.members[index]?.suffix && (
-    <p className="error-message">*{errors.members[index].suffix}</p>
-  )}
-</div>
+                          <div className="form-row">
+                            <select
+                              id={`member_sex_${index}`}
+                              name="sex"
+                              className={`rbi-form-select ${errors.members[index]?.sex ? "input-error" : ""}`}
+                              value={member.sex || ""}
+                              onChange={e => handleMemberChange(index, e)}
+                              required
+                            >
+                              <option value="">SEX</option>
+                              <option value="1">Male</option>
+                              <option value="2">Female</option>
+                              <option value="3">Prefer Not To Say</option>
+                              <option value="4">Other</option>
+                            </select>
+                            {member.sex === "4" && (
+                              <input
+                                type="text"
+                                name="sex_other"
+                                placeholder="Please specify sex"
+                                className={`rbi-form-input ${errors.members[index]?.sex ? "input-error" : ""}`}
+                                value={member.sex_other || ""}
+                                onChange={e => handleMemberChange(index, e)}
+                                required
+                              />
+                            )}
+                            {errors.members[index]?.sex && (
+                              <p className="error-message">*{errors.members[index].sex}</p>
+                            )}
+                          </div>
+                          <div className="form-row">
+                            <select
+                              id={`member_suffix_${index}`}
+                              name="suffix"
+                              className={`rbi-form-select ${errors.members[index]?.suffix ? "input-error" : ""}`}
+                              value={member.suffix || ""}
+                              onChange={e => handleMemberChange(index, e)}
+                              required
+                            >
+                              <option value="">SUFFIX</option>
+                              <option value="1">None</option>
+                              <option value="2">Jr.</option>
+                              <option value="3">Sr.</option>
+                              <option value="4">I</option>
+                              <option value="5">II</option>
+                              <option value="6">III</option>
+                              <option value="7">IV</option>
+                              <option value="8">V</option>
+                            </select>
+                            {errors.members[index]?.suffix && (
+                              <p className="error-message">*{errors.members[index].suffix}</p>
+                            )}
+                          </div>
                         </div>
 
                         <div className="member-other-info">
@@ -1129,7 +1129,7 @@ const handleConfirmSubmit = async () => {
                               <p className="error-message">*{errors.members[index].birth_date}</p>
                             )}
                           </div>
-                        
+
 
                           <div className="form-row">
                             <select
@@ -1153,33 +1153,33 @@ const handleConfirmSubmit = async () => {
                           </div>
 
                           <div className="form-row">
-  <select
-    id={`member_citizenship_${index}`}
-    name="citizenship"
-    className={`rbi-form-select ${errors.members[index]?.citizenship ? "input-error" : ""}`}
-    value={member.citizenship || ""}
-    onChange={(e) => handleMemberChange(index, e)}
-    required
-  >
-    <option value="">CITIZENSHIP</option>
-    <option value="Filipino">Filipino</option>
-    <option value="Other">Other</option>
-  </select>
-  {member.citizenship === "Other" && (
-    <input
-      type="text"
-      name="citizenship_other"
-      placeholder="Please specify citizenship"
-      className={`rbi-form-input ${errors.members[index]?.citizenship ? "input-error" : ""}`}
-      value={member.citizenship_other || ""}
-      onChange={(e) => handleMemberChange(index, e)}
-      required={member.citizenship === "Other"}
-    />
-  )}
-  {errors.members[index]?.citizenship && (
-    <p className="error-message">*{errors.members[index].citizenship}</p>
-  )}
-</div>
+                            <select
+                              id={`member_citizenship_${index}`}
+                              name="citizenship"
+                              className={`rbi-form-select ${errors.members[index]?.citizenship ? "input-error" : ""}`}
+                              value={member.citizenship || ""}
+                              onChange={(e) => handleMemberChange(index, e)}
+                              required
+                            >
+                              <option value="">CITIZENSHIP</option>
+                              <option value="Filipino">Filipino</option>
+                              <option value="Other">Other</option>
+                            </select>
+                            {member.citizenship === "Other" && (
+                              <input
+                                type="text"
+                                name="citizenship_other"
+                                placeholder="Please specify citizenship"
+                                className={`rbi-form-input ${errors.members[index]?.citizenship ? "input-error" : ""}`}
+                                value={member.citizenship_other || ""}
+                                onChange={(e) => handleMemberChange(index, e)}
+                                required={member.citizenship === "Other"}
+                              />
+                            )}
+                            {errors.members[index]?.citizenship && (
+                              <p className="error-message">*{errors.members[index].citizenship}</p>
+                            )}
+                          </div>
 
                           <div className="form-row">
                             <select
