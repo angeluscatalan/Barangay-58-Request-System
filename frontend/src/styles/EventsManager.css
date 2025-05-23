@@ -1,5 +1,5 @@
 /* Update the events-section to match the Certificate Request tab styling */
-.events-section {
+.events-manager-section {
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -10,7 +10,7 @@
 }
 
 /* Add this new style for the events-section container */
-.events-section {
+.events-manager-section {
   background-color: white !important;
   border-radius: 10px;
   padding: 20px;
@@ -22,7 +22,7 @@
   height: 100%;
 }
 
-.table-header {
+.events-manager-header {
   background-color: white !important;
   display: flex;
   justify-content: space-between;
@@ -33,7 +33,7 @@
   width: 100%;
 }
 
-.table-controls {
+.events-manager-controls {
   display: flex;
   align-items: center;
   gap: 15px;
@@ -42,7 +42,7 @@
   min-width: fit-content;
 }
 
-.events-count {
+.events-manager-count {
   font-size: 24px;
   font-weight: 600;
   position: absolute;

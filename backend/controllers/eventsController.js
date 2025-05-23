@@ -106,15 +106,44 @@ exports.createEvent = async (req, res) => {
 // Get all events with pagination
 exports.getEvents = async (req, res) => {
     try {
-        // Parse pagination params
-        const page = parseInt(req.query.page, 10) || 1;
-        const limit = parseInt(req.query.limit, 10) || 9;
-        const offset = (page - 1) * limit;
+        // Check if pagination is requested
+        const isPaginated = req.query.page || req.query.limit;
+        
+        if (isPaginated) {
+            // Parse pagination params
+            const page = parseInt(req.query.page, 10) || 1;
+            const limit = parseInt(req.query.limit, 10) || 9;
+            const offset = (page - 1) * limit;
 
-        // Get total count for pagination
-        const [[{ total }]] = await pool.query(`SELECT COUNT(*) as total FROM archive_events`);
+            // Get total count for pagination
+            const [[{ total }]] = await pool.query(`SELECT COUNT(*) as total FROM archive_events`);
 
-        // Get paginated events
+            // Get paginated events
+            const [rows] = await pool.query(`
+                SELECT 
+                    id, 
+                    event_name,
+                    DATE_FORMAT(event_date, '%Y-%m-%d') as event_date,
+                    TIME_FORMAT(time_start, '%H:%i') as time_start,
+                    TIME_FORMAT(time_end, '%H:%i') as time_end, 
+                    venue, 
+                    description, 
+                    image_url, 
+                    CONVERT_TZ(created_at, 'UTC', 'Asia/Manila') as created_at
+                FROM archive_events
+                ORDER BY created_at DESC
+                LIMIT ? OFFSET ?
+            `, [limit, offset]);
+
+            return res.status(200).json({
+                events: rows,
+                total,
+                page,
+                totalPages: Math.ceil(total / limit)
+            });
+        }
+
+        // If no pagination requested, return all events
         const [rows] = await pool.query(`
             SELECT 
                 id, 
@@ -128,14 +157,11 @@ exports.getEvents = async (req, res) => {
                 CONVERT_TZ(created_at, 'UTC', 'Asia/Manila') as created_at
             FROM archive_events
             ORDER BY created_at DESC
-            LIMIT ? OFFSET ?
-        `, [limit, offset]);
+        `);
 
         res.status(200).json({
             events: rows,
-            total,
-            page,
-            totalPages: Math.ceil(total / limit)
+            total: rows.length
         });
     } catch (error) {
         console.error('Error fetching events:', error);

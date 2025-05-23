@@ -1,30 +1,32 @@
 "use client"
+import React from "react"
 import "../styles/DeleteConfirmationModal.css"
 
-const DeleteConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }) => {
+const DeleteConfirmationModal = ({ 
+  isOpen, 
+  title, 
+  message, 
+  onConfirm, 
+  onCancel, 
+  hideCancel = false,
+  confirmText = "Delete" 
+}) => {
   if (!isOpen) return null
 
   return (
-    <div className="delete-modal-overlay">
-      <div className="delete-confirmation-modal">
-        <div className="delete-modal-header">
-          <h2>{title || "Confirm Delete"}</h2>
-          <button className="close-button" onClick={onCancel}>
-            &times;
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <h2>{title}</h2>
+        <p>{message}</p>
+        <div className="modal-buttons">
+          <button className="confirm-button" onClick={onConfirm}>
+            {confirmText}
           </button>
-        </div>
-
-        <div className="delete-modal-body">
-          <p>{message || "Are you sure you want to delete this item?"}</p>
-        </div>
-
-        <div className="delete-modal-footer">
-          <button className="cancel-button" onClick={onCancel}>
-            Cancel
-          </button>
-          <button className="delete-button" onClick={onConfirm}>
-            Delete
-          </button>
+          {!hideCancel && (
+            <button className="cancel-button" onClick={onCancel}>
+              Cancel
+            </button>
+          )}
         </div>
       </div>
     </div>

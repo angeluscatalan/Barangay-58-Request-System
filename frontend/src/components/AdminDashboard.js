@@ -104,6 +104,14 @@ function AdminDashboard() {
       const approvedRBI = rbiData.filter((rbi) => rbi?.status?.toLowerCase() === "approved")
       const rejectedRBI = rbiData.filter((rbi) => rbi?.status?.toLowerCase() === "rejected")
 
+      // Process events data - ensure we're getting the correct data structure
+      let eventsData = []
+      if (Array.isArray(eventsResponse.data)) {
+        eventsData = eventsResponse.data
+      } else if (eventsResponse.data && Array.isArray(eventsResponse.data.events)) {
+        eventsData = eventsResponse.data.events
+      }
+
       // Get recent requests (last 5)
       const sortedRequests = [...requests]
         .sort((a, b) => new Date(b?.created_at || 0) - new Date(a?.created_at || 0))
@@ -282,7 +290,7 @@ function AdminDashboard() {
         pendingRBI: pendingRBI.length,
         approvedRBI: approvedRBI.length,
         rejectedRBI: rejectedRBI.length,
-        totalEvents: Array.isArray(eventsResponse.data) ? eventsResponse.data.length : 0,
+        totalEvents: eventsData.length,
         // New statistics
         totalRegisteredFamilies,
         totalRegisteredResidents: totalResidents,

@@ -25,17 +25,23 @@ function EventsManager() {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [eventToDelete, setEventToDelete] = useState(null)
   const [showDeleteSelectedModal, setShowDeleteSelectedModal] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [successMessage, setSuccessMessage] = useState("")
 
   const fetchEvents = async () => {
     try {
       setLoading(true)
       const response = await axios.get("http://localhost:5000/api/events")
-      const eventsData = response.data.events || [];
-      setEvents(Array.isArray(eventsData) ? eventsData : []);
+      if (response.data && Array.isArray(response.data.events)) {
+        setEvents(response.data.events)
+      } else {
+        console.error("Invalid events data format:", response.data)
+        setEvents([])
+      }
     } catch (error) {
       console.error("Error fetching events:", error)
       setError("Failed to fetch events")
-      setEvents([]);
+      setEvents([])
     } finally {
       setLoading(false)
     }
@@ -70,6 +76,8 @@ function EventsManager() {
       setEvents((prevEvents) => prevEvents.filter((event) => event.id !== eventToDelete))
       setShowDeleteModal(false)
       setEventToDelete(null)
+      setSuccessMessage("Event successfully deleted!")
+      setShowSuccessModal(true)
     } catch (error) {
       console.error("Delete error:", error)
       alert(`Failed to delete event: ${error.response?.data?.message || error.message}`)
@@ -83,6 +91,8 @@ function EventsManager() {
     setEvents(updatedEvents)
     setShowAddEvent(false)
     setEditingEvent(null)
+    setSuccessMessage("Event successfully updated!")
+    setShowSuccessModal(true)
   }
 
   const formatDate = (dateString) => {
@@ -159,6 +169,8 @@ function EventsManager() {
       fetchEvents()
       setSelectedEvents([])
       setShowDeleteSelectedModal(false)
+      setSuccessMessage("Selected events successfully deleted!")
+      setShowSuccessModal(true)
     } catch (error) {
       console.error("Error deleting events:", error)
       alert("Failed to delete some events")
@@ -201,15 +213,21 @@ function EventsManager() {
   }
 
   const handleAddEvent = (newEvent) => {
-    setEvents((prevEvents) => [...prevEvents, newEvent])
-    setShowAddEvent(false)
-  }
+    setEvents(prevEvents => {
+      const updatedEvents = [newEvent, ...prevEvents];
+      console.log("Updated events:", updatedEvents); // Debug log
+      return updatedEvents;
+    });
+    setShowAddEvent(false);
+    setSuccessMessage("Event successfully added!");
+    setShowSuccessModal(true);
+  };
 
   if (loading) return <div className="loading">Loading events...</div>
   if (error) return <div className="error">{error}</div>
 
   return (
-    <div className="events-section">
+    <div className="events-manager-section">
       {/* Switch Buttons */}
       <div className="view-buttons">
         <button className={viewMode === "table" ? "active" : ""} onClick={() => setViewMode("table")}>
@@ -221,11 +239,11 @@ function EventsManager() {
       </div>
       {viewMode === "table" ? (
         <>
-          <div className="table-header">
-            <div className="events-count">
+          <div className="events-manager-header">
+            <div className="events-manager-count">
               Events <span className="event-count">({filterEvents().length})</span>
             </div>
-            <div className="table-controls">
+            <div className="events-manager-controls">
               <div className="search-container">
                 <input
                   type="text"
@@ -274,7 +292,7 @@ function EventsManager() {
                   <th>
                     <input
                       type="checkbox"
-                      checked={selectedEvents.length === events.length && events.length > 0}
+                      checked={selectedEvents.length === filterEvents().length && filterEvents().length > 0}
                       onChange={handleSelectAll}
                     />
                   </th>
@@ -425,6 +443,17 @@ function EventsManager() {
         message={`Are you sure you want to delete ${selectedEvents.length} selected event(s)?`}
         onConfirm={confirmDeleteSelected}
         onCancel={() => setShowDeleteSelectedModal(false)}
+      />
+
+      {/* Success Modal */}
+      <DeleteConfirmationModal
+        isOpen={showSuccessModal}
+        title="Success"
+        message={successMessage}
+        onConfirm={() => setShowSuccessModal(false)}
+        onCancel={() => setShowSuccessModal(false)}
+        hideCancel={true}
+        confirmText="OK"
       />
     </div>
   )
