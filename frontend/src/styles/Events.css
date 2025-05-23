@@ -218,7 +218,6 @@ body {
 .event-cards-container {
   background-color: #ffe3e2 !important;
   position: relative;
-  display: grid;
   grid-template-columns: repeat(1, 1fr);
   gap: 20px;
   width: 90%;

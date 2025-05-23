@@ -90,6 +90,43 @@ const EventsContent = () => {
         </div>
 
         <h2 className="upcoming-events-title">Events</h2>
+        {totalPages > 1 && (
+          <div className="pagination-controls" style={{ margin: "2rem 0 2rem 0", textAlign: "center" }}>
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              style={{ marginRight: "1rem" }}
+            >
+              Previous
+            </button>
+            {Array.from({ length: totalPages }, (_, idx) => (
+              <button
+                key={idx + 1}
+                onClick={() => setCurrentPage(idx + 1)}
+                className={currentPage === idx + 1 ? "active-page" : ""}
+                style={{
+                  margin: "0 0.25rem",
+                  fontWeight: currentPage === idx + 1 ? "bold" : "normal",
+                  background: currentPage === idx + 1 ? "#da1c6f" : "#fff",
+                  color: currentPage === idx + 1 ? "#fff" : "#000",
+                  border: "1px solid #da1c6f",
+                  borderRadius: "4px",
+                  padding: "0.3rem 0.8rem",
+                  cursor: "pointer"
+                }}
+              >
+                {idx + 1}
+              </button>
+            ))}
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              style={{ marginLeft: "1rem" }}
+            >
+              Next
+            </button>
+          </div>
+        )}
 
         <section className="events-section">
           <div className={`event-cards-container ${expandedEvent ? "has-expanded-event" : ""}`}>
@@ -104,6 +141,9 @@ const EventsContent = () => {
               </div>
             ) : (
               <>
+              <center>
+
+              <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
                 <div
                   className="events-grid"
                   style={{
@@ -116,44 +156,9 @@ const EventsContent = () => {
                     <EventCard key={event.id} event={event} defaultImage={Announcement} />
                   ))}
                 </div>
-                {/* Pagination Controls */}
-                {totalPages > 1 && (
-                  <div className="pagination-controls" style={{ marginTop: "2rem", textAlign: "center" }}>
-                    <button
-                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                      disabled={currentPage === 1}
-                      style={{ marginRight: "1rem" }}
-                    >
-                      Previous
-                    </button>
-                    {Array.from({ length: totalPages }, (_, idx) => (
-                      <button
-                        key={idx + 1}
-                        onClick={() => setCurrentPage(idx + 1)}
-                        className={currentPage === idx + 1 ? "active-page" : ""}
-                        style={{
-                          margin: "0 0.25rem",
-                          fontWeight: currentPage === idx + 1 ? "bold" : "normal",
-                          background: currentPage === idx + 1 ? "#da1c6f" : "#fff",
-                          color: currentPage === idx + 1 ? "#fff" : "#000",
-                          border: "1px solid #da1c6f",
-                          borderRadius: "4px",
-                          padding: "0.3rem 0.8rem",
-                          cursor: "pointer"
-                        }}
-                      >
-                        {idx + 1}
-                      </button>
-                    ))}
-                    <button
-                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                      disabled={currentPage === totalPages}
-                      style={{ marginLeft: "1rem" }}
-                    >
-                      Next
-                    </button>
-                  </div>
-                )}
+              </div>
+
+                </center>
               </>
             )}
           </div>

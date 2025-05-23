@@ -42,7 +42,6 @@ function reqPage() {
   const [showImageUpload, setShowImageUpload] = useState(false);
   const [suffixes, setSuffixes] = useState([]);
   const [certificates, setCertificates] = useState([]);
-  const [statuses, setStatuses] = useState([]); // Add state for statuses if needed in the future
   
   useEffect(() => {
   const fetchCertificates = async () => {
@@ -74,26 +73,13 @@ useEffect(() => {
   fetchSuffixes();
 }, []);
 
-// Fetch statuses (if you want to use them in the future, e.g., for display)
-useEffect(() => {
-  const fetchStatuses = async () => {
-    try {
-      const response = await axios.get('http://localhost:5000/api/requests/statuses');
-      setStatuses(response.data);
-    } catch (error) {
-      // Optionally handle error
-    }
-  };
-  fetchStatuses();
-}, []);
-
   // Handle form field changes
   const handleChange = (e) => {
   let { name, value } = e.target;
 
   // Auto-capitalize names
   if (["last_name", "first_name", "middle_name","unit_no","street","subdivision"].includes(name)) {
-    value = value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
+    value = value.charAt(0).toUpperCase() + value.slice(1);
   }
 
   // Clear sex_other if not "Other" is selected
@@ -225,10 +211,9 @@ useEffect(() => {
     try {
         let s3Key = null;
         let photoUrl = null;
-        // Use certificate name for robustness
-        const cert = certificates.find(c => c.id == formData.certificate_id);
-        const requiresPhoto = cert && (cert.name === "Barangay Clearance" || cert.name === "Barangay ID");
-        if (requiresPhoto && imagePreviewFromModal) {
+        
+        // Modify this condition to include IDApp
+        if ((formData.certificate_id === 1 || formData.certificate_id === 4) && imagePreviewFromModal) {
             const blob = await fetch(imagePreviewFromModal).then(res => res.blob());
             const imageFormData = new FormData();
             imageFormData.append('image', blob, `${formData.last_name}_${Date.now()}.jpg`);
@@ -238,23 +223,23 @@ useEffect(() => {
                 imageFormData,
                 { headers: { 'Content-Type': 'multipart/form-data' } }
             );
+            
             s3Key = uploadResponse.data.s3Key;
             photoUrl = uploadResponse.data.imageUrl;
         }
     // Prepare the request data with both s3_key and photo_url
     const requestData = {
-      ...formData,
-      s3_key: s3Key,
-      photo_url: photoUrl,
-      address: [
-        formData.unit_no,
-        formData.street,
-        formData.subdivision
-      ].filter(Boolean).join(", "),
-      number_of_copies: Number(formData.number_of_copies),
-      suffix_id: formData.suffix_id // Ensure this is included
-      // Do NOT set status or status_id here; backend will default to pending
-    };
+  ...formData,
+  s3_key: s3Key,
+  photo_url: photoUrl,
+  address: [
+    formData.unit_no,
+    formData.street,
+    formData.subdivision
+  ].filter(Boolean).join(", "),
+  number_of_copies: Number(formData.number_of_copies),
+  suffix_id: formData.suffix_id // Ensure this is included
+};
 
     // Create the request
     await axios.post('http://localhost:5000/api/requests', requestData);
