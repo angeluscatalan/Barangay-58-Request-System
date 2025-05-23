@@ -268,7 +268,6 @@ console.log('Full requestData:', JSON.stringify(requestData, null, 2));
         const controlFieldName = {
     'IDApp': 'control_id',
     'BrgyCert': 'control_id',
-    'ClearanceCert': 'Text20',
     'IndigencyCert': 'control_number'
 }[requestData.type_of_certificate];
 

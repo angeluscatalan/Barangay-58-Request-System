@@ -211,9 +211,18 @@ useEffect(() => {
     try {
         let s3Key = null;
         let photoUrl = null;
-        
-        // Modify this condition to include IDApp
-        if ((formData.certificate_id === 1 || formData.certificate_id === 4) && imagePreviewFromModal) {
+
+        // Find the selected certificate object
+        const selectedCertificate = certificates.find(
+          c => String(c.id) === String(formData.certificate_id)
+        );
+
+        // Use the certificate name to determine if photo is required
+        const requiresPhoto = selectedCertificate &&
+          (selectedCertificate.name === "Barangay Clearance" ||
+           selectedCertificate.name === "Barangay ID");
+
+        if (requiresPhoto && imagePreviewFromModal) {
             const blob = await fetch(imagePreviewFromModal).then(res => res.blob());
             const imageFormData = new FormData();
             imageFormData.append('image', blob, `${formData.last_name}_${Date.now()}.jpg`);
@@ -349,18 +358,19 @@ useEffect(() => {
 
       {/* Confirmation Modal - only shown when all validations pass */}
       <ConfirmationModal
-        isOpen={showConfirmation}
-        onClose={() => setShowConfirmation(false)}
-        onConfirm={handleConfirmSubmit}
-        formData={{
-          ...formData,
-          suffix: getSuffixName(formData.suffix_id) // Add the suffix name here
-        }}
-        formType="request"
-        imagePreview={imagePreview}
-        setImagePreview={setImagePreview}
-        certificates={certificates}
-      />
+  isOpen={showConfirmation}
+  onClose={() => setShowConfirmation(false)}
+  onConfirm={handleConfirmSubmit}
+  formData={{
+    ...formData,
+    suffix: getSuffixName(formData.suffix_id),
+    certificate: certificates.find(c => String(c.id) === String(formData.certificate_id)) // Pass the full certificate object
+  }}
+  formType="request"
+  imagePreview={imagePreview}
+  setImagePreview={setImagePreview}
+  certificates={certificates}
+/>
 
       {/* Validation Error Popup */}
       <ValidationErrorPopup

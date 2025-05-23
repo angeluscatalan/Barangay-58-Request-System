@@ -41,6 +41,14 @@ function Request_Manager() {
     fetchStatuses();
   }, []);
 
+  // Auto-refresh table every 1 hour
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchRequests();
+    }, 60 * 60 * 1000); // 1 hour in ms
+    return () => clearInterval(interval);
+  }, [fetchRequests]);
+
   const filterRequests = () => {
     if (!requests) return [];
 
@@ -96,6 +104,11 @@ function Request_Manager() {
     setSelectedRequest(null);
   };
 
+  // Manual refresh handler
+  const handleRefresh = () => {
+    fetchRequests();
+  };
+
   if (loading) return <div className="loading">Loading requests...</div>;
   if (error) return <div className="error">Error: {error}</div>;
 
@@ -110,6 +123,9 @@ function Request_Manager() {
           Pending Requests <span className="request-count">({filteredRequests.length})</span>
         </div>
         <div className="table-controls">
+          <button className="refresh-btn" onClick={handleRefresh} title="Refresh Table">
+            &#x21bb; Refresh
+          </button>
           <form className="search-form" onSubmit={handleSearch}>
             <input
               type="text"
@@ -234,6 +250,22 @@ function Request_Manager() {
                     <span>{selectedRequest.number_of_copies || '1'}</span>
                   </div>
                 </div>
+                {/* Show uploaded image if certificate is Barangay ID Application or Barangay Clearance */}
+                {(
+                  selectedRequest.certificate_name === "Barangay ID Application" ||
+                  selectedRequest.certificate_name === "Barangay Clearance"
+                ) && selectedRequest.photo_url && (
+                  <div className="info-item" style={{ marginTop: "1rem" }}>
+                    <label>Uploaded Photo:</label>
+                    <div style={{ marginTop: 8 }}>
+                      <img
+                        src={selectedRequest.photo_url}
+                        alt="Uploaded"
+                        style={{ maxWidth: 160, maxHeight: 160, borderRadius: 8, border: "1px solid #ccc" }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="applicant-info">
@@ -259,7 +291,11 @@ function Request_Manager() {
                   </div>
                   <div className="info-item">
                     <label>Sex:</label>
-                    <span>{selectedRequest.sex || 'N/A'}</span>
+                    <span>
+                      {selectedRequest.sex_display ||
+                        selectedRequest.sex_name ||
+                        'N/A'}
+                    </span>
                   </div>
                   <div className="info-item">
                     <label>Contact Number:</label>

@@ -14,6 +14,7 @@ const ConfirmationModal = ({
     certificates
 }) => {
   const [showImageUpload, setShowImageUpload] = useState(false) // State managed here
+  const [imageError, setImageError] = useState(""); // Add error state
 
   if (!isOpen) return null
 
@@ -27,20 +28,37 @@ const ConfirmationModal = ({
     })
   }
 
-  const requiresPhotoUpload = () => {
-    if (!certificates || !Array.isArray(certificates)) return false;
-    const cert = certificates.find(c => c.id == formData.certificate_id);
-    if (!cert) return false;
-    return (
-      cert.name === "Barangay Clearance" ||
-      cert.name === "Barangay ID"
-    );
-  };
-  
+const requiresPhotoUpload = () => {
+  // First try to get certificate from formData if it was passed directly
+  if (formData.certificate && 
+      (formData.certificate.name === "Barangay Clearance" || 
+       formData.certificate.name === "Barangay ID")) {
+    return true;
+  }
+
+  // If not, check via certificate_id and certificates list
+  if (!formData.certificate_id || !certificates || !Array.isArray(certificates)) {
+    return false;
+  }
+
+  const cert = certificates.find(c => String(c.id) === String(formData.certificate_id));
+  if (!cert) return false;
+
+  return (
+    cert.name === "Barangay Clearance" ||
+    cert.name === "Barangay ID"
+  );
+};
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB in bytes
+        setImageError("Please upload an image less than 5 MB.");
+        setImagePreview(null);
+        return;
+      }
+      setImageError(""); // Clear error if valid
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
@@ -156,7 +174,10 @@ const ConfirmationModal = ({
         </label>
       </div>
 
-      {!imagePreview && (
+      {imageError && (
+        <p className="upload-warning" style={{ color: "red" }}>{imageError}</p>
+      )}
+      {!imagePreview && !imageError && (
         <p className="upload-warning">Photo upload is required to proceed</p>
       )}
     </div>

@@ -41,8 +41,8 @@ const backupRequest = async (connection, requestData) => {
     `INSERT INTO backup_requests 
      (last_name, first_name, middle_name, suffix_id, sex, sex_other, birthday, 
       contact_no, email, address, certificate_id, 
-      purpose_of_request, number_of_copies, status_id, original_id, created_at, photo_url, s3_key) 
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      purpose_of_request, number_of_copies, status_id, original_id, created_at, photo_url, s3_key, control_id) 
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       requestData.last_name,
       requestData.first_name,
@@ -61,7 +61,8 @@ const backupRequest = async (connection, requestData) => {
       requestData.id,
       requestData.created_at,
       requestData.photo_url || null,
-      requestData.s3_key || null
+      requestData.s3_key || null,
+      requestData.control_id || null // <-- Copy control_id to backup
     ]
   );
 };
@@ -176,6 +177,7 @@ exports.getRequests = async (req, res) => {
       SELECT r.id, r.last_name, r.first_name, r.middle_name, r.suffix_id,
              r.sex, r.sex_other, DATE_FORMAT(r.birthday, '%Y-%m-%d') as birthday,
              r.contact_no, r.email, r.address, r.certificate_id,
+             r.control_id,
              c.name as certificate_name,
              r.purpose_of_request, r.number_of_copies, 
              r.status_id, rs.name as status,
@@ -275,38 +277,11 @@ exports.updateRequestStatus = async (req, res) => {
       return res.status(400).json({ error: 'Invalid status_id' });
     }
 
-    const statusName = statusRows[0].name.toLowerCase();
-    let controlId = request.control_id;
-
-    // Only generate control number if being approved and doesn't have one yet
-    if (statusName === 'approved' && !controlId) {
-      // MySQL approach using LAST_INSERT_ID()
-      const [seqResult] = await connection.query(
-        `UPDATE certificate_sequences 
-         SET last_id = LAST_INSERT_ID(last_id + 1) 
-         WHERE certificate_type = ?;
-         SELECT LAST_INSERT_ID() as last_id;`,
-        [request.certificate_name]
-      );
-
-      // The result contains both the update and select results
-      const lastId = seqResult[1][0].last_id;
-      const currentYear = new Date().getFullYear();
-      const paddedId = lastId.toString().padStart(4, '0');
-      controlId = `${currentYear}-${paddedId}`;
-
-      // Update the request with control_id
-      await connection.query(
-        "UPDATE requests SET control_id = ?, status_id = ? WHERE id = ?",
-        [controlId, status_id, id]
-      );
-    } else {
-      // Just update status if not approving or already has control_id
-      await connection.query(
-        "UPDATE requests SET status_id = ? WHERE id = ?",
-        [status_id, id]
-      );
-    }
+    // Do not generate or set control_id, just update status_id
+    await connection.query(
+      "UPDATE requests SET status_id = ? WHERE id = ?",
+      [status_id, id]
+    );
 
     // Get updated request data to return
     const [updatedRequest] = await connection.query(
@@ -316,29 +291,6 @@ exports.updateRequestStatus = async (req, res) => {
        WHERE r.id = ?`,
       [id]
     );
-
-    if (statusName === 'approved' && !controlId) {
-  console.log('Generating new control ID for request:', id);
-  // ... your existing code ...
-  console.log('Generated control ID:', controlId);
-  
-  await connection.query(
-    "UPDATE requests SET control_id = ?, status_id = ? WHERE id = ?",
-    [controlId, status_id, id]
-  );
-  
-  // Verify the update worked
-  const [verify] = await connection.query(
-    "SELECT control_id FROM requests WHERE id = ?", 
-    [id]
-
-    
-    
-  );
-  console.log('Verified control_id in database:', verify[0].control_id);
-}
-    console.log('Updated request to return:', updatedRequest[0].control_id); // Add this
-
 
     await connection.commit();
 
@@ -495,6 +447,93 @@ exports.restoreRequests = async (req, res) => {
       error: 'Database operation failed',
       details: error.message
     });
+  } finally {
+    connection.release();
+  }
+};
+
+// Generate control_id for eligible requests
+exports.generateControlId = async (req, res) => {
+  const { id } = req.params;
+  const eligibleCertificateNames = [
+    'Barangay ID Application',
+    'Barangay Clearance',
+    'Certificate of Indigency',
+    'Barangay ID',
+    'Barangay Certificate',
+    'Clearance',
+    'Indigency'
+  ];
+
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    // Get request and certificate info
+    const [rows] = await connection.query(
+      `SELECT r.*, c.name as certificate_name FROM requests r
+       JOIN certificates c ON r.certificate_id = c.id
+       WHERE r.id = ?`,
+      [id]
+    );
+    
+    if (rows.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ error: 'Request not found' });
+    }
+    
+    const request = rows[0];
+
+    // If already has control_id, return it (do not change)
+    if (request.control_id) {
+      await connection.commit();
+      return res.json({ control_id: request.control_id });
+    }
+
+    // Only generate for eligible certificate types
+    if (!eligibleCertificateNames.map(n => n.toLowerCase()).includes(request.certificate_name.toLowerCase())) {
+      await connection.commit();
+      return res.json({ control_id: null });
+    }
+
+    // Get the highest existing control_id for this certificate type in the current year from both requests and backup_requests
+    const currentYear = new Date().getFullYear();
+    const controlIdLike = `${currentYear}-%`;
+
+    // Get max from requests
+    const [maxIdRowsRequests] = await connection.query(
+      `SELECT MAX(CAST(SUBSTRING_INDEX(control_id, '-', -1) AS UNSIGNED)) as max_id
+       FROM requests
+       WHERE certificate_id = ? AND control_id LIKE ? AND control_id IS NOT NULL`,
+      [request.certificate_id, controlIdLike]
+    );
+
+    // Get max from backup_requests
+    const [maxIdRowsBackup] = await connection.query(
+      `SELECT MAX(CAST(SUBSTRING_INDEX(control_id, '-', -1) AS UNSIGNED)) as max_id
+       FROM backup_requests
+       WHERE certificate_id = ? AND control_id LIKE ? AND control_id IS NOT NULL`,
+      [request.certificate_id, controlIdLike]
+    );
+
+    const maxIdRequests = maxIdRowsRequests[0].max_id || 0;
+    const maxIdBackup = maxIdRowsBackup[0].max_id || 0;
+    const nextId = Math.max(maxIdRequests, maxIdBackup) + 1;
+    const paddedId = nextId.toString().padStart(4, '0');
+    const controlId = `${currentYear}-${paddedId}`;
+
+    // Update the request with the new control_id
+    await connection.query(
+      `UPDATE requests SET control_id = ? WHERE id = ?`,
+      [controlId, id]
+    );
+
+    await connection.commit();
+    res.json({ control_id: controlId });
+  } catch (error) {
+    await connection.rollback();
+    console.error('Error generating control_id:', error);
+    res.status(500).json({ error: 'Failed to generate control_id', details: error.message });
   } finally {
     connection.release();
   }

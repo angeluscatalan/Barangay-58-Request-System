@@ -43,6 +43,14 @@ function RBI_Request_Manager() {
     fetchRbiRequests(activeFilter, 1, 10, searchTerm);
   }, [fetchRbiRequests, activeFilter, searchTerm]);
 
+  // Auto-refresh table every 1 hour
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchRbiRequests(activeFilter, 1, 10, searchTerm);
+    }, 60 * 60 * 1000); // 1 hour in ms
+    return () => clearInterval(interval);
+  }, [fetchRbiRequests, activeFilter, searchTerm]);
+
   const handleStatusChange = async (id, newStatus) => {
     const success = await updateRbiStatus(id, newStatus);
     if (success) {
@@ -103,6 +111,11 @@ function RBI_Request_Manager() {
     // The search will be cleared by the useEffect hook since we're updating searchTerm
   };
 
+  // Manual refresh handler
+  const handleRefresh = () => {
+    fetchRbiRequests(activeFilter, 1, 10, searchTerm);
+  };
+
   // Helper functions for display
   const getSuffixDisplay = (suffixId) => {
     switch (String(suffixId)) {
@@ -154,6 +167,9 @@ function RBI_Request_Manager() {
           RBI Registrations <span className="event-count">({filterRecords().length || 0})</span>
         </div>
         <div className="table-controls">
+          <button className="refresh-btn" onClick={handleRefresh} title="Refresh Table">
+            &#x21bb; Refresh
+          </button>
           <div className="filter-buttons">
             <button
               className={activeFilter === "pending" ? "active" : ""}
@@ -190,7 +206,7 @@ function RBI_Request_Manager() {
             <form className="search-form" onSubmit={handleSearch}>
               <input
                 type="text"
-                placeholder="Search pending RBI requests..."
+                placeholder="Search RBI requests..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />

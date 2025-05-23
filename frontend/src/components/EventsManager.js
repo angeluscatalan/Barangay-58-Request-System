@@ -261,6 +261,14 @@ function EventsManager() {
                   <option value="Name">Sort by: Name</option>
                 </select>
               </div>
+              <button
+                className="refresh-btn"
+                onClick={fetchEvents}
+                title="Refresh Events"
+                style={{ marginRight: "10px" }}
+              >
+                <i className="fas fa-sync-alt"></i> Refresh
+              </button>
               {selectedEvents.length > 0 && (
                 <button
                   className="bulk-delete-btn"

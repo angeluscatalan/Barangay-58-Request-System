@@ -52,6 +52,7 @@ router.get('/', requestController.getRequests);
 router.get('/:id', requestController.getRequestById);
 router.put('/:id/status', requestController.updateRequestStatus);
 router.delete('/:id', requestController.deleteRequest);
+router.post('/:id/generate-control-id', requestController.generateControlId);
 
 // Backup endpoints
 router.get('/backup/list', requestController.getBackupRequests);

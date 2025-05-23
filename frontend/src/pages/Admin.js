@@ -189,13 +189,13 @@ function Admin() {
 
   // Filter to show only non-pending requests (hide pending)
   const approvedRequests = useMemo(
-    () => requests.filter((request) => {
-      // Exclude 'Pending' requests so they only appear after status is changed
-      const statusName = (request.status || '').toLowerCase();
-      return statusName !== 'pending';
-    }),
-    [requests],
-  )
+  () => requests.filter((request) => {
+    // Exclude 'Pending' requests so they only appear after status is changed
+    const statusName = (request.status || '').toLowerCase();
+    return statusName !== 'pending';
+  }),
+  [requests],
+);
 
   // Filter requests based on type, status, and search query
   const filteredRequests = useMemo(() => {
@@ -215,6 +215,8 @@ function Admin() {
         `${request.last_name}, ${request.first_name} ${request.middle_name || ""}`
           .toLowerCase()
           .includes(searchQuery.toLowerCase())
+        // --- Add control number search ---
+        || (request.control_id && request.control_id.toLowerCase().includes(searchQuery.toLowerCase()));
 
       return matchesType && matchesStatus && matchesSearch
     })
@@ -414,80 +416,91 @@ function Admin() {
   const handlePrintRequest = async (request) => {
   setIsPrinting((prev) => ({ ...prev, [request.id]: true }));
   try {
-     console.log("Request data being sent:", {
-      ...request,
-      control_id: request.control_id // Ensure this is included
-    });
-
+    let control_id = request.control_id;
+    const eligibleTypes = [
+      'Barangay ID Application',
+      'Barangay Clearance',
+      'Certificate of Indigency',
+      'Barangay Certificate',
+      'Clearance',
+      'Indigency'
+    ];
     
-    console.log("Sending request data:", request);
+    const certName = request.certificate_name;
     
-    // Find the certificate details based on certificate_id
-    const certificate = certificates.find(cert => cert.id === request.certificate_id);
-    if (!certificate) {
-      throw new Error("Certificate type not found");
-    }
-
-    // Map frontend certificate names to backend types
-    const certificateTypeMap = {
-      'Barangay Clearance': 'ClearanceCert',
-      'Certificate of Indigency': 'IndigencyCert',
-      'Barangay Jobseeker': 'JobseekerCert',
-      'Barangay ID': 'IDApp',
-      'Barangay Certificate': 'BrgyCert'
-    };
-
-    const backendCertificateType = certificateTypeMap[certificate.name] || 
-                                 certificate.name.replace(/\s+/g, '');
-
-    const response = await axios.post(
-      "http://localhost:5000/api/certificates/generate-pdf",
-      {
-        requestData: {
-          ...request,
-          type_of_certificate: backendCertificateType,
-          control_id: request.control_id,
-          s3_key: request.s3_key,
-        },
-      },
-      {
-        responseType: "blob",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+    if (eligibleTypes.map(n => n.toLowerCase()).includes(certName.toLowerCase())) {
+      if (!control_id) {
+        const token = localStorage.getItem("token");
+        const resp = await axios.post(
+          `http://localhost:5000/api/requests/${request.id}/generate-control-id`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        control_id = resp.data.control_id;
+        
+        // Update the requests in context/state
+        await fetchRequests(); // This will refresh the list with the new control_id
       }
-    );
-
-    // Handle ZIP for Jobseeker certificates
-    if (certificate.name === "Barangay Jobseeker") {
-      const file = new Blob([response.data], { type: "application/zip" });
-      const fileURL = URL.createObjectURL(file);
-      const link = document.createElement("a");
-      link.href = fileURL;
-      link.download = `JobseekerDocuments_${request.last_name}.zip`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(fileURL);
-    } else {
-      // Handle regular PDFs
-      const file = new Blob([response.data], { type: "application/pdf" });
-      const fileURL = URL.createObjectURL(file);
-      const link = document.createElement("a");
-      link.href = fileURL;
-      link.download = `${certificate.name.replace(/\s+/g, '_')}_${request.last_name}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(fileURL);
     }
-  } catch (error) {
-    console.error("Error printing certificate:", error);
-    alert(`Failed to generate certificate: ${error.message}`);
-  } finally {
-    setIsPrinting((prev) => ({ ...prev, [request.id]: false }));
-  }
-};
+      // Map frontend certificate names to backend types
+      const certificateTypeMap = {
+        'Barangay ID Application': 'IDApp',
+        'Barangay Clearance': 'ClearanceCert',
+        'Certificate of Indigency': 'IndigencyCert',
+        'Barangay Jobseeker': 'JobseekerCert',
+        'Barangay Certificate': 'BrgyCert'
+      };
+
+      const backendCertificateType = certificateTypeMap[certName] || certName.replace(/\s+/g, '');
+
+      const response = await axios.post(
+        "http://localhost:5000/api/certificates/generate-pdf",
+        {
+          requestData: {
+            ...request,
+            type_of_certificate: backendCertificateType,
+            control_id: control_id,
+            s3_key: request.s3_key,
+          },
+        },
+        {
+          responseType: "blob",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      // Handle ZIP for Jobseeker certificates
+      if (certName === "Barangay Jobseeker") {
+        const file = new Blob([response.data], { type: "application/zip" });
+        const fileURL = URL.createObjectURL(file);
+        const link = document.createElement("a");
+        link.href = fileURL;
+        link.download = `JobseekerDocuments_${request.last_name}.zip`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(fileURL);
+      } else {
+        // Handle regular PDFs
+        const file = new Blob([response.data], { type: "application/pdf" });
+        const fileURL = URL.createObjectURL(file);
+        const link = document.createElement("a");
+        link.href = fileURL;
+        link.download = `${certName.replace(/\s+/g, '_')}_${request.last_name}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(fileURL);
+      }
+    } catch (error) {
+      console.error("Error printing certificate:", error);
+      alert(`Failed to generate certificate: ${error.message}`);
+    } finally {
+       setIsPrinting((prev) => ({ ...prev, [request.id]: false }));
+    }
+  };
 
   if (requestsLoading || certificates.length === 0) return <div className="loading">Loading...</div> // Adjust loading check
   if (requestsError) return <div className="error">Error: {requestsError}</div>
