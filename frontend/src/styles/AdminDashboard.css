@@ -407,24 +407,38 @@
 .refresh-button {
   background-color: #3498db;
   color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
+  border: 2px solid #3498db;
+  padding: 10px 16px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
-  transition: all 0.3s;
+  font-weight: 500;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .refresh-button:hover {
-  background-color: #2980b9;
+  background-color: transparent;
+  color: #3498db;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.refresh-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .refresh-button:disabled {
   background-color: #cccccc;
+  border-color: #cccccc;
+  color: #666666;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .demographics-stats {

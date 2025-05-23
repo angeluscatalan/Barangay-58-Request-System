@@ -168,7 +168,7 @@ function RBI_Request_Manager() {
         </div>
         <div className="table-controls">
           <button className="refresh-btn" onClick={handleRefresh} title="Refresh Table">
-            &#x21bb; Refresh
+            <i className="fas fa-sync-alt"></i> Refresh
           </button>
           <div className="filter-buttons">
             <button

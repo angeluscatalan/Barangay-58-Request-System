@@ -443,6 +443,7 @@ body {
 }
 
 .modal-content {
+  width: 80vw !important;
   flex: 1;
   padding: 30px;
   overflow-y: auto;

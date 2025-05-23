@@ -831,8 +831,8 @@ function AdminDashboard() {
                 <span className="data-source-value">RBI Approved Registrations</span>
                 <span className="data-source-timestamp">Last updated: {lastUpdated.toLocaleString()}</span>
               </div>
-              <button onClick={refreshDashboardData} disabled={loading} className="refresh-button">
-                {loading ? "Refreshing..." : "Refresh Data"}
+              <button onClick={refreshDashboardData} disabled={loading} className="refresh-btn">
+                <i className="fas fa-sync-alt"></i> {loading ? "Refreshing..." : "Refresh Data"}
               </button>
             </div>
 
