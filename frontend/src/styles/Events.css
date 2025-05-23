@@ -322,11 +322,12 @@ body {
 .event-date {
   color: #666;
   font-size: 14px;
-  margin-bottom: 8px;
+  margin-bottom: 0px;
   text-align: left;
 }
 
 .event-time {
+  margin-bottom: 0px;
   font-size: medium;
   color: #d90452;
   font-weight: bold;
@@ -457,11 +458,19 @@ body {
   line-height: 1.2;
 }
 
+.modal-time {
+  margin-bottom: 0px !important;
+}
+
+.modal-date {
+  margin-bottom: 0px !important;
+}
+
 .modal-details {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
-  margin-bottom: 30px;
+  margin-bottom: 0px;
   font-size: 1rem;
 }
 
@@ -470,6 +479,16 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 10px;
+  margin-bottom: 10px;
+}
+
+.modal-venue {
+  width: 100%;
+  margin-top: -15px;
+  padding-top: 0px;
+  border-top: 1px solid #eee;
+  color: #666;
+  font-size: 0.95rem;
 }
 
 .modal-description h3 {
