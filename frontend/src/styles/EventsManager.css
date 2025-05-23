@@ -154,7 +154,7 @@
 
 .action-btn {
   background: none;
-  border: none;
+  border: 2px solid transparent;
   padding: 5px 10px;
   cursor: pointer;
   transition: all 0.3s;
@@ -166,18 +166,38 @@
 
 .action-btn.edit {
   color: #0d6efd;
+  border-color: transparent;
+}
+
+.action-btn.edit:hover {
+  border-color: #0d6efd;
 }
 
 .action-btn.delete {
   color: #dc3545;
+  border-color: transparent;
+}
+
+.action-btn.delete:hover {
+  border-color: #dc3545;
 }
 
 .action-btn.published {
   color: #198754;
+  border-color: transparent;
+}
+
+.action-btn.published:hover {
+  border-color: #198754;
 }
 
 .action-btn:not(.published) {
   color: #6c757d;
+  border-color: transparent;
+}
+
+.action-btn:not(.published):hover {
+  border-color: #6c757d;
 }
 
 .action-btn:hover {
@@ -346,7 +366,7 @@
 
 .view-buttons button {
   padding: 8px 15px;
-  border: 1px solid #ddd;
+  border: 2px solid #ddd;
   background-color: #f8f9fa;
   border-radius: 5px;
   cursor: pointer;
@@ -360,5 +380,7 @@
 }
 
 .view-buttons button:hover:not(.active) {
-  background-color: #e9ecef;
+  background-color: transparent;
+  color: #da1c6f;
+  border-color: #da1c6f;
 }

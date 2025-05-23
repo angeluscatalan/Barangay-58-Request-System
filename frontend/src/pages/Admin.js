@@ -493,15 +493,20 @@ function Admin() {
     return (
       <div className="admin-mobile-message">
         <div className="mobile-warning">
-          <i className="fas fa-desktop" style={{ fontSize: "3rem", color: "#da1c6f", marginBottom: "1rem" }}></i>
-          <h2>Desktop View Required</h2>
-          <p>⚠️ The Admin Page is best viewed on desktop or laptop devices.</p>
-          <p>Please use a device with a larger screen for the optimal experience.</p>
+          <i className="fas fa-tablet-alt" style={{ fontSize: "3rem", color: "#da1c6f", marginBottom: "1rem" }}></i>
+          <h2>Device Compatibility Notice</h2>
+          <p>The Admin Dashboard is optimized for:</p>
+          <div className="device-list">
+            <p><strong>✓ Tablets</strong> (iPad, iPad Mini, etc.)</p>
+            <p><strong>✓ Desktop computers</strong></p>
+            <p><strong>✓ Laptops</strong></p>
+          </div>
+          <p style={{ marginTop: "1rem", color: "#666" }}>For the best experience, please use one of these devices.</p>
           <button
             className="back-button"
             onClick={() => navigate("/")}
             style={{
-              marginTop: "1rem",
+              marginTop: "1.5rem",
               padding: "0.5rem 1rem",
               backgroundColor: "#da1c6f",
               color: "white",

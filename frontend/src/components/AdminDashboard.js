@@ -34,6 +34,7 @@ function AdminDashboard() {
       adult: 0, // 36-59 years
       seniorCitizen: 0, // 60+ years
     },
+    occupationStats: {}
   })
 
   const [recentRequests, setRecentRequests] = useState([])
@@ -256,6 +257,21 @@ function AdminDashboard() {
         }
       })
 
+      const occupationCounts = {};
+
+      // Count occupations for household heads
+      approvedRegistrations.forEach((registration) => {
+        const occupation = registration.occupation || "Not Specified";
+        occupationCounts[occupation] = (occupationCounts[occupation] || 0) + 1;
+
+        // Count occupations for household members
+        if (registration.members && Array.isArray(registration.members)) {
+          registration.members.forEach((member) => {
+            const memberOccupation = member.occupation || "Not Specified";
+            occupationCounts[memberOccupation] = (occupationCounts[memberOccupation] || 0) + 1;
+          });
+        }
+      });
 
       setStats({
         totalRequests: requests.length,
@@ -272,6 +288,7 @@ function AdminDashboard() {
         totalRegisteredResidents: totalResidents,
         genderRatio: { male: maleCount, female: femaleCount, other: otherCount, preferNotToSay: preferNotToSayCount },
         ageBrackets,
+        occupationStats: occupationCounts
       })
 
       setRecentRequests(sortedRequests)
@@ -306,6 +323,7 @@ function AdminDashboard() {
           adult: 0,
           seniorCitizen: 0,
         },
+        occupationStats: {}
       })
     } finally {
       setLoading(false)
@@ -563,6 +581,67 @@ function AdminDashboard() {
       </div>
     )
   }
+
+  const occupationData = [
+    { name: "Employed", value: stats.occupationStats["Employed"] || 0 },
+    { name: "Unemployed", value: stats.occupationStats["Unemployed"] || 0 },
+    { name: "Student", value: stats.occupationStats["Student"] || 0 },
+    { name: "Retired", value: stats.occupationStats["Retired"] || 0 },
+    { name: "Self-employed", value: stats.occupationStats["Self-employed"] || 0 },
+    { name: "Homemaker", value: stats.occupationStats["Homemaker"] || 0 },
+    { name: "Unable to Work", value: stats.occupationStats["Unable to Work"] || 0 },
+    { name: "Not Specified", value: stats.occupationStats["Not Specified"] || 0 }
+  ];
+
+  const OCCUPATION_COLORS = [
+    "#4caf50", // Employed - Green
+    "#f44336", // Unemployed - Red
+    "#2196f3", // Student - Blue
+    "#9c27b0", // Retired - Purple
+    "#ff9800", // Self-employed - Orange
+    "#00bcd4", // Homemaker - Cyan
+    "#607d8b", // Unable to Work - Blue Grey
+    "#9e9e9e"  // Not Specified - Grey
+  ];
+
+  const renderCSSBarChartOccupation = () => {
+    const values = occupationData.map(item => item.value);
+    const maxValue = Math.max(...values, 1);
+
+    if (values.every((value) => value === 0)) {
+      return (
+        <div className="no-data-chart">
+          <p>No occupation data available</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="css-bar-chart-container">
+        <div className="css-bar-chart occupation-chart">
+          {occupationData.map(({ name, value }, index) => {
+            const height = (value / maxValue) * 100;
+            return (
+              <div key={name} className="css-bar-item">
+                <div className="css-bar-container">
+                  <div
+                    className="css-bar"
+                    style={{
+                      height: `${height}%`,
+                      backgroundColor: OCCUPATION_COLORS[index],
+                    }}
+                  >
+                    <span className="css-bar-value">{value}</span>
+                  </div>
+                </div>
+                <div className="css-bar-label">{name}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
 
   if (loading) {
     return (
@@ -835,6 +914,29 @@ function AdminDashboard() {
                     <span className="age-bracket-label">Senior (60+):</span>
                     <span className="age-bracket-value">{stats.ageBrackets.seniorCitizen}</span>
                   </div>
+                </div>
+              </div>
+
+              <div className="chart-container">
+                <h3>Occupation Distribution</h3>
+                <div className="chart-wrapper">
+                  {loading ? (
+                    <div className="chart-loading">
+                      <div className="spinner"></div>
+                      <p>Loading chart data...</p>
+                    </div>
+                  ) : (
+                    renderCSSBarChartOccupation()
+                  )}
+                </div>
+                <div className="occupation-summary">
+                  {occupationData.map(({ name, value }, index) => (
+                    <div className="occupation-item" key={name}>
+                      <span className="occupation-color" style={{ backgroundColor: OCCUPATION_COLORS[index] }}></span>
+                      <span className="occupation-label">{name}:</span>
+                      <span className="occupation-value">{value}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>

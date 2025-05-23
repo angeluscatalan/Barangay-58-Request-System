@@ -25,7 +25,7 @@ function LandingModal({ isOpen, onClose }) {
         <button className="landing-modal-close" onClick={onClose}>
           &times;
         </button>
-        <h2 className="landing-modal-title">Upcoming Events</h2>
+        <h2 className="landing-modal-title">Lastest Events!</h2>
         <EventsSlideshow />
       </div>
     </div>

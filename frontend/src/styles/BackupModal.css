@@ -113,18 +113,21 @@
     padding: 0.5rem 1rem;
     background-color: #007bff;
     color: white;
-    border: none;
+    border: 2px solid #007bff;
     border-radius: 4px;
     cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.restore-btn:hover:not(:disabled) {
+    background-color: transparent;
+    color: #007bff;
 }
 
 .restore-btn:disabled {
     background-color: #ccc;
+    border-color: #ccc;
     cursor: not-allowed;
-}
-
-.restore-btn:hover:not(:disabled) {
-    background-color: #0056b3;
 }
 
 /* Password Modal Styles */
@@ -159,29 +162,34 @@
     padding: 0.5rem 1rem;
     background-color: #6c757d;
     color: white;
-    border: none;
+    border: 2px solid #6c757d;
     border-radius: 4px;
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .cancel-btn:hover {
-    background-color: #5a6268;
+    background-color: transparent;
+    color: #6c757d;
 }
 
 .verify-btn {
     padding: 0.5rem 1rem;
     background-color: #28a745;
     color: white;
-    border: none;
+    border: 2px solid #28a745;
     border-radius: 4px;
     cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.verify-btn:hover:not(:disabled) {
+    background-color: transparent;
+    color: #28a745;
 }
 
 .verify-btn:disabled {
     background-color: #ccc;
+    border-color: #ccc;
     cursor: not-allowed;
-}
-
-.verify-btn:hover:not(:disabled) {
-    background-color: #218838;
 }

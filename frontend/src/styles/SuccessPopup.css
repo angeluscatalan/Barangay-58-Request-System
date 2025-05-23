@@ -57,19 +57,18 @@
 .success-button {
   background-color: #2563eb;
   color: white;
-  border: none;
+  border: 2px solid #2563eb;
   border-radius: 4px;
   padding: 10px 20px;
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
 }
 
 .success-button:hover {
-  border: solid  #1d4ed8;
-  color:  #1d4ed8;
   background-color: transparent;
+  color: #2563eb;
 }
 
 @media (max-width: 640px) {

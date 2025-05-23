@@ -131,23 +131,24 @@
 .back-button {
   background-color: #f1f1f1;
   color: #333;
-  border: 1px solid #ddd;
+  border: 2px solid #ddd;
 }
 
 .back-button:hover {
-  background-color: #e5e5e5;
+  background-color: transparent;
+  color: #666;
+  border-color: #666;
 }
 
 .submit-button {
   background-color: #da1c6f;
   color: white;
-  border: none;
+  border: 2px solid #da1c6f;
 }
 
 .submit-button:hover {
-  border: solid #da1c6f;
-  color: #da1c6f;
   background-color: transparent;
+  color: #da1c6f;
 }
 
 .image-upload-section {
@@ -244,7 +245,49 @@
   margin-top: 10px;
 }
 
-@media (max-width: 768px) {
+@media (min-width: 600px) and (max-width: 1023px) {
+  .confirmation-modal {
+    width: 90%;
+    max-height: 85vh;
+  }
+
+  .modal-header h2 {
+    font-size: 1.3rem;
+  }
+
+  .data-row {
+    margin-bottom: 10px;
+  }
+
+  .data-label {
+    width: 130px;
+    font-size: 13px;
+  }
+
+  .data-value {
+    font-size: 13px;
+  }
+
+  .back-button,
+  .submit-button {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+
+  .modal-body {
+    padding: 15px;
+  }
+
+  .confirmation-data h3 {
+    font-size: 1.1rem;
+  }
+
+  .confirmation-data h4 {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 599px) {
   .confirmation-modal {
     width: 95%;
     max-height: 80vh;
