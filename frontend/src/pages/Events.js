@@ -1,13 +1,14 @@
 "use client"
 
-import { useContext, useEffect, useState } from "react"
+import React, { useContext, useEffect, useState, lazy, Suspense } from "react"
 import "../styles/Events.css"
 import ScrollIcon from "../assets/SDA.png"
 import Announcement from "../assets/Announce.png"
 import EventCard from "../components/event-card"
-import EventModal from "../components/event-modal"
 import { EventsProvider, EventsContext } from "../components/events-context"
-import Footer from "../components/Footer"
+// Use React.lazy for non-critical components
+const EventModal = lazy(() => import("../components/event-modal"))
+const Footer = lazy(() => import("../components/Footer"))
 
 // Main component wrapper with context
 const Events = () => {
@@ -23,6 +24,18 @@ const EventsContent = () => {
   const { publishedEvents, loading, expandedEvent, setExpandedEvent } = useContext(EventsContext)
   const [currentPage, setCurrentPage] = useState(1)
   const EVENTS_PER_PAGE = 9
+
+  // Lazy load Facebook iframe on scroll
+  const [loadIframe, setLoadIframe] = useState(false)
+  useEffect(() => {
+    const onScroll = () => {
+      if (window.scrollY > 300 && !loadIframe) {
+        setLoadIframe(true)
+      }
+    }
+    window.addEventListener("scroll", onScroll)
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [loadIframe])
 
   useEffect(() => {
     // Check if there's a selected event ID in sessionStorage
@@ -67,12 +80,17 @@ const EventsContent = () => {
           <p className="scroll-down" onClick={scrollToSection}>
             SCROLL DOWN
           </p>
-          <img
-            src={ScrollIcon || "/placeholder.svg"}
-            alt="Scroll Down"
-            className="scroll-down-icon"
-            onClick={scrollToSection}
-          />
+          {/* Use regular img since next/image is not available */}
+          <span onClick={scrollToSection} style={{ cursor: "pointer" }}>
+            <img
+              src={ScrollIcon || "/placeholder.svg"}
+              alt="Scroll Down"
+              width={32}
+              height={32}
+              className="scroll-down-icon"
+              loading="lazy"
+            />
+          </span>
         </div>
       </section>
 
@@ -80,12 +98,20 @@ const EventsContent = () => {
         <div className="embed-container">
           <h2>Barangay 58 Facebook Updates</h2>
           <div className="events-content">
-            <iframe
-              src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fprofile.php%3Fid%3D61552676805291&tabs=timeline&width=500&height=350&small_header=true&adapt_container_width=true&hide_cover=true&show_facepile=false&appId"
-              scrolling="no"
-              frameBorder="0"
-              allowFullScreen={true}
-            ></iframe>
+            {/* Lazy load Facebook iframe */}
+            {loadIframe && (
+              <iframe
+                src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fprofile.php%3Fid%3D61552676805291&tabs=timeline&width=500&height=350&small_header=true&adapt_container_width=true&hide_cover=true&show_facepile=false&appId"
+                scrolling="no"
+                frameBorder="0"
+                allowFullScreen={true}
+              ></iframe>
+            )}
+            {!loadIframe && (
+              <div style={{ minHeight: 350, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ color: "#888" }}>Scroll down to load Facebook updates...</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -164,11 +190,11 @@ const EventsContent = () => {
           </div>
         </section>
       </section>
-
-      {/* Event Modal - completely separate from the cards */}
-      <EventModal defaultImage={Announcement} />
-
-      <Footer />
+      {/* Lazy loaded Event Modal and Footer using Suspense */}
+      <Suspense fallback={<div>Loading...</div>}>
+        <EventModal defaultImage={Announcement} />
+        <Footer />
+      </Suspense>
     </>
   )
 }
