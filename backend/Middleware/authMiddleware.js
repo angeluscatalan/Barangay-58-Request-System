@@ -14,7 +14,6 @@ exports.authenticateToken = (req, res, next) => {
       return res.status(403).json({ message: "Invalid or expired token" });
     }
     
-    console.log('Token verified for user:', user.username);
     req.user = user;
     next();
   });

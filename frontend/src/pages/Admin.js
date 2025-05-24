@@ -688,7 +688,6 @@ useEffect(() => {
           <header>
             <div className="profile-section">
               <div className="notifications">
-                <i className="fas fa-bell"></i>
               </div>
               <div
                 className="avatar"
