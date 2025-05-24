@@ -20,7 +20,7 @@ const BackupRBIModal = ({ isOpen, onClose, onRestore }) => {
         try {
             setLoading(true);
             const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:5000/api/rbi/backup/list', {
+            const response = await axios.get('https://barangay-58-pasay.vercel.app/api/rbi/backup/list', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setBackupRBI(response.data.map(item => ({
@@ -44,7 +44,7 @@ const BackupRBIModal = ({ isOpen, onClose, onRestore }) => {
         try {
             setLoading(true);
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:5000/api/rbi/backup/restore', {
+            await axios.post('https://barangay-58-pasay.vercel.app/api/rbi/backup/restore', {
                 householdIds: selectedRBI
             }, {
                 headers: { Authorization: `Bearer ${token}` }

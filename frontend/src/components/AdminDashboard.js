@@ -75,7 +75,7 @@ function AdminDashboard() {
         Authorization: `Bearer ${token}`,
       }
 
-      const baseURL = "http://localhost:5000/api"
+      const baseURL = "https://barangay-58-pasay.vercel.app/api"
 
       // Use Promise.all to fetch data concurrently
       const [requestsResponse, rbiResponse, eventsResponse] = await Promise.all([
@@ -380,7 +380,7 @@ function AdminDashboard() {
       const token = localStorage.getItem("token")
 
       const response = await axios.post(
-        "http://localhost:5000/api/export/export-database",
+        "https://barangay-58-pasay.vercel.app/api/export/export-database",
         { password: adminPassword },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -428,7 +428,7 @@ function AdminDashboard() {
       formData.append("sqlFile", selectedFile)
       formData.append("password", importPassword)
 
-      const response = await axios.post("http://localhost:5000/api/import/import-database", formData, {
+      const response = await axios.post("https://barangay-58-pasay.vercel.app/api/import/import-database", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",

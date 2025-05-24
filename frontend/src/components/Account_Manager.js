@@ -35,7 +35,7 @@ function Account_Manager() {
       }
     }
 
-      const response = await axios.get("http://localhost:5000/api/admin/accounts", {
+      const response = await axios.get("https://barangay-58-pasay.vercel.app/api/admin/accounts", {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -85,12 +85,12 @@ function Account_Manager() {
   
       const response = editMode 
   ? await axios.put(
-      `http://localhost:5000/api/admin/accounts/${currentAccount.id}`,
+      `https://barangay-58-pasay.vercel.app/api/admin/accounts/${currentAccount.id}`,
       accountData,
       { headers: { Authorization: `Bearer ${token}` } }
     )
   : await axios.post(
-      "http://localhost:5000/api/admin/accounts",
+      "https://barangay-58-pasay.vercel.app/api/admin/accounts",
       accountData,
       { headers: { Authorization: `Bearer ${token}` } }
     );

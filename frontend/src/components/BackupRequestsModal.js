@@ -35,7 +35,7 @@ const BackupRequestsModal = ({ isOpen, onClose, onRestore, statuses = [] }) => {
         }
 
         const response = await axios.post(
-            'http://localhost:5000/api/auth/verify-password',
+            'https://barangay-58-pasay.vercel.app/api/auth/verify-password',
             { password },
             {
                 headers: {
@@ -97,7 +97,7 @@ const BackupRequestsModal = ({ isOpen, onClose, onRestore, statuses = [] }) => {
     }
 
     const response = await axios.get(
-      'http://localhost:5000/api/requests/backup/list',
+      'https://barangay-58-pasay.vercel.app/api/requests/backup/list',
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -152,7 +152,7 @@ const BackupRequestsModal = ({ isOpen, onClose, onRestore, statuses = [] }) => {
                 return;
             }
             await axios.post(
-                'http://localhost:5000/api/requests/backup/restore',
+                'https://barangay-58-pasay.vercel.app/api/requests/backup/restore',
                 {
                     requestIds: selectedRequests,
                     ...(pendingStatusId && { status_id: pendingStatusId })

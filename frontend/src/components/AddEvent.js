@@ -78,8 +78,8 @@ function AddEvent({ onClose, onAddEvent, editData = null, onEditEvent }) {
 
     try {
         const url = editData
-            ? `http://localhost:5000/api/events/${editData.id}`
-            : 'http://localhost:5000/api/events';
+            ? `https://barangay-58-pasay.vercel.app/api/events/${editData.id}`
+            : 'https://barangay-58-pasay.vercel.app/api/events';
 
         const method = editData ? 'PUT' : 'POST';
 
