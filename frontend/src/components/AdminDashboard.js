@@ -694,14 +694,6 @@ function AdminDashboard() {
       </div>
 
       <div className="dashboard-actions">
-        <button onClick={() => setShowPasswordModal(true)} disabled={isExporting} className="export-button">
-          {isExporting ? "Exporting..." : "Export Database"}
-        </button>
-        {exportError && <div className="error-message">{exportError}</div>}
-        <button onClick={() => setShowImportModal(true)} disabled={isImporting} className="import-button">
-          {isImporting ? "Importing..." : "Import Database"}
-        </button>
-        {importError && <div className="error-message">{importError}</div>}
       </div>
 
       <div className="dashboard-content">
