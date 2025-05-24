@@ -29,7 +29,6 @@ function Account_Manager() {
        if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        console.log('Token payload:', payload);
       } catch (e) {
         console.error('Token decode error:', e);
       }
@@ -69,7 +68,6 @@ function Account_Manager() {
       const token = localStorage.getItem('token');
       if (token) {
   const payload = JSON.parse(atob(token.split('.')[1]));
-  console.log('Current user access level:', payload.access_level);
 }
       
       // Prepare the account data with all required fields
@@ -80,8 +78,6 @@ function Account_Manager() {
         access_level: parseInt(currentAccount.access_level) || 1, // Ensure it's a number
         archive: currentAccount.archive || 'NO' // Default to 'NO' if not provided
       };
-
-      console.log("Submitting account data:", accountData);
   
       const response = editMode 
   ? await axios.put(
@@ -94,8 +90,6 @@ function Account_Manager() {
       accountData,
       { headers: { Authorization: `Bearer ${token}` } }
     );
-
-console.log("Server response:", response.data);
 setShowModal(false);
 
 // If editing, update the specific account in state

@@ -248,8 +248,7 @@ function EventsManager() {
 
   const handleAddEvent = (newEvent) => {
     setEvents(prevEvents => {
-      const updatedEvents = [newEvent, ...prevEvents];
-      console.log("Updated events:", updatedEvents); // Debug log
+      const updatedEvents = [newEvent, ...prevEvents]; // Debug log
       return updatedEvents;
     });
     setShowAddEvent(false);
