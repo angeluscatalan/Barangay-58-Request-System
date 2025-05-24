@@ -23,7 +23,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors({
-  origin: "https://barangay-58-pasay.vercel.app", 
+  origin: "https://barangay-58-pasay-city.vercel.app", 
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: false, // <-- Set to false for header-based JWT auth
   allowedHeaders: ['Content-Type', 'Authorization'],
