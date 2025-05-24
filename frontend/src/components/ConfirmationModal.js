@@ -30,9 +30,14 @@ const ConfirmationModal = ({
 
 const requiresPhotoUpload = () => {
   // First try to get certificate from formData if it was passed directly
-  if (formData.certificate && 
-      (formData.certificate.name === "Barangay Clearance" || 
-       formData.certificate.name === "Barangay ID")) {
+  if (
+    formData.certificate &&
+    (
+      formData.certificate.name === "Barangay Clearance" ||
+      formData.certificate.name === "Barangay ID" ||
+      formData.certificate.name === "Barangay ID Application" // <-- Add this
+    )
+  ) {
     return true;
   }
 
@@ -46,7 +51,8 @@ const requiresPhotoUpload = () => {
 
   return (
     cert.name === "Barangay Clearance" ||
-    cert.name === "Barangay ID"
+    cert.name === "Barangay ID" ||
+    cert.name === "Barangay ID Application" // <-- Add this
   );
 };
 

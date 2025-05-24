@@ -218,9 +218,13 @@ const handleConfirmSubmit = async (imagePreviewFromModal) => {
     );
 
     // Use the certificate name to determine if photo is required
-    const requiresPhoto = selectedCertificate &&
-      (selectedCertificate.name === "Barangay Clearance" ||
-       selectedCertificate.name === "Barangay ID");
+    const requiresPhoto =
+      selectedCertificate &&
+      (
+        selectedCertificate.name === "Barangay Clearance" ||
+        selectedCertificate.name === "Barangay ID" ||
+        selectedCertificate.name === "Barangay ID Application" // <-- Add this
+      );
 
     if (requiresPhoto && imagePreviewFromModal) {
       const blob = await fetch(imagePreviewFromModal).then(res => res.blob());
