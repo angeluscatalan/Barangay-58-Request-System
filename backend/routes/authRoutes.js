@@ -6,7 +6,8 @@ const pool = require('../config/db');
 
 // Existing auth routes
 router.post('/login', authController.loginAdmin);
-router.post('/logout', authController.logoutAdmin);
+router.post('/logout', authController.authenticateToken, authController.logoutAdmin);
+
 
 // Password reset routes
 router.post('/forgot-password', authController.forgotPassword);

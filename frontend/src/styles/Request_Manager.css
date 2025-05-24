@@ -704,3 +704,20 @@ input[type="checkbox"] {
   background-color: #17a2b8;
   color: white;
 }
+
+.add-request-btn {
+  background-color: #da1c6f;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s, border 0.3s;
+}
+
+.add-request-btn:hover {
+  border-radius: 5px;
+  border: 1px solid #da1c6f;
+  color: #da1c6f;
+  background-color: transparent;
+}

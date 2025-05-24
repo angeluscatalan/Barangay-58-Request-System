@@ -155,6 +155,21 @@ function RBI_Request_Manager() {
     }
   };
 
+  // Pagination helpers
+  const recordsPerPage = 10;
+  const totalRecords = filterRecords().length;
+  const totalPages = Math.max(1, Math.ceil(totalRecords / recordsPerPage));
+  // Use local state for pagination to avoid backend pagination issues
+  const [localPage, setLocalPage] = useState(1);
+
+  // Reset localPage when search/filter changes
+  useEffect(() => {
+    setLocalPage(1);
+  }, [activeFilter, searchTerm]);
+
+  // Get paginated records for current page
+  const paginatedRecords = filterRecords().slice((localPage - 1) * recordsPerPage, localPage * recordsPerPage);
+
   if (loading && !rbiRequests.records.length) return <div className="loading">Loading RBI registrations...</div>;
   if (error) return <div className="error">Error: {error}</div>;
 
@@ -229,7 +244,7 @@ function RBI_Request_Manager() {
             </tr>
           </thead>
           <tbody>
-            {filterRecords().map((household) => (
+            {paginatedRecords.map((household) => (
               <React.Fragment key={household.id}>
                 <tr className={expandedHouseholds[household.id] ? "expanded" : ""}>
                   <td>{household.id}</td>
@@ -364,32 +379,40 @@ function RBI_Request_Manager() {
       </div>
 
       {/* Pagination controls */}
-      {filterRecords().length > 10 && (
+      {totalRecords > recordsPerPage && (
         <div className="pagination">
           <button
-            disabled={rbiRequests.currentPage === 1}
-            onClick={() => fetchRbiRequests(activeFilter, 1, 10, searchTerm)}
+            type="button"
+            className="add-request-btn"
+            disabled={localPage === 1}
+            onClick={() => setLocalPage(1)}
           >
             First
           </button>
           <button
-            disabled={rbiRequests.currentPage === 1}
-            onClick={() => fetchRbiRequests(activeFilter, rbiRequests.currentPage - 1, 10, searchTerm)}
+            type="button"
+            className="add-request-btn"
+            disabled={localPage === 1}
+            onClick={() => setLocalPage((prev) => Math.max(1, prev - 1))}
           >
             Previous
           </button>
           <span className="page-info">
-            Page {rbiRequests.currentPage} of {Math.ceil(filterRecords().length / 10)}
+            Page {localPage} of {totalPages}
           </span>
           <button
-            disabled={rbiRequests.currentPage === Math.ceil(filterRecords().length / 10)}
-            onClick={() => fetchRbiRequests(activeFilter, rbiRequests.currentPage + 1, 10, searchTerm)}
+            type="button"
+            className="add-request-btn"
+            disabled={localPage === totalPages}
+            onClick={() => setLocalPage((prev) => Math.min(totalPages, prev + 1))}
           >
             Next
           </button>
           <button
-            disabled={rbiRequests.currentPage === Math.ceil(filterRecords().length / 10)}
-            onClick={() => fetchRbiRequests(activeFilter, Math.ceil(filterRecords().length / 10), 10, searchTerm)}
+            type="button"
+            className="add-request-btn"
+            disabled={localPage === totalPages}
+            onClick={() => setLocalPage(totalPages)}
           >
             Last
           </button>

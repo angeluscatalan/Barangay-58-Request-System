@@ -2,6 +2,10 @@ const express = require('express');
 const router = express.Router();
 const multer = require("multer");
 const eventsController = require("../controllers/eventsController");
+const { authenticateToken, verifyAdmin } = require("../controllers/authController"); 
+
+router.use(authenticateToken);
+router.use(verifyAdmin);
 
 const upload = multer({
     dest: "uploads/",

@@ -1,4 +1,4 @@
-    "use client"
+"use client"
 
     import { useRef } from "react"
     import BirthdatePicker from "../components/BirthdatePicker"
@@ -332,7 +332,11 @@
               </div>
 
               <div className="back-button-container">
-                <button className="mobile-back-button" onClick={() => toggleSection("info")}>
+                <button
+                  type="button"
+                  className="mobile-back-button add-request-btn"
+                  onClick={() => toggleSection("info")}
+                >
                   Back to Information
                 </button>
               </div>

@@ -334,7 +334,11 @@ useEffect(() => {
         {/* Information section */}
         <div className={`req-info ${activeSection === "info" ? "active" : ""}`}>
           <RequestTitlesandSteps />
-          <button className="mobile-next-button" onClick={() => toggleSection("form")}>
+          <button
+            type="button"
+            className="mobile-next-button add-request-btn"
+            onClick={() => toggleSection("form")}
+          >
             Continue to Form
           </button>
         </div>

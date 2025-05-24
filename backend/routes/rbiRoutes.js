@@ -126,7 +126,8 @@ const validateStatusUpdate = [
 
 // Public routes (no authentication required)
 router.post('/', validateCompleteHousehold, rbiController.createCompleteHousehold);
-router.post('/find-similar', rbiController.findSimilarRbis);
+router.post('/find-similar', authenticateToken, rbiController.findSimilarRbis);
+
 
 // Apply authentication middleware for protected routes
 router.use(authenticateToken);

@@ -4,6 +4,9 @@ const requestController = require('../controllers/requestController');
 const { check } = require('express-validator');
 const pool = require('../config/db');
 
+// import your auth guards
+const { ensureAuthenticated, ensureAdmin } = require('../Middleware/authMiddleware');
+
 const validateRequest = [
   check('last_name').notEmpty().trim().escape(),
   check('first_name').notEmpty().trim().escape(),
@@ -23,7 +26,8 @@ const validateRequest = [
   check('number_of_copies').isInt({ min: 1 })
 ];
 
-// Basic data endpoints
+// ───── Public endpoints ──────────────────────────────────────────────────────────
+// Anyone can fetch these lists (used to populate your form UI)
 router.get('/suffixes', async (req, res) => {
   try {
     const [rows] = await pool.query("SELECT * FROM suffixes ORDER BY id");
@@ -33,7 +37,6 @@ router.get('/suffixes', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
 router.get('/certificates', async (req, res) => {
   try {
     const [rows] = await pool.query("SELECT * FROM certificates ORDER BY name");
@@ -43,19 +46,27 @@ router.get('/certificates', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
 router.get('/statuses', requestController.getStatuses);
 
-// Request endpoints
+// Public form submission (consider rate-limit or CAPTCHA here!)
 router.post('/', validateRequest, requestController.createRequest);
+
+
+// ───── Authenticated / Role-Protected endpoints ─────────────────────────────────
+// All routes below this line require at least “logged in”
+router.use(ensureAuthenticated);
+
+// View your own or all requests (depending on role logic in the controller)
 router.get('/', requestController.getRequests);
 router.get('/:id', requestController.getRequestById);
-router.put('/:id/status', requestController.updateRequestStatus);
-router.delete('/:id', requestController.deleteRequest);
-router.post('/:id/generate-control-id', requestController.generateControlId);
 
-// Backup endpoints
-router.get('/backup/list', requestController.getBackupRequests);
-router.post('/backup/restore', requestController.restoreRequests);
+// Only admins can change state or delete
+router.put('/:id/status', ensureAdmin, requestController.updateRequestStatus);
+router.delete('/:id', ensureAdmin, requestController.deleteRequest);
+router.post('/:id/generate-control-id', ensureAdmin, requestController.generateControlId);
+
+// Backup endpoints—admin only
+router.get('/backup/list', ensureAdmin, requestController.getBackupRequests);
+router.post('/backup/restore', ensureAdmin, requestController.restoreRequests);
 
 module.exports = router;

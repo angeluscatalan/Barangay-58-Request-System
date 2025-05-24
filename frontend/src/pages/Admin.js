@@ -451,8 +451,6 @@ function Admin() {
         'Barangay Certificate': 'BrgyCert'
       };
 
-      const backendCertificateType = certificateTypeMap[certName] || certName.replace(/\s+/g, '');
-
       const response = await axios.post(
         "http://localhost:5000/api/certificates/generate-pdf",
         {
@@ -744,116 +742,118 @@ function Admin() {
                         }}
                       >
                         <table>
-  <thead>
-    <tr>
-      <th><input
-        type="checkbox"
-        checked={
-          selectedRequests.length === filteredRequests.length && filteredRequests.length > 0
-        }
-        onChange={handleMasterSelect}
-      /></th>
-      <th>Control Number</th> {/* Add this column */}
-      <th>DATE REQUESTED</th>
-      <th>NAME</th>
-      <th>SUFFIX</th>
-      <th>SEX</th>
-      <th>BIRTHDAY</th>
-      <th>AGE</th>
-      <th>ADDRESS</th>
-      <th>CONTACT NO.</th>
-      <th>EMAIL</th>
-      <th>TYPE OF REQUEST</th>
-      <th>PURPOSE</th>
-      <th>NO. OF COPIES</th>
-      <th>STATUS</th>
-      <th>ACTIONS</th>
-    </tr>
-  </thead>
-  <tbody>
-    {filteredRequests.map((request, index) => (
-      <tr key={index}>
-        <td>
-          <input
-            type="checkbox"
-            checked={selectedRequests.includes(request.id)}
-            onChange={() => handleSelectRequest(request.id)}
-          />
-        </td>
-        <td>{request.control_id || 'Pending'}</td> {/* Add this column */}
-        <td>{request.created_at}</td>
-        <td>{`${request.last_name}, ${request.first_name} ${request.middle_name || ""}`}</td>
-        <td>{getSuffixDisplay(request.suffix_id || request.suffix)}</td>
-        <td>{getSexDisplay(request.sex, request.sex_other) || request.sex_display || request.sex_name || ""}</td>
-        <td>{request.birthday ? request.birthday.split("T")[0] : ""}</td>
-        <td>{calculateAge(request.birthday)}</td>
-        <td>{request.address}</td>
-        <td>{request.contact_no}</td>
-        <td>{request.email}</td>
-        <td>{request.certificate_name}</td>
-        <td>{request.purpose_of_request}</td>
-        <td>{request.number_of_copies}</td>
-        <td>
-          <span className={`status-badge ${getStatusClassById(request.status_id)}`}>
-            {getStatusName(request.status_id)}
-          </span>
-          {statusLoading ? (
-            <div className="status-loading">Loading options...</div>
-          ) : statusError ? (
-            <div className="status-error">Status options unavailable</div>
-          ) : (
-            <select
-              value={request.status_id}
-              onChange={async e => {
-                const selectedStatusId = Number(e.target.value);
-                const rejectedStatus = statuses.find(s => s.name.toLowerCase() === 'rejected');
-                if (selectedStatusId === rejectedStatus?.id) {
-                  // Delete request (backend should move to backup_requests and delete file)
-                  try {
-                    const token = localStorage.getItem("token");
-                    await axios.delete(`http://localhost:5000/api/requests/${request.id}`, {
-                      headers: { Authorization: `Bearer ${token}` },
-                    });
-                    fetchRequests();
-                  } catch (err) {
-                    alert('Failed to reject and delete request.');
-                  }
-                } else {
-                  await updateRequestStatus(request.id, selectedStatusId);
-                  fetchRequests();
-                }
-              }}
-              className={getStatusClassById(request.status_id)}
-            >
-              {statuses.map(status => (
-                <option key={status.id} value={status.id}>{status.name}</option>
-              ))}
-            </select>
-          )}
-        </td>
-        <td className="action-buttons">
-          <button
-            className="print-btn"
-            onClick={() => handlePrintRequest(request)}
-            title="Print Request"
-            disabled={isPrinting[request.id]}
-          >
-            <i
-              className={`fas ${isPrinting[request.id] ? "fa-spinner fa-spin" : "fa-print"}`}
-            ></i>
-          </button>
-          <button
-            className="delete-btn"
-            onClick={() => handleDeleteRequest(request.id)}
-            title="Delete Request"
-          >
-            <i className="fas fa-trash-alt"></i>
-          </button>
-        </td>
-      </tr>
-    ))}
-  </tbody>
-</table>
+                          <thead>
+                            <tr>
+                              <th>
+                                <input
+                                  type="checkbox"
+                                  checked={
+                                    selectedRequests.length === filteredRequests.length && filteredRequests.length > 0
+                                  }
+                                  onChange={handleMasterSelect}
+                                />
+                              </th>
+                              <th>Control Number</th>
+                              <th>DATE REQUESTED</th>
+                              <th>NAME</th>
+                              <th>SUFFIX</th>
+                              <th>SEX</th>
+                              <th>BIRTHDAY</th>
+                              <th>AGE</th>
+                              <th>ADDRESS</th>
+                              <th>CONTACT NO.</th>
+                              <th>EMAIL</th>
+                              <th>TYPE OF REQUEST</th>
+                              <th>PURPOSE</th>
+                              <th>NO. OF COPIES</th>
+                              <th>STATUS</th>
+                              <th>ACTIONS</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {filteredRequests.map((request, index) => (
+                              <tr key={index}>
+                                <td>
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedRequests.includes(request.id)}
+                                    onChange={() => handleSelectRequest(request.id)}
+                                  />
+                                </td>
+                                <td>{request.control_id || 'Pending'}</td>
+                                <td>{request.created_at}</td>
+                                <td>{`${request.last_name}, ${request.first_name} ${request.middle_name || ""}`}</td>
+                                <td>{getSuffixDisplay(request.suffix_id || request.suffix)}</td>
+                                <td>{getSexDisplay(request.sex, request.sex_other) || request.sex_display || request.sex_name || ""}</td>
+                                <td>{request.birthday ? request.birthday.split("T")[0] : ""}</td>
+                                <td>{calculateAge(request.birthday)}</td>
+                                <td>{request.address}</td>
+                                <td>{request.contact_no}</td>
+                                <td>{request.email}</td>
+                                <td>{request.certificate_name}</td>
+                                <td>{request.purpose_of_request}</td>
+                                <td>{request.number_of_copies}</td>
+                                <td>
+                                  <span className={`status-badge ${getStatusClassById(request.status_id)}`}>
+                                    {getStatusName(request.status_id)}
+                                  </span>
+                                  {statusLoading ? (
+                                    <div className="status-loading">Loading options...</div>
+                                  ) : statusError ? (
+                                    <div className="status-error">Status options unavailable</div>
+                                  ) : (
+                                    <select
+                                      value={request.status_id}
+                                      onChange={async e => {
+                                        const selectedStatusId = Number(e.target.value);
+                                        const rejectedStatus = statuses.find(s => s.name.toLowerCase() === 'rejected');
+                                        if (selectedStatusId === rejectedStatus?.id) {
+                                          // Delete request (backend should move to backup_requests and delete file)
+                                          try {
+                                            const token = localStorage.getItem("token");
+                                            await axios.delete(`http://localhost:5000/api/requests/${request.id}`, {
+                                              headers: { Authorization: `Bearer ${token}` },
+                                            });
+                                            fetchRequests();
+                                          } catch (err) {
+                                            alert('Failed to reject and delete request.');
+                                          }
+                                        } else {
+                                          await updateRequestStatus(request.id, selectedStatusId);
+                                          fetchRequests();
+                                        }
+                                      }}
+                                      className={getStatusClassById(request.status_id)}
+                                    >
+                                      {statuses.map(status => (
+                                        <option key={status.id} value={status.id}>{status.name}</option>
+                                      ))}
+                                    </select>
+                                  )}
+                                </td>
+                                <td className="action-buttons">
+                                  <button
+                                    className="print-btn"
+                                    onClick={() => handlePrintRequest(request)}
+                                    title="Print Request"
+                                    disabled={isPrinting[request.id]}
+                                  >
+                                    <i
+                                      className={`fas ${isPrinting[request.id] ? "fa-spinner fa-spin" : "fa-print"}`}
+                                    ></i>
+                                  </button>
+                                  <button
+                                    className="delete-btn"
+                                    onClick={() => handleDeleteRequest(request.id)}
+                                    title="Delete Request"
+                                  >
+                                    <i className="fas fa-trash-alt"></i>
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     )}
                   </div>
