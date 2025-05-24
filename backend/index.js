@@ -11,8 +11,6 @@ const requestRoutes = require("./routes/requestRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const certificateRoutes = require("./routes/certificateRoutes");
 const apiRoutes = require("./routes/api");
-const exportRoutes = require("./routes/exportRoutes"); 
-const importRoutes = require('./routes/importRoutes');
 const reqimgRoutes = require('./routes/reqimgRoute');
 
 // Express app setup
@@ -39,8 +37,6 @@ app.use("/api/auth", authRoutes); // <-- This line ensures /api/auth/* routes ar
 app.use("/api/requests", requestRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/certificates", certificateRoutes);
-app.use("/api/export", exportRoutes); 
-app.use('/api/import', importRoutes);
 app.use('/api/images', reqimgRoutes);
 
 // Mount general API routes last
