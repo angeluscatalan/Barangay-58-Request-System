@@ -30,7 +30,7 @@ const BackupVerifiedRBIModal = ({ isOpen, onClose, onRestore }) => {
 
             const token = localStorage.getItem('token');
             const response = await axios.post(
-                'https://barangay-58-pasay.vercel.app/api/auth/verify-password',
+                'https://barangay-58-request-system-n07q.onrender.com/api/auth/verify-password',
                 { password },
                 {
                     headers: {
@@ -65,7 +65,7 @@ const BackupVerifiedRBIModal = ({ isOpen, onClose, onRestore }) => {
             setLoading(true);
             const token = localStorage.getItem('token');
             const response = await axios.get(
-                'https://barangay-58-pasay.vercel.app/api/rbi/backup/list',
+                'https://barangay-58-request-system-n07q.onrender.com/api/rbi/backup/list',
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -116,7 +116,7 @@ const BackupVerifiedRBIModal = ({ isOpen, onClose, onRestore }) => {
             setLoading(true);
             const token = localStorage.getItem('token');
             await axios.post(
-                'https://barangay-58-pasay.vercel.app/api/rbi/backup/restore',
+                'https://barangay-58-request-system-n07q.onrender.com/api/rbi/backup/restore',
                 { householdIds: selectedHouseholds },
                 {
                     headers: {

@@ -29,7 +29,7 @@ const BackupEventsModal = ({ isOpen, onClose, onRestore }) => {
         try {
             // Verify the admin password
             const token = localStorage.getItem('token');
-            await axios.post('https://barangay-58-pasay.vercel.app/api/auth/verify-password',
+            await axios.post('https://barangay-58-request-system-n07q.onrender.com/api/auth/verify-password',
                 { password },
                 {
                     headers: {
@@ -63,7 +63,7 @@ const BackupEventsModal = ({ isOpen, onClose, onRestore }) => {
             return;
         }
 
-        const response = await axios.get('https://barangay-58-pasay.vercel.app/api/events/backup/list', {
+        const response = await axios.get('https://barangay-58-request-system-n07q.onrender.com/api/events/backup/list', {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -102,7 +102,7 @@ const BackupEventsModal = ({ isOpen, onClose, onRestore }) => {
             return;
         }
 
-        await axios.post('https://barangay-58-pasay.vercel.app/api/events/backup/restore', 
+        await axios.post('https://barangay-58-request-system-n07q.onrender.com/api/events/backup/restore', 
             { eventIds: selectedEvents },
             {
                 headers: {
