@@ -220,7 +220,7 @@ useEffect(() => {
         // Use the certificate name to determine if photo is required
         const requiresPhoto = selectedCertificate &&
           (selectedCertificate.name === "Barangay Clearance" ||
-           selectedCertificate.name === "Barangay ID");
+           selectedCertificate.name === "Barangay ID Application");
 
         if (requiresPhoto && imagePreviewFromModal) {
             const blob = await fetch(imagePreviewFromModal).then(res => res.blob());
