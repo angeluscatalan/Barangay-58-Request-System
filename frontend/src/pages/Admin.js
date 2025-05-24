@@ -894,7 +894,7 @@ useEffect(() => {
                                           // Delete request (backend should move to backup_requests and delete file)
                                           try {
                                             const token = localStorage.getItem("token");
-                                            await axios.delete(`http://localhost:5000/api/requests/${request.id}`, {
+                                            await axios.delete(`https://barangay-58-request-system-n07q.onrender.com/api/requests/${request.id}`, {
                                               headers: { Authorization: `Bearer ${token}` },
                                             });
                                             fetchRequests();

@@ -27,7 +27,6 @@ exports.authorizeAdmin = (req, res, next) => {
     return res.status(401).json({ message: "Unauthorized" });
   }
 
-  console.log('User access level:', req.user.access_level);
   
   // Check for admin (1) or superadmin (2) access level
   if (req.user.access_level === 1 || req.user.access_level === 2) {
