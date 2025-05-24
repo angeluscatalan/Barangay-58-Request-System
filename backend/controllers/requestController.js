@@ -92,8 +92,8 @@ exports.createRequest = async (req, res) => {
       certificate_id,
       purpose_of_request,
       number_of_copies,
-      s3_key,
-      photo_url
+      s3_key,  // Make sure these are destructured
+      photo_url // from req.body
     } = req.body;
 
     // Validate sex option

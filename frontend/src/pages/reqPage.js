@@ -207,51 +207,56 @@ useEffect(() => {
   }
 
   // Handle final submission after confirmation
-  const handleConfirmSubmit = async (imagePreviewFromModal) => {
-    try {
-        let s3Key = null;
-        let photoUrl = null;
+const handleConfirmSubmit = async (imagePreviewFromModal) => {
+  try {
+    let s3Key = null;
+    let photoUrl = null;
 
-        // Find the selected certificate object
-        const selectedCertificate = certificates.find(
-          c => String(c.id) === String(formData.certificate_id)
-        );
+    // Find the selected certificate object
+    const selectedCertificate = certificates.find(
+      c => String(c.id) === String(formData.certificate_id)
+    );
 
-        // Use the certificate name to determine if photo is required
-        const requiresPhoto = selectedCertificate &&
-          (selectedCertificate.name === "Barangay Clearance" ||
-           selectedCertificate.name === "Barangay ID Application");
+    // Use the certificate name to determine if photo is required
+    const requiresPhoto = selectedCertificate &&
+      (selectedCertificate.name === "Barangay Clearance" ||
+       selectedCertificate.name === "Barangay ID");
 
-        if (requiresPhoto && imagePreviewFromModal) {
-            const blob = await fetch(imagePreviewFromModal).then(res => res.blob());
-            const imageFormData = new FormData();
-            imageFormData.append('image', blob, `${formData.last_name}_${Date.now()}.jpg`);
+    if (requiresPhoto && imagePreviewFromModal) {
+      const blob = await fetch(imagePreviewFromModal).then(res => res.blob());
+      const imageFormData = new FormData();
+      imageFormData.append('image', blob, `${formData.last_name}_${Date.now()}.jpg`);
 
-            const uploadResponse = await axios.post(
-                'https://barangay-58-request-system-n07q.onrender.com/api/images/upload',
-                imageFormData,
-                { headers: { 'Content-Type': 'multipart/form-data' } }
-            );
-            
-            s3Key = uploadResponse.data.s3Key;
-            photoUrl = uploadResponse.data.imageUrl;
-        }
+      const uploadResponse = await axios.post(
+        'https://barangay-58-request-system-n07q.onrender.com/api/images/upload',
+        imageFormData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+      
+      s3Key = uploadResponse.data.s3Key;
+      photoUrl = uploadResponse.data.imageUrl;
+    }
+
     // Prepare the request data with both s3_key and photo_url
     const requestData = {
-  ...formData,
-  s3_key: s3Key,
-  photo_url: photoUrl,
-  address: [
-    formData.unit_no,
-    formData.street,
-    formData.subdivision
-  ].filter(Boolean).join(", "),
-  number_of_copies: Number(formData.number_of_copies),
-  suffix_id: formData.suffix_id // Ensure this is included
-};
+      ...formData,
+      s3_key: s3Key,
+      photo_url: photoUrl,
+      address: [
+        formData.unit_no,
+        formData.street,
+        formData.subdivision
+      ].filter(Boolean).join(", "),
+      number_of_copies: Number(formData.number_of_copies),
+      suffix_id: formData.suffix_id || null // Ensure this is included and defaults to null if undefined
+    };
 
     // Create the request
-    await axios.post('https://barangay-58-request-system-n07q.onrender.com/api/requests', requestData);
+    await axios.post('https://barangay-58-request-system-n07q.onrender.com/api/requests', requestData, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
     
     setShowConfirmation(false);
     setShowSuccessPopup(true);
