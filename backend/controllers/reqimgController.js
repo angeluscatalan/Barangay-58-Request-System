@@ -20,7 +20,7 @@ const uploadRequestImage = async (req, res) => {
     const key = `request_images/${fileName}`;
 
     const uploadParams = {
-      Bucket: 'barangay-events-images',
+      Bucket: 'barangay-images',
       Key: key,
       Body: req.file.buffer,
       ContentType: req.file.mimetype
