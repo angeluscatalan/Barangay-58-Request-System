@@ -115,41 +115,20 @@ function Navbar() {
             <Link to="/Team" className={location.pathname === "/Team" ? "active" : ""} onClick={closeMenu}>
               TEAM
             </Link>
-            <div className="mobile-dropdown">
-              <div
-                className={`mobile-dropdown-header ${
-                  location.pathname === "/Request" || location.pathname === "/RBI" ? "active" : ""
-                }`}
-                onClick={(e) => {
-                  e.stopPropagation() // Prevent event bubbling
-                  setShowServicesDropdown(!showServicesDropdown)
-                }}
-              >
-                SERVICES <ChevronDown size={16} className={showServicesDropdown ? "rotate" : ""} />
-              </div>
-              {showServicesDropdown && (
-                <div className="mobile-dropdown-content">
-                  <Link
-                    to="/Request"
-                    onClick={() => {
-                      closeMenu()
-                      setShowServicesDropdown(false)
-                    }}
-                  >
-                    Certificate Request
-                  </Link>
-                  <Link
-                    to="/RBI"
-                    onClick={() => {
-                      closeMenu()
-                      setShowServicesDropdown(false)
-                    }}
-                  >
-                    RBI Registration
-                  </Link>
-                </div>
-              )}
-            </div>
+            <Link
+              to="/Request"
+              className={location.pathname === "/Request" ? "active" : ""}
+              onClick={closeMenu}
+            >
+              CERTIFICATE REQUEST
+            </Link>
+            <Link
+              to="/RBI"
+              className={location.pathname === "/RBI" ? "active" : ""}
+              onClick={closeMenu}
+            >
+              RBI REGISTRATION
+            </Link>
             <Link to="/Events" className={location.pathname === "/Events" ? "active" : ""} onClick={closeMenu}>
               EVENTS
             </Link>
