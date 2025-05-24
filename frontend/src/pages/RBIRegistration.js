@@ -483,7 +483,7 @@ function RBIRegistration() {
 
       // Submit data to API
       const response = await axios.post(
-        "http://localhost:5000/api/rbi",
+        "https://barangay-58-request-system-n07q.onrender.com/api/rbi",
         {
           household: formattedHouseholdData,
           members: formattedMembers,

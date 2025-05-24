@@ -26,8 +26,8 @@ const fetchRequests = useCallback(async (status_id = null) => {
     };
 
     const url = status_id 
-      ? `http://localhost:5000/api/requests?status_id=${status_id}`
-      : 'http://localhost:5000/api/requests';
+      ? `https://barangay-58-request-system-n07q.onrender.com/api/requests?status_id=${status_id}`
+      : 'https://barangay-58-request-system-n07q.onrender.com/api/requests';
 
     const response = await axios.get(url, config);
     
@@ -47,7 +47,7 @@ const fetchRequests = useCallback(async (status_id = null) => {
   try {
     const token = localStorage.getItem('token');
     await axios.put(
-      `http://localhost:5000/api/requests/${id}/status`, 
+      `https://barangay-58-request-system-n07q.onrender.com/api/requests/${id}/status`, 
       { status_id },
       {
         headers: {

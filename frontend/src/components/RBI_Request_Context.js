@@ -41,7 +41,7 @@ export const RequestProvider = ({ children }) => {
 
       // Make the request to fetch data with auth headers
       const response = await axios.get(
-        `http://localhost:5000/api/rbi?${params.toString()}`,
+        `https://barangay-58-request-system-n07q.onrender.com/api/rbi?${params.toString()}`,
         getAuthHeaders()
       );
 
@@ -70,7 +70,7 @@ export const RequestProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       const response = await axios.get(
-        `http://localhost:5000/api/rbi/${householdId}`,
+        `https://barangay-58-request-system-n07q.onrender.com/api/rbi/${householdId}`,
         getAuthHeaders()
       );
       return response.data;
@@ -93,7 +93,7 @@ export const RequestProvider = ({ children }) => {
       setError(null);
       // Make the request to update the status with auth headers
       await axios.put(
-        `http://localhost:5000/api/rbi/${id}/status`,
+        `https://barangay-58-request-system-n07q.onrender.com/api/rbi/${id}/status`,
         { status: newStatus },
         getAuthHeaders()
       );

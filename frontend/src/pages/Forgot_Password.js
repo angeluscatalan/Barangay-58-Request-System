@@ -5,7 +5,7 @@ import "../styles/ForgotPassword.css";
 import brgyLoginPageLogo from "../assets/brgyLoginPageLogo.png";
 
 // Define the backend URL at the top
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = "https://barangay-58-request-system-n07q.onrender.com";
 
 function Forgot_Password() {
   const [email, setEmail] = useState("");

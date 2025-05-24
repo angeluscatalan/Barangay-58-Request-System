@@ -23,7 +23,7 @@ function Request_Manager() {
     const fetchStatuses = async () => {
       try {
         setStatusLoading(true);
-        const response = await axios.get('http://localhost:5000/api/requests/statuses');
+        const response = await axios.get('https://barangay-58-request-system-n07q.onrender.com/api/requests/statuses');
         // console.log('Statuses API response:', response.data); // Remove debug log in production
         setStatuses(response.data);
         setStatusError(null);
@@ -84,7 +84,7 @@ function Request_Manager() {
       // Delete request (backend should move to backup_requests and delete file)
       try {
         const token = localStorage.getItem('token'); // <-- Add this line
-        await axios.delete(`http://localhost:5000/api/requests/${id}`, {
+        await axios.delete(`https://barangay-58-request-system-n07q.onrender.com/api/requests/${id}`, {
           headers: { Authorization: `Bearer ${token}` } // <-- Add this line
         });
         fetchRequests();

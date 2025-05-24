@@ -105,12 +105,12 @@ function Verified_RBI_List() {
       // Process deletions
       const results = await Promise.allSettled([
         ...selectedItems.members.map(member =>
-          axios.delete(`http://localhost:5000/api/rbi/members/${member.id}`, {
+          axios.delete(`https://barangay-58-request-system-n07q.onrender.com/api/rbi/members/${member.id}`, {
             headers: { Authorization: `Bearer ${token}` },
           })
         ),
         ...selectedItems.households.map(id =>
-          axios.delete(`http://localhost:5000/api/rbi/${id}`, {
+          axios.delete(`https://barangay-58-request-system-n07q.onrender.com/api/rbi/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
           })
         )
@@ -190,14 +190,14 @@ function Verified_RBI_List() {
 
     if (editType === 'household') {
       response = await axios.put(
-        `http://localhost:5000/api/rbi/${currentEditItem.id}`,
+        `https://barangay-58-request-system-n07q.onrender.com/api/rbi/${currentEditItem.id}`,
         processedData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
     } else {
       const member = selectedItems.members[0];
       response = await axios.put(
-        `http://localhost:5000/api/rbi/${member.householdId}/members/${member.id}`,
+        `https://barangay-58-request-system-n07q.onrender.com/api/rbi/${member.householdId}/members/${member.id}`,
         processedData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -218,7 +218,7 @@ function Verified_RBI_List() {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        'http://localhost:5000/api/rbi',
+        'https://barangay-58-request-system-n07q.onrender.com/api/rbi',
         { household: householdData, members: [] }, // Empty members array for now
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -280,7 +280,7 @@ function Verified_RBI_List() {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        `http://localhost:5000/api/rbi/${selectedHouseholdId}/members`,
+        `https://barangay-58-request-system-n07q.onrender.com/api/rbi/${selectedHouseholdId}/members`,
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );

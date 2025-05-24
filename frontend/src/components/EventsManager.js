@@ -42,7 +42,7 @@ function EventsManager() {
       return;
     }
 
-    const response = await axios.get("http://localhost:5000/api/events", {
+    const response = await axios.get("https://barangay-58-request-system-n07q.onrender.com/api/events", {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -98,7 +98,7 @@ function EventsManager() {
 
   const confirmDelete = async () => {
     try {
-      const response = await axios.delete(`http://localhost:5000/api/events/${eventToDelete}`, {
+      const response = await axios.delete(`https://barangay-58-request-system-n07q.onrender.com/api/events/${eventToDelete}`, {
   headers: {
     Authorization: `Bearer ${localStorage.getItem('token')}`
   }
@@ -194,7 +194,7 @@ function EventsManager() {
     setIsDeleting(true)
     try {
       for (const id of selectedEvents) {
-        await axios.delete(`http://localhost:5000/api/events/${id}`, {
+        await axios.delete(`https://barangay-58-request-system-n07q.onrender.com/api/events/${id}`, {
   headers: {
     Authorization: `Bearer ${localStorage.getItem('token')}`
   }

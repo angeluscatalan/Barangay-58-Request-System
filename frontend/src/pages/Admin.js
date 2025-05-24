@@ -142,7 +142,7 @@ useEffect(() => {
   const confirmDeleteRequest = async () => {
     try {
       const token = localStorage.getItem("token")
-      await axios.delete(`http://localhost:5000/api/requests/${requestToDelete}`, {
+      await axios.delete(`https://barangay-58-request-system-n07q.onrender.com/api/requests/${requestToDelete}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       await fetchRequests() // Refresh the requests list
@@ -160,15 +160,15 @@ useEffect(() => {
       const token = localStorage.getItem("token")
       // Only send fields expected by backend
       const response = await axios.post(
-        "http://localhost:5000/api/rbi/find-similar",
-        {
-          lastName: request.last_name,
-          firstName: request.first_name,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      )
+  "https://barangay-58-request-system-n07q.onrender.com/api/rbi/find-similar",
+  {
+    lastName: request.last_name,
+    firstName: request.first_name,
+  },
+  {
+    headers: { Authorization: `Bearer ${token}` },
+  },
+);
       setSimilarRbis(response.data)
       setShowRbiComparison(true)
     } catch (error) {
@@ -186,9 +186,13 @@ useEffect(() => {
         return
       }
 
-      const response = await axios.get("http://localhost:5000/api/auth/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const response = await axios.get(
+  "https://barangay-58-request-system-n07q.onrender.com/api/auth/me",
+  {
+    headers: { Authorization: `Bearer ${token}` },
+  }
+);
+
       setUserAccessLevel(response.data.access_level)
     } catch (error) {
       console.error("Error fetching user data:", error)
@@ -200,9 +204,12 @@ useEffect(() => {
   const fetchCertificates = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:5000/api/requests/certificates", { // **ASSUMPTION:** You have this endpoint
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.get(
+  "https://barangay-58-request-system-n07q.onrender.com/api/requests/certificates",
+  {
+    headers: { Authorization: `Bearer ${token}` },
+  }
+);
       setCertificates(response.data);
     } catch (error) {
       console.error("Error fetching certificates:", error);
@@ -215,7 +222,9 @@ useEffect(() => {
     const fetchStatuses = async () => {
       try {
         setStatusLoading(true);
-        const response = await axios.get('http://localhost:5000/api/requests/statuses');
+        const response = await axios.get(
+  "https://barangay-58-request-system-n07q.onrender.com/api/requests/statuses"
+);
         setStatuses(response.data);
         setStatusError(null);
       } catch (err) {
@@ -467,12 +476,15 @@ useEffect(() => {
     try {
       const token = localStorage.getItem("token")
       await Promise.all(
-        selectedRequests.map((id) =>
-          axios.delete(`http://localhost:5000/api/requests/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ),
-      )
+  selectedRequests.map((id) =>
+    axios.delete(
+      `https://barangay-58-request-system-n07q.onrender.com/api/requests/${id}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    )
+  )
+);
       await fetchRequests()
       setSelectedRequests([])
       setShowBulkDeleteModal(false)
@@ -501,10 +513,10 @@ useEffect(() => {
       if (!control_id) {
         const token = localStorage.getItem("token");
         const resp = await axios.post(
-          `http://localhost:5000/api/requests/${request.id}/generate-control-id`,
-          {},
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+  `https://barangay-58-request-system-n07q.onrender.com/api/requests/${request.id}/generate-control-id`,
+  {},
+  { headers: { Authorization: `Bearer ${token}` } }
+);
         control_id = resp.data.control_id;
         
         // Update the requests in context/state
@@ -525,23 +537,22 @@ useEffect(() => {
     const backendCertificateType = certificateTypeMap[certName] || certName;
 
     const response = await axios.post(
-      "http://localhost:5000/api/certificates/generate-pdf",
-      {
-        requestData: {
-          ...request,
-          type_of_certificate: backendCertificateType,
-          control_id: control_id,
-          s3_key: request.s3_key,
-        },
-      },
-      {
-        responseType: "blob",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
-
+  "https://barangay-58-request-system-n07q.onrender.com/api/certificates/generate-pdf",
+  {
+    requestData: {
+      ...request,
+      type_of_certificate: backendCertificateType,
+      control_id: control_id,
+      s3_key: request.s3_key,
+    },
+  },
+  {
+    responseType: "blob",
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  }
+);
     // Handle ZIP for Jobseeker certificates
     if (certName === "Barangay Jobseeker") {
       const file = new Blob([response.data], { type: "application/zip" });

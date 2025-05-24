@@ -15,7 +15,7 @@ function Login() {
   setErrorMessage("");
   
   try {
-    const response = await fetch("http://localhost:5000/api/auth/login", {
+    const response = await fetch("https://barangay-58-request-system-n07q.onrender.com/api/auth/login", {
       method: "POST",
       headers: { 
         "Content-Type": "application/json",
@@ -35,7 +35,7 @@ function Login() {
       localStorage.setItem("user", JSON.stringify(data.user));
       
       // Test token immediately
-      const testResponse = await fetch("http://localhost:5000/api/auth/me", {
+      const testResponse = await fetch("https://barangay-58-request-system-n07q.onrender.com/api/auth/me", {
         headers: {
           Authorization: `Bearer ${data.token}`
         }

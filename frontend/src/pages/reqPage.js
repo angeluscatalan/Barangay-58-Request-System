@@ -46,7 +46,7 @@ function reqPage() {
   useEffect(() => {
   const fetchCertificates = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/requests/certificates');
+      const response = await axios.get('https://barangay-58-request-system-n07q.onrender.com/api/requests/certificates');
       setCertificates(response.data);
     } catch (error) {
       console.error("Error fetching certificates:", error);
@@ -58,7 +58,7 @@ function reqPage() {
 useEffect(() => {
   const fetchSuffixes = async () => {
   try {
-    const response = await axios.get('http://localhost:5000/api/requests/suffixes', {
+    const response = await axios.get('https://barangay-58-request-system-n07q.onrender.com/api/requests/suffixes', {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
@@ -228,7 +228,7 @@ useEffect(() => {
             imageFormData.append('image', blob, `${formData.last_name}_${Date.now()}.jpg`);
 
             const uploadResponse = await axios.post(
-                'http://localhost:5000/api/images/upload',
+                'https://barangay-58-request-system-n07q.onrender.com/api/images/upload',
                 imageFormData,
                 { headers: { 'Content-Type': 'multipart/form-data' } }
             );
@@ -251,7 +251,7 @@ useEffect(() => {
 };
 
     // Create the request
-    await axios.post('http://localhost:5000/api/requests', requestData);
+    await axios.post('https://barangay-58-request-system-n07q.onrender.com/api/requests', requestData);
     
     setShowConfirmation(false);
     setShowSuccessPopup(true);
