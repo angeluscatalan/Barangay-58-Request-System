@@ -22,26 +22,55 @@ const BackupRequestsModal = ({ isOpen, onClose, onRestore, statuses = [] }) => {
     }, [isOpen]);
 
     const verifyPassword = async () => {
-        try {
-            setLoading(true);
-            setPasswordError('');
+    try {
+        setLoading(true);
+        setPasswordError('');
 
-            const response = await axios.post('http://localhost:5000/api/auth/verify-password',
-                { password },
-                { withCredentials: true }
-            );
-
-            if (response.status === 200) {
-                setShowPasswordModal(false);
-                fetchBackupRequests();
-            }
-        } catch (error) {
-            console.error('Password verification error:', error);
-            setPasswordError('Invalid password');
-        } finally {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            setPasswordError('Session expired. Please log in again.');
             setLoading(false);
+            onClose();
+            return;
         }
-    };
+
+        const response = await axios.post(
+            'http://localhost:5000/api/auth/verify-password',
+            { password },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        if (response.status === 200) {
+            // Store any new token if returned
+            if (response.data.token) {
+                localStorage.setItem('token', response.data.token);
+            }
+            setShowPasswordModal(false);
+            await fetchBackupRequests(); // Wait for fetch to complete
+        }
+    } catch (error) {
+        if (error.response?.status === 401) {
+            setPasswordError('Session expired. Please log in again.');
+            setTimeout(() => {
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+            }, 1500);
+        } else {
+            setPasswordError(
+                error.response?.data?.error ||
+                error.response?.data?.message ||
+                'Invalid password'
+            );
+        }
+    } finally {
+        setLoading(false);
+    }
+};
 
     const handlePasswordSubmit = async (e) => {
         e.preventDefault();
@@ -53,17 +82,53 @@ const BackupRequestsModal = ({ isOpen, onClose, onRestore, statuses = [] }) => {
     };
 
     const fetchBackupRequests = async () => {
-        try {
-            setLoading(true);
-            const response = await axios.get('http://localhost:5000/api/requests/backup/list');
-            setBackupRequests(response.data);
-        } catch (error) {
-            console.error('Error fetching backup requests:', error);
-            setError('Failed to fetch backup requests');
-        } finally {
-            setLoading(false);
+  try {
+    setLoading(true);
+    setError(null);
+    
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setError('Session expired. Please log in again.');
+      setTimeout(() => {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }, 1500);
+      return;
+    }
+
+    const response = await axios.get(
+      'http://localhost:5000/api/requests/backup/list',
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
-    };
+      }
+    );
+    
+    setBackupRequests(response.data);
+  } catch (error) {
+    console.error('Error fetching backup requests:', error);
+    
+    if (error.response) {
+      if (error.response.status === 403) {
+        setError('Access denied. You need admin privileges to view backup requests.');
+      } else if (error.response.status === 401) {
+        setError('Session expired. Please log in again.');
+        setTimeout(() => {
+          localStorage.removeItem('token');
+          window.location.href = '/login';
+        }, 1500);
+      } else {
+        setError(error.response.data?.message || 'Failed to fetch backup requests');
+      }
+    } else {
+      setError('Network error. Please check your connection.');
+    }
+  } finally {
+    setLoading(false);
+  }
+};
 
     const handleRestore = async () => {
         if (selectedRequests.length === 0) {
@@ -77,16 +142,48 @@ const BackupRequestsModal = ({ isOpen, onClose, onRestore, statuses = [] }) => {
 
         try {
             setLoading(true);
-            await axios.post('http://localhost:5000/api/requests/backup/restore', {
-                requestIds: selectedRequests,
-                ...(pendingStatusId && { status_id: pendingStatusId })
-            });
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setError('Session expired. Please log in again.');
+                setTimeout(() => {
+                    localStorage.removeItem('token');
+                    window.location.href = '/login';
+                }, 1500);
+                return;
+            }
+            await axios.post(
+                'http://localhost:5000/api/requests/backup/restore',
+                {
+                    requestIds: selectedRequests,
+                    ...(pendingStatusId && { status_id: pendingStatusId })
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
             onRestore(); // Callback to refresh main requests list
             onClose(); // Close modal after successful restore
             alert('Successfully restored selected requests!');
         } catch (error) {
-            console.error('Error restoring requests:', error);
-            alert('Failed to restore requests');
+            if (error.response?.status === 401) {
+                setError('Session expired. Please log in again.');
+                setTimeout(() => {
+                    localStorage.removeItem('token');
+                    window.location.href = '/login';
+                }, 1500);
+            } else if (error.response?.status === 403) {
+                setError('Access denied. You need admin privileges to restore backup requests.');
+            } else {
+                console.error('Error restoring requests:', error);
+                setError(
+                    error.response?.data?.message ||
+                    error.response?.data?.error ||
+                    'Failed to restore requests'
+                );
+            }
         } finally {
             setLoading(false);
         }

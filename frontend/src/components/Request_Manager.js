@@ -83,7 +83,10 @@ function Request_Manager() {
     if (status_id === rejectedStatus?.id) {
       // Delete request (backend should move to backup_requests and delete file)
       try {
-        await axios.delete(`http://localhost:5000/api/requests/${id}`);
+        const token = localStorage.getItem('token'); // <-- Add this line
+        await axios.delete(`http://localhost:5000/api/requests/${id}`, {
+          headers: { Authorization: `Bearer ${token}` } // <-- Add this line
+        });
         fetchRequests();
       } catch (err) {
         alert('Failed to reject and delete request.');
@@ -153,7 +156,7 @@ function Request_Manager() {
               <th>Name</th>
               <th>Certificate Type</th>
               <th>Date Requested</th>
-              <th>Control Number</th> {/* Add this column */}
+              <th>Control Number</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -161,13 +164,13 @@ function Request_Manager() {
           <tbody>
             {filteredRequests.map((request) => (
               <tr key={request.id}>
-                <td>{request.id}</td>
+                <td>{`${request.id}`}</td>
                 <td>{`${request.last_name}, ${request.first_name}`}</td>
                 <td>{request.certificate_name}</td>
                 <td>{new Date(request.created_at).toLocaleDateString()}</td>
-                <td>{request.control_id || 'Pending'}</td> {/* Add this column */}
+                <td>{request.control_id || 'Pending'}</td>
                 <td>
-                  <span className={`status-badge ${request.status.toLowerCase()}`}>
+                  <span className={`fstatus-badge ${request.status.toLowerCase()}`}>
                     {request.status}
                   </span>
                 </td>

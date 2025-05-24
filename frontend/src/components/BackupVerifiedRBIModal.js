@@ -238,23 +238,67 @@ const BackupVerifiedRBIModal = ({ isOpen, onClose, onRestore }) => {
                                     <th>Household Head</th>
                                     <th>Address</th>
                                     <th># of Members</th>
+                                    <th>Members</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filterHouseholds().map(household => (
-                                    <tr key={household.id}>
-                                        <td>
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedHouseholds.includes(household.id)}
-                                                onChange={() => handleSelectHousehold(household.id)}
-                                            />
-                                        </td>
-                                        <td>{household.id}</td>
-                                        <td>{`${household.head_last_name}, ${household.head_first_name} ${household.head_middle_name || ''}`}</td>
-                                        <td>{`${household.house_unit_no || ''} ${household.street_name || ''}, ${household.subdivision || ''}`}</td>
-                                        <td>{household.members?.length || 1}</td>
-                                    </tr>
+                                    <React.Fragment key={household.id}>
+                                        <tr>
+                                            <td>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedHouseholds.includes(household.id)}
+                                                    onChange={() => handleSelectHousehold(household.id)}
+                                                />
+                                            </td>
+                                            <td>{household.id}</td>
+                                            <td>{`${household.head_last_name}, ${household.head_first_name} ${household.head_middle_name || ''}`}</td>
+                                            <td>{`${household.house_unit_no || ''} ${household.street_name || ''}, ${household.subdivision || ''}`}</td>
+                                            <td>{household.members?.length || 1}</td>
+                                            <td>
+                                                {household.members && household.members.length > 0 ? (
+                                                    <table style={{ width: "100%", background: "#f9f9f9", marginTop: 4 }}>
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Name</th>
+                                                                <th>Relationship</th>
+                                                                <th>Type</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {household.members.map(member => (
+                                                                <tr key={member.id}>
+                                                                    <td>
+                                                                        {member.last_name}, {member.first_name} {member.middle_name || ""}
+                                                                    </td>
+                                                                    <td>
+                                                                        {(() => {
+                                                                            switch (String(member.relationship_id)) {
+                                                                                case "1": return "Mother";
+                                                                                case "2": return "Father";
+                                                                                case "3": return "Son";
+                                                                                case "4": return "Daughter";
+                                                                                case "5": return "Brother";
+                                                                                case "6": return "Sister";
+                                                                                case "7": return "Grandmother";
+                                                                                case "8": return "Grandfather";
+                                                                                case "9": return member.relationship_other || "Others";
+                                                                                default: return "";
+                                                                            }
+                                                                        })()}
+                                                                    </td>
+                                                                    <td>Member</td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                ) : (
+                                                    <span style={{ color: "#888" }}>No members</span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    </React.Fragment>
                                 ))}
                             </tbody>
                         </table>
@@ -275,4 +319,4 @@ const BackupVerifiedRBIModal = ({ isOpen, onClose, onRestore }) => {
     );
 };
 
-export default BackupVerifiedRBIModal; 
+export default BackupVerifiedRBIModal;

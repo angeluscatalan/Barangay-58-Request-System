@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { check } = require('express-validator');
 const rbiController = require('../controllers/rbiController');
+const authMiddleware = require('../Middleware/authMiddleware'); // <-- Add this import
 const { authenticateToken } = require('../Middleware/authMiddleware');
 
 // ✅ Validate household complete registration (one request with head + members)
@@ -135,11 +136,24 @@ router.use(authenticateToken);
 // Admin RBI routes
 router.get('/', rbiController.getAllHouseholds);
 router.get('/:id', rbiController.getHouseholdWithMembersById);
-router.put('/:id', rbiController.updateHousehold);
+router.put('/:id',
+  authMiddleware.authenticateToken,
+  authMiddleware.authorizeAdmin,
+  rbiController.updateHousehold
+);
+router.put('/:id/members/:memberId',
+  authMiddleware.authenticateToken,
+  authMiddleware.authorizeAdmin,
+  rbiController.updateHouseholdMember
+);
 router.put('/:id/status', validateStatusUpdate, rbiController.updateHouseholdStatus);
 router.delete('/:id', rbiController.deleteHousehold);
 router.post('/:id/members', validateMember, rbiController.addHouseholdMember);
-router.put('/:id/members/:memberId', validateMember, rbiController.updateHouseholdMember);
+router.put('/:id/members/:memberId',
+  authMiddleware.authenticateToken,
+  authMiddleware.authorizeAdmin,
+  rbiController.updateHouseholdMember
+);
 router.delete('/members/:memberId', rbiController.deleteHouseholdMember);
 
 // Backup routes

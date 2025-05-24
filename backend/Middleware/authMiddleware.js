@@ -1,46 +1,59 @@
 const jwt = require('jsonwebtoken');
 
-const authenticateToken = (req, res, next) => {
+exports.authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
-  
-  if (!token) return res.sendStatus(401); // 401 for missing token
+  if (!token) {
+    console.log('No token provided');
+    return res.status(401).json({ message: "Authorization token required" });
+  }
 
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403); // 403 for invalid/expired token
-    req.user = user; // Attach decoded user to request
+    if (err) {
+      console.error('Token verification failed:', err.message);
+      return res.status(403).json({ message: "Invalid or expired token" });
+    }
+    
+    console.log('Token verified for user:', user.username);
+    req.user = user;
     next();
   });
 };
 
 
 
+exports.authorizeAdmin = (req, res, next) => {
+  if (!req.user) {
+    console.log('No user in request');
+    return res.status(401).json({ message: "Unauthorized" });
+  }
 
-const authorizeAdmin = (req, res, next) => {
-  if (!req.user) return res.sendStatus(401);
+  console.log('User access level:', req.user.access_level);
   
-  // Either use access_level or role, but not both
-  if ([1, 2].includes(req.user.access_level)) { // or req.user.role === 'admin'
+  // Check for admin (1) or superadmin (2) access level
+  if (req.user.access_level === 1 || req.user.access_level === 2) {
     return next();
   }
+
+  console.log('Access denied for user:', req.user.username);
   res.status(403).json({ 
     message: 'Admin privileges required',
-    errorCode: 'FORBIDDEN_ADMIN_ACCESS' // Standardized error code
+    userAccessLevel: req.user.access_level,
+    requiredAccessLevel: '1 (admin) or 2 (superadmin)'
   });
 };
 
-function ensureAuthenticated(req, res, next) {
+exports.ensureAuthenticated = (req, res, next) => {
   if (req.isAuthenticated && req.isAuthenticated()) {
     return next();
   }
   return res.status(401).json({ message: "Unauthorized" });
 }
 
-function ensureAdmin(req, res, next) {
+exports.ensureAdmin = (req, res, next) => {
   if (req.user && req.user.role === 'admin') {
     return next();
   }
   return res.status(403).json({ message: "Forbidden" });
 }
 
-module.exports = { authenticateToken, authorizeAdmin, ensureAuthenticated, ensureAdmin };

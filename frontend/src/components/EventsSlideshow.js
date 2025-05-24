@@ -29,7 +29,7 @@ function EventsSlideshow() {
 
                 setEvents(latestEvents);
             } catch (error) {
-                console.error('Error fetching events:', error);
+                // console.error('Error fetching events:', error);
                 setEvents([]);
             } finally {
                 setLoading(false);

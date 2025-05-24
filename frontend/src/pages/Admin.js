@@ -17,6 +17,9 @@ import BackupRequestsModal from "../components/BackupRequestsModal"
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal"
 import LogoutConfirmationModal from "../components/LogoutConfirmationModal"
 import BulkDeleteConfirmationModal from "../components/BulkDeleteConfirmationModal"
+import RequestDetailsModal from "../components/RequestDetailsModal"; // <-- Add this import
+import { jwtDecode } from 'jwt-decode';
+
 
 function Admin() {
   const navigate = useNavigate()
@@ -45,6 +48,10 @@ function Admin() {
   const [statuses, setStatuses] = useState([]); // <-- Add state for statuses
   const [statusLoading, setStatusLoading] = useState(true);
   const [statusError, setStatusError] = useState(null);
+  const [showRequestDetailsModal, setShowRequestDetailsModal] = useState(false);
+  const [requestDetails, setRequestDetails] = useState(null);
+  const [isRequestDetailsOpen, setIsRequestDetailsOpen] = useState(false);
+const [selectedRequestDetails, setSelectedRequestDetails] = useState(null);
 
   const { requests, loading: requestsLoading, error: requestsError, fetchRequests, updateRequestStatus } = useRequests()
 
@@ -69,6 +76,68 @@ function Admin() {
     setRequestToDelete(id)
     setShowDeleteModal(true)
   }
+  
+  const handleViewRequestDetails = (request) => {
+  setSelectedRequestDetails(request);
+  setIsRequestDetailsOpen(true);
+};
+
+useEffect(() => {
+  const verifyToken = () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/');
+      return false;
+    }
+
+    try {
+      const decoded = jwtDecode(token); // <-- use jwtDecode
+      const isExpired = decoded.exp * 1000 < Date.now();
+      
+      if (isExpired) {
+        localStorage.removeItem('token');
+        navigate('/');
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Token verification error:', error);
+      localStorage.removeItem('token');
+      navigate('/');
+      return false;
+    }
+  };
+  
+  // Verify token hasn't expired
+  const token = localStorage.getItem('token');
+  if (token) {
+    const decoded = jwtDecode(token); // <-- use jwtDecode
+    if (decoded.exp * 1000 < Date.now()) {
+      localStorage.removeItem('token');
+      navigate('/');
+    }
+  }
+}, [navigate]);
+
+useEffect(() => {
+  const verifyAccess = async () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        if (![1, 2].includes(decoded.access_level)) {
+          // Redirect if not admin
+          navigate('/');
+        }
+      } catch (error) {
+        localStorage.removeItem('token');
+        navigate('/');
+      }
+    }
+  };
+  verifyAccess();
+}, [navigate]);
 
   const confirmDeleteRequest = async () => {
     try {
@@ -439,66 +508,70 @@ function Admin() {
         control_id = resp.data.control_id;
         
         // Update the requests in context/state
-        await fetchRequests(); // This will refresh the list with the new control_id
+        await fetchRequests();
       }
     }
-      // Map frontend certificate names to backend types
-      const certificateTypeMap = {
-        'Barangay ID Application': 'IDApp',
-        'Barangay Clearance': 'ClearanceCert',
-        'Certificate of Indigency': 'IndigencyCert',
-        'Barangay Jobseeker': 'JobseekerCert',
-        'Barangay Certificate': 'BrgyCert'
-      };
 
-      const response = await axios.post(
-        "http://localhost:5000/api/certificates/generate-pdf",
-        {
-          requestData: {
-            ...request,
-            type_of_certificate: backendCertificateType,
-            control_id: control_id,
-            s3_key: request.s3_key,
-          },
+    // Map frontend certificate names to backend types
+    const certificateTypeMap = {
+      'Barangay ID Application': 'IDApp',
+      'Barangay Clearance': 'ClearanceCert',
+      'Certificate of Indigency': 'IndigencyCert',
+      'Barangay Jobseeker': 'JobseekerCert',
+      'Barangay Certificate': 'BrgyCert'
+    };
+
+    // Get the backend type from the map
+    const backendCertificateType = certificateTypeMap[certName] || certName;
+
+    const response = await axios.post(
+      "http://localhost:5000/api/certificates/generate-pdf",
+      {
+        requestData: {
+          ...request,
+          type_of_certificate: backendCertificateType,
+          control_id: control_id,
+          s3_key: request.s3_key,
         },
-        {
-          responseType: "blob",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
-      // Handle ZIP for Jobseeker certificates
-      if (certName === "Barangay Jobseeker") {
-        const file = new Blob([response.data], { type: "application/zip" });
-        const fileURL = URL.createObjectURL(file);
-        const link = document.createElement("a");
-        link.href = fileURL;
-        link.download = `JobseekerDocuments_${request.last_name}.zip`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(fileURL);
-      } else {
-        // Handle regular PDFs
-        const file = new Blob([response.data], { type: "application/pdf" });
-        const fileURL = URL.createObjectURL(file);
-        const link = document.createElement("a");
-        link.href = fileURL;
-        link.download = `${certName.replace(/\s+/g, '_')}_${request.last_name}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(fileURL);
+      },
+      {
+        responseType: "blob",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       }
-    } catch (error) {
-      console.error("Error printing certificate:", error);
-      alert(`Failed to generate certificate: ${error.message}`);
-    } finally {
-       setIsPrinting((prev) => ({ ...prev, [request.id]: false }));
+    );
+
+    // Handle ZIP for Jobseeker certificates
+    if (certName === "Barangay Jobseeker") {
+      const file = new Blob([response.data], { type: "application/zip" });
+      const fileURL = URL.createObjectURL(file);
+      const link = document.createElement("a");
+      link.href = fileURL;
+      link.download = `JobseekerDocuments_${request.last_name}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(fileURL);
+    } else {
+      // Handle regular PDFs
+      const file = new Blob([response.data], { type: "application/pdf" });
+      const fileURL = URL.createObjectURL(file);
+      const link = document.createElement("a");
+      link.href = fileURL;
+      link.download = `${certName.replace(/\s+/g, '_')}_${request.last_name}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(fileURL);
     }
-  };
+  } catch (error) {
+    console.error("Error printing certificate:", error);
+    alert(`Failed to generate certificate: ${error.message}`);
+  } finally {
+    setIsPrinting((prev) => ({ ...prev, [request.id]: false }));
+  }
+};
 
   if (requestsLoading || certificates.length === 0) return <div className="loading">Loading...</div> // Adjust loading check
   if (requestsError) return <div className="error">Error: {requestsError}</div>
@@ -849,6 +922,14 @@ function Admin() {
                                   >
                                     <i className="fas fa-trash-alt"></i>
                                   </button>
+                                  {/* Add this button for viewing details */}
+                                  <button
+                                    className="view-btn"
+                                    onClick={() => handleViewRequestDetails(request)}
+                                    title="View Details"
+                                  >
+                                    <i className="fas fa-eye"></i>
+                                  </button>
                                 </td>
                               </tr>
                             ))}
@@ -914,7 +995,19 @@ function Admin() {
         onConfirm={confirmBulkDelete}
         count={selectedRequests.length}
       />
+      {/* Add the RequestDetailsModal */}
+      <RequestDetailsModal
+        isOpen={showRequestDetailsModal}
+        onClose={() => setShowRequestDetailsModal(false)}
+        request={requestDetails}
+      />
+      <RequestDetailsModal 
+  isOpen={isRequestDetailsOpen}
+  onClose={() => setIsRequestDetailsOpen(false)}
+  request={selectedRequestDetails}
+/>
     </>
+    
   )
 }
 

@@ -15,21 +15,20 @@ const transporter = nodemailer.createTransport({
 
   exports.authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1] || req.cookies.token;
-    
-    console.log("Received token:", token ? "Yes" : "No");
-  
+    // Only check Authorization header, body, or query (not cookies)
+    const token = authHeader && authHeader.split(' ')[1] ||
+                  req.body?.token ||
+                  req.query?.token;
+
     if (!token) {
       return res.status(401).json({ message: "Authentication required" });
     }
-  
+
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
       if (err) {
         console.error("Token verification error:", err);
         return res.status(403).json({ message: "Invalid or expired token" });
       }
-  
-      console.log("Token verified, user:", decoded);
       req.user = decoded;
       next();
     });
@@ -40,9 +39,6 @@ const verificationCodes = {};
 
 // Password Reset Functions
 exports.forgotPassword = async (req, res) => {
-    console.log('🚀 forgotPassword function called');
-    console.log('📧 Request body:', req.body);
-    
     const { email } = req.body;
   
     try {
@@ -57,8 +53,6 @@ exports.forgotPassword = async (req, res) => {
         [email, email]
       );
   
-      console.log('🔍 Database query result:', admin.length > 0 ? 'User found' : 'No user found');
-      
       if (admin.length === 0) {
         return res.status(404).json({ success: false, message: "Email not found" });
       }
@@ -71,9 +65,6 @@ exports.forgotPassword = async (req, res) => {
         adminId: admin[0].id
       };
   
-      console.log('📧 Sending email to:', email);
-      console.log('🔢 Generated code:', code);
-  
       // Send email
       await transporter.sendMail({
         from: `"Barangay 58 Admin" <${process.env.EMAIL_USER}>`,
@@ -85,8 +76,6 @@ exports.forgotPassword = async (req, res) => {
           <p>This code will expire in 15 minutes.</p>
         `
       });
-  
-      console.log('✅ Email sent successfully');
       
       res.json({ 
         success: true,
@@ -200,7 +189,6 @@ exports.loginAdmin = async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    console.log("Login attempt with:", { username, passwordLength: password?.length });
     
     // Find admin in database (include archive status in the query)
     const [admin] = await pool.execute(
@@ -238,18 +226,10 @@ exports.loginAdmin = async (req, res) => {
       { expiresIn: '1h' }
     );
 
-    // Set cookie and respond
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 3600000 // 1 hour
-    });
-
     res.json({ 
       success: true,
       message: "Login successful",
-      token: token,
+      token: token, // Ensure this is included
       user: { 
         id: user.id, 
         username: user.username,
@@ -310,15 +290,14 @@ exports.logoutAdmin = (req, res) => {
 
 exports.verifyAdmin = (req, res, next) => {
   this.authenticateToken(req, res, () => {
-    console.log("User access level:", req.user.access_level) // Log the actual value
     
     // Updated check to handle both numeric and string admin values
-    if (req.user.access_level !== 'admin' && req.user.access_level !== 2) {
+    if (![1, 2].includes(req.user.access_level)) {
       return res.status(403).json({ 
         message: "Admin access required",
         details: {
           receivedAccessLevel: req.user.access_level,
-          expected: "Either 'admin' or 2"
+          expected: "1 (admin) or 2 (superadmin)"
         }
       });
     }

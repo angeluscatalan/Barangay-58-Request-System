@@ -80,11 +80,9 @@ function AdminDashboard() {
       // Use Promise.all to fetch data concurrently
       const [requestsResponse, rbiResponse, eventsResponse] = await Promise.all([
         axios.get(`${baseURL}/requests`, { headers }),
-        
         axios.get(`${baseURL}/rbi`, { headers }),
         axios.get(`${baseURL}/events`, { headers }),
       ])
-
 
       // Process certificate requests data
       const requests = Array.isArray(requestsResponse.data) ? requestsResponse.data : []
@@ -304,7 +302,8 @@ function AdminDashboard() {
       setError(null)
       setLastUpdated(new Date())
     } catch (err) {
-      console.error("Error fetching dashboard data:", err)
+      // Remove browser log:
+      // console.error("Error fetching dashboard data:", err)
       setError(err.message || "Failed to load dashboard data. Please try again later.")
       // Set empty states when there's an error
       setRecentRequests([])
@@ -346,13 +345,13 @@ function AdminDashboard() {
   // Load Recharts components when demographics tab is active
   useEffect(() => {
     if (activeTab === "demographics") {
-      // Dynamically import Recharts when needed
       import("./RechartsComponents")
         .then(() => {
           setChartsLoaded(true)
         })
         .catch((err) => {
-          console.error("Failed to load charts:", err)
+          // Remove browser log:
+          // console.error("Failed to load charts:", err)
         })
     }
   }, [activeTab])
@@ -363,10 +362,10 @@ function AdminDashboard() {
       setExportError(null)
       const token = localStorage.getItem("token")
 
-      // Show password modal instead of direct export
       setShowPasswordModal(true)
     } catch (err) {
-      console.error("Export error:", err)
+      // Remove browser log:
+      // console.error("Export error:", err)
       setExportError("Export failed. Please check server connections and permissions.")
     } finally {
       setIsExporting(false)
@@ -400,7 +399,8 @@ function AdminDashboard() {
       setShowPasswordModal(false)
       setAdminPassword("")
     } catch (err) {
-      console.error("Export failed:", err)
+      // Remove browser log:
+      // console.error("Export failed:", err)
       if (err.response?.status === 401) {
         setPasswordError("Incorrect password. Please try again.")
       } else {
@@ -441,7 +441,8 @@ function AdminDashboard() {
       alert("Database imported successfully! The page will now refresh.")
       window.location.reload()
     } catch (err) {
-      console.error("Import failed:", err)
+      // Remove browser log:
+      // console.error("Import failed:", err)
       if (err.response?.status === 401) {
         setImportPasswordError("Incorrect password. Please try again.")
       } else {

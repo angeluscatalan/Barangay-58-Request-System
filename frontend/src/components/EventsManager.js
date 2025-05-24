@@ -28,24 +28,50 @@ function EventsManager() {
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [successMessage, setSuccessMessage] = useState("")
 
-  const fetchEvents = async () => {
-    try {
-      setLoading(true)
-      const response = await axios.get("http://localhost:5000/api/events")
-      if (response.data && Array.isArray(response.data.events)) {
-        setEvents(response.data.events)
-      } else {
-        console.error("Invalid events data format:", response.data)
-        setEvents([])
-      }
-    } catch (error) {
-      console.error("Error fetching events:", error)
-      setError("Failed to fetch events")
-      setEvents([])
-    } finally {
-      setLoading(false)
+ const fetchEvents = async () => {
+  try {
+    setLoading(true);
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      setError('Authentication required. Please log in again.');
+      // Redirect to login after a delay
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 1500);
+      return;
     }
+
+    const response = await axios.get("http://localhost:5000/api/events", {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (response.data && Array.isArray(response.data.events)) {
+      setEvents(response.data.events);
+    } else {
+      console.error("Invalid events data format:", response.data);
+      setEvents([]);
+    }
+  } catch (error) {
+    console.error("Error fetching events:", error);
+    
+    if (error.response?.status === 401) {
+      setError('Session expired. Please log in again.');
+      // Redirect to login after a delay
+      setTimeout(() => {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }, 1500);
+    } else {
+      setError("Failed to fetch events");
+    }
+    setEvents([]);
+  } finally {
+    setLoading(false);
   }
+};
 
   useEffect(() => {
     fetchEvents()
@@ -72,7 +98,11 @@ function EventsManager() {
 
   const confirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:5000/api/events/${eventToDelete}`)
+      const response = await axios.delete(`http://localhost:5000/api/events/${eventToDelete}`, {
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem('token')}`
+  }
+});
       setEvents((prevEvents) => prevEvents.filter((event) => event.id !== eventToDelete))
       setShowDeleteModal(false)
       setEventToDelete(null)
@@ -164,7 +194,11 @@ function EventsManager() {
     setIsDeleting(true)
     try {
       for (const id of selectedEvents) {
-        await axios.delete(`http://localhost:5000/api/events/${id}`)
+        await axios.delete(`http://localhost:5000/api/events/${id}`, {
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem('token')}`
+  }
+});
       }
       fetchEvents()
       setSelectedEvents([])

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 function AddHouseholdMemberModal({ isOpen, onClose, onSave, householdId }) {
   const [memberData, setMemberData] = useState({
@@ -12,9 +12,10 @@ function AddHouseholdMemberModal({ isOpen, onClose, onSave, householdId }) {
     civil_status: "",
     citizenship: "",
     citizenship_other: "",
-    occupation: ""
+    occupation: "",
+    relationship_id: "",
+    relationship_other: ""
   });
-
   // Occupation options
   const occupationOptions = [
     "Employed",
@@ -48,20 +49,38 @@ function AddHouseholdMemberModal({ isOpen, onClose, onSave, householdId }) {
 
   const nameFields = ["last_name", "first_name", "middle_name"];
 
+  const relationshipOptions = [
+    { id: 1, name: "Mother" },
+    { id: 2, name: "Father" },
+    { id: 3, name: "Son" },
+    { id: 4, name: "Daughter" },
+    { id: 5, name: "Brother" },
+    { id: 6, name: "Sister" },
+    { id: 7, name: "Grandmother" },
+    { id: 8, name: "Grandfather" },
+    { id: 9, name: "Others" }
+  ];
+
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     let newValue = value;
+    
     if (nameFields.includes(name)) {
       newValue = value.charAt(0).toUpperCase() + value.slice(1);
     }
+    
     setMemberData(prev => ({
       ...prev,
-      [name]: newValue
+      [name]: newValue,
+      // Clear relationship_other if not "Others"
+      ...(name === "relationship_id" && value !== "9" && { relationship_other: "" })
     }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     // Prepare the data to be saved
     // Remove empty/undefined fields and map suffix/sex for backend
     const suffixMap = {
@@ -84,12 +103,12 @@ function AddHouseholdMemberModal({ isOpen, onClose, onSave, householdId }) {
       "Prefer Not To Say": 3,
       "Other": 4
     };
+
     // Validate required fields
-    const requiredFields = ['last_name', 'first_name', 'birth_date', 'sex'];
+    const requiredFields = ['last_name', 'first_name', 'birth_date', 'sex', 'relationship_id'];
     const missingFields = requiredFields.filter(field => !memberData[field]);
-    
+
     if (missingFields.length > 0) {
-      console.log('Missing required fields:', missingFields);
       alert(`Please fill in all required fields: ${missingFields.join(', ')}`);
       return;
     }
@@ -104,13 +123,19 @@ function AddHouseholdMemberModal({ isOpen, onClose, onSave, householdId }) {
           ? parseInt(suffixMap[memberData.suffix], 10)
           : null,
       sex: sexMap[memberData.sex] !== undefined ? Number(sexMap[memberData.sex]) : memberData.sex,
-      occupation: memberData.occupation || null
+      occupation: memberData.occupation || null,
+      relationship_id: memberData.relationship_id,
+      ...(memberData.relationship_id === "9" && memberData.relationship_other && {
+        relationship_other: memberData.relationship_other
+      })
     };
-    
-    console.log('Data to be submitted:', dataToSave);
+
     delete dataToSave.suffix;
     if (dataToSave.citizenship !== "Other") {
       delete dataToSave.citizenship_other;
+    }
+    if (dataToSave.relationship_id !== "9") {
+      delete dataToSave.relationship_other;
     }
     // Remove empty string fields
     Object.keys(dataToSave).forEach(
@@ -270,6 +295,31 @@ function AddHouseholdMemberModal({ isOpen, onClose, onSave, householdId }) {
               ))}
             </select>
           </div>
+          <div className="form-group">
+          <label>Relationship to Household Head:</label>
+          <select
+            name="relationship_id"
+            value={memberData.relationship_id}
+            onChange={handleChange}
+            required
+          >
+            <option value="">Select Relationship</option>
+            {relationshipOptions.map(opt => (
+              <option key={opt.id} value={opt.id}>{opt.name}</option>
+            ))}
+          </select>
+          {memberData.relationship_id === "9" && (
+            <input
+              type="text"
+              name="relationship_other"
+              placeholder="Specify relationship"
+              value={memberData.relationship_other}
+              onChange={handleChange}
+              required={memberData.relationship_id === "9"}
+              style={{ marginTop: '8px' }}
+            />
+          )}
+        </div>
           <div className="modal-footer">
             <button type="button" className="cancel-btn" onClick={onClose}>
               Cancel
@@ -278,6 +328,7 @@ function AddHouseholdMemberModal({ isOpen, onClose, onSave, householdId }) {
               Save Member
             </button>
           </div>
+          
         </form>
       </div>
     </div>

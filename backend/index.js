@@ -25,8 +25,9 @@ app.use(cookieParser());
 app.use(cors({
   origin: "http://localhost:3000",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: false, // <-- Set to false for header-based JWT auth
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Authorization'],
   optionsSuccessStatus: 204,
 }));
 

@@ -10,41 +10,54 @@ function Login() {
     const [errorMessage, setErrorMessage] = useState("");
     const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setErrorMessage(""); // Clear previous errors
-        
-        try {
-            const response = await fetch("http://localhost:5000/api/auth/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({ username, password }),
-            });
-    
-            const data = await response.json();
-    
-            if (response.ok) {
-                // If you're using token-based auth, store the token from the response
-                if (data.token) {
-                    localStorage.setItem("token", data.token);
-                }
-                localStorage.setItem("access_level", data.user.access_level); 
-                console.log("Login successful, navigating...");
-                navigate("/admin");
-            } else {
-                // Handle different error cases
-                if (response.status === 403) {
-                    setErrorMessage(data.message || "Account disabled. Please contact the administrator.");
-                } else {
-                    setErrorMessage(data.message || "Invalid username or password");
-                }
-            }
-        } catch (error) {
-            console.error("Login error:", error);
-            setErrorMessage("Server error. Please try again later.");
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  setErrorMessage("");
+  
+  try {
+    const response = await fetch("http://localhost:5000/api/auth/login", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, password }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      // Verify token exists before navigation
+      if (!data.token) {
+        throw new Error("No token received");
+      }
+      
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      
+      // Test token immediately
+      const testResponse = await fetch("http://localhost:5000/api/auth/me", {
+        headers: {
+          Authorization: `Bearer ${data.token}`
         }
-    };
+      });
+      
+      if (testResponse.ok) {
+        navigate("/admin");
+      } else {
+        throw new Error("Token verification failed");
+      }
+    } else {
+      if (response.status === 403) {
+        setErrorMessage(data.message || "Account disabled. Please contact the administrator.");
+      } else {
+        setErrorMessage(data.message || "Invalid username or password");
+      }
+    }
+  } catch (error) {
+    console.error("Login error:", error);
+    setErrorMessage("Server error. Please try again later.");
+  }
+};
 
     return (
         <div className="login-container">

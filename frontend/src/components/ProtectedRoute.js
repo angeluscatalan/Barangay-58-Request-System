@@ -6,9 +6,16 @@ const ProtectedRoute = ({ children }) => {
 
   useEffect(() => {
     const verifyAuth = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setIsAuthenticated(false);
+        return;
+      }
       try {
-        const res = await fetch('/api/auth/verify', {
-          credentials: 'include'
+        const res = await fetch('http://localhost:5000/api/auth/me', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         });
         setIsAuthenticated(res.ok);
       } catch (err) {

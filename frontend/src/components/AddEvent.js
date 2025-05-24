@@ -55,67 +55,81 @@ function AddEvent({ onClose, onAddEvent, editData = null, onEditEvent }) {
 
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
+    e.preventDefault();
 
-        const formData = new FormData();
-        formData.append('event_name', eventData.name);
-        formData.append('event_date', eventData.date);
-        formData.append('time_start', eventData.timeStart);
-        formData.append('time_end', eventData.timeEnd);
-        formData.append('venue', eventData.venue);
-        formData.append('description', eventData.description);
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert('Session expired. Please log in again.');
+        window.location.href = '/login';
+        return;
+    }
 
-        if (eventData.image) {
-            formData.append('image', eventData.image);
+    const formData = new FormData();
+    formData.append('event_name', eventData.name);
+    formData.append('event_date', eventData.date);
+    formData.append('time_start', eventData.timeStart);
+    formData.append('time_end', eventData.timeEnd);
+    formData.append('venue', eventData.venue);
+    formData.append('description', eventData.description);
+
+    if (eventData.image) {
+        formData.append('image', eventData.image);
+    }
+
+    try {
+        const url = editData
+            ? `http://localhost:5000/api/events/${editData.id}`
+            : 'http://localhost:5000/api/events';
+
+        const method = editData ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+            method,
+            body: formData,
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const responseData = await response.json();
+
+        if (!response.ok) {
+            throw new Error(responseData.message || 'Request failed');
         }
 
-        try {
-            const url = editData
-                ? `http://localhost:5000/api/events/${editData.id}`
-                : 'http://localhost:5000/api/events';
-
-            const method = editData ? 'PUT' : 'POST';
-
-            const response = await fetch(url, {
-                method,
-                body: formData
-                // Don't set Content-Type header - let the browser set it with boundary
+        if (editData) {
+            onEditEvent({
+                ...eventData,
+                id: editData.id,
+                image_url: responseData.image_url || eventData.image_url,
+                event_name: eventData.name,
+                event_date: eventData.date,
+                time_start: eventData.timeStart,
+                time_end: eventData.timeEnd
             });
+        } else {
+            onAddEvent({
+                ...eventData,
+                id: responseData.id,
+                image_url: responseData.image_url,
+                event_name: eventData.name,
+                event_date: eventData.date,
+                time_start: eventData.timeStart,
+                time_end: eventData.timeEnd
+            });
+        }
 
-            const responseData = await response.json();
-
-            if (!response.ok) {
-                throw new Error(responseData.message || 'Request failed');
-            }
-
-            if (editData) {
-                onEditEvent({
-                    ...eventData,
-                    id: editData.id,
-                    image_url: responseData.image_url || eventData.image_url,
-                    event_name: eventData.name,
-                    event_date: eventData.date,
-                    time_start: eventData.timeStart,
-                    time_end: eventData.timeEnd
-                });
-            } else {
-                onAddEvent({
-                    ...eventData,
-                    id: responseData.id,
-                    image_url: responseData.image_url,
-                    event_name: eventData.name,
-                    event_date: eventData.date,
-                    time_start: eventData.timeStart,
-                    time_end: eventData.timeEnd
-                });
-            }
-
-            onClose();
-        } catch (error) {
-            console.error('Error:', error);
+        onClose();
+    } catch (error) {
+        console.error('Error:', error);
+        if (error.message.includes('401')) {
+            alert('Session expired. Please log in again.');
+            window.location.href = '/login';
+        } else {
             alert(`Operation failed: ${error.message}`);
         }
-    };
+    }
+};
 
     return (
         <div className="add-event-container">

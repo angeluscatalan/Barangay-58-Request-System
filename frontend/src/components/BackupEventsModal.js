@@ -50,40 +50,82 @@ const BackupEventsModal = ({ isOpen, onClose, onRestore }) => {
     };
 
     const fetchBackupEvents = async () => {
-        try {
-            setLoading(true);
-            const response = await axios.get('http://localhost:5000/api/events/backup/list');
-            setBackupEvents(response.data);
-        } catch (error) {
-            console.error('Error fetching backup events:', error);
-            setError('Failed to fetch backup events');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleRestore = async () => {
-        if (selectedEvents.length === 0) {
-            alert('Please select at least one event to restore');
+    try {
+        setLoading(true);
+        setError(null);
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+            setError('Session expired. Please log in again.');
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 1500);
             return;
         }
 
-        try {
-            setLoading(true);
-            await axios.post('http://localhost:5000/api/events/backup/restore', {
-                eventIds: selectedEvents
-            });
-            onRestore(); // Callback to refresh main events list
-            onClose(); // Close modal after successful restore
-            alert('Successfully restored selected events!');
-        } catch (error) {
-            console.error('Error restoring events:', error);
-            alert('Failed to restore events');
-        } finally {
-            setLoading(false);
+        const response = await axios.get('http://localhost:5000/api/events/backup/list', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        setBackupEvents(response.data);
+    } catch (error) {
+        console.error('Error fetching backup events:', error);
+        
+        if (error.response?.status === 401) {
+            setError('Session expired. Please log in again.');
+            setTimeout(() => {
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+            }, 1500);
+        } else {
+            setError(error.response?.data?.message || 'Failed to fetch backup events');
         }
-    };
+    } finally {
+        setLoading(false);
+    }
+};
 
+    const handleRestore = async () => {
+    if (selectedEvents.length === 0) {
+        alert('Please select at least one event to restore');
+        return;
+    }
+
+    try {
+        setLoading(true);
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+            alert('Session expired. Please log in again.');
+            window.location.href = '/login';
+            return;
+        }
+
+        await axios.post('http://localhost:5000/api/events/backup/restore', 
+            { eventIds: selectedEvents },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+        onRestore();
+        onClose();
+        alert('Successfully restored selected events!');
+    } catch (error) {
+        console.error('Error restoring events:', error);
+        
+        if (error.response?.status === 401) {
+            alert('Session expired. Please log in again.');
+            window.location.href = '/login';
+        } else {
+            alert(error.response?.data?.message || 'Failed to restore events');
+        }
+    } finally {
+        setLoading(false);
+    }
+};
     const handleSelectEvent = (id) => {
         setSelectedEvents(prev => {
             if (prev.includes(id)) {

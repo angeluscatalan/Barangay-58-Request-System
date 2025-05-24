@@ -249,7 +249,8 @@ exports.updateHousehold = async (req, res) => {
     head_last_name,
     head_first_name,
     head_middle_name,
-    head_suffix_id, // Changed to head_suffix_id
+    head_suffix, // Accept from frontend (string or id)
+    head_suffix_id, // Accept from frontend (id)
     house_unit_no,
     street_name,
     subdivision,
@@ -258,10 +259,25 @@ exports.updateHousehold = async (req, res) => {
     sex,
     civil_status,
     citizenship,
+    citizenship_other,
     occupation,
     email_address,
-    sex_other // Added sex_other
+    sex_other
   } = req.body;
+
+  // Determine suffix_id to save (prefer head_suffix_id, fallback to head_suffix if it's a valid id)
+  let suffixIdToSave = null;
+  if (head_suffix_id) {
+    suffixIdToSave = head_suffix_id;
+  } else if (head_suffix && !isNaN(Number(head_suffix))) {
+    suffixIdToSave = Number(head_suffix);
+  }
+
+  // Always use the value in 'citizenship' for the DB, ignore citizenship_other
+  let citizenshipToSave = citizenship === "Other" && citizenship_other 
+  ? citizenship_other 
+  : citizenship;
+let occupationToSave = occupation;
 
   try {
     const [result] = await pool.query(
@@ -275,7 +291,7 @@ exports.updateHousehold = async (req, res) => {
         head_last_name,
         head_first_name,
         head_middle_name,
-        head_suffix_id || null, // Changed to head_suffix_id
+        suffixIdToSave || null,
         house_unit_no,
         street_name,
         subdivision,
@@ -283,10 +299,10 @@ exports.updateHousehold = async (req, res) => {
         birth_date,
         sex,
         civil_status,
-        citizenship,
-        occupation,
+        citizenshipToSave,
+        occupationToSave,
         email_address,
-        sex_other || null, // Added sex_other
+        sex_other || null,
         id
       ]
     );
@@ -344,27 +360,28 @@ exports.addHouseholdMember = async (req, res) => {
     }
 
     const [result] = await pool.execute(
-      `INSERT INTO household_members
-        (household_id, last_name, first_name, middle_name, suffix_id,
-         birth_place, birth_date, sex, sex_other, civil_status, citizenship, occupation, relationship_id, relationship_other)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        id,
-        last_name,
-        first_name,
-        middle_name || null,
-        suffix_id || null,
-        birth_place,
-        birth_date,
-        sex,
-        sex_other || null,
-        civil_status,
-        citizenship,
-        occupation,
-        relationship_id || null,
-        relationship_other || null
-      ]
-    );
+  `INSERT INTO household_members
+    (household_id, last_name, first_name, middle_name, suffix_id,
+     birth_place, birth_date, sex, sex_other, civil_status, 
+     citizenship, occupation, relationship_id, relationship_other)
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  [
+    id,
+    last_name,
+    first_name,
+    middle_name || null,
+    suffix_id || null,
+    birth_place,
+    birth_date,
+    sex,
+    sex_other || null,
+    civil_status,
+    citizenship,
+    occupation,
+    relationship_id || null,
+    relationship_other || null
+  ]
+);
 
     res.status(201).json({
       success: true,
@@ -377,52 +394,69 @@ exports.addHouseholdMember = async (req, res) => {
   }
 };
 
+// 📌 Update household member
 exports.updateHouseholdMember = async (req, res) => {
   const { id, memberId } = req.params;
   const {
     last_name,
     first_name,
     middle_name,
-    suffix_id,
+    suffix, // Accept from frontend (string or id)
+    suffix_id, // Accept from frontend (id)
     birth_place,
     birth_date,
     sex,
     sex_other,
     civil_status,
     citizenship,
+    citizenship_other,
     occupation,
     relationship_id,
     relationship_other
   } = req.body;
 
+  // Determine suffix_id to save (prefer suffix_id, fallback to suffix if it's a valid id)
+  let suffixIdToSave = null;
+  if (suffix_id) {
+    suffixIdToSave = suffix_id;
+  } else if (suffix && !isNaN(Number(suffix))) {
+    suffixIdToSave = Number(suffix);
+  }
+
+  // Always use the value in 'citizenship' for the DB, ignore citizenship_other
+let citizenshipToSave = citizenship === "Other" && citizenship_other 
+  ? citizenship_other 
+  : citizenship;
+let occupationToSave = occupation;
+
   try {
     const [result] = await pool.query(
-      `UPDATE household_members
-       SET last_name = ?, first_name = ?, middle_name = ?, suffix_id = ?,
-           birth_place = ?, birth_date = ?, sex = ?, sex_other = ?, civil_status = ?,
-           citizenship = ?, occupation = ?, relationship_id = ?, relationship_other = ?
-       WHERE id = ? AND household_id = ?`,
-      [
-        last_name,
-        first_name,
-        middle_name,
-        suffix_id || null,
-        birth_place,
-        birth_date,
-        sex,
-        sex_other || null,
-        civil_status,
-        citizenship,
-        occupation,
-        relationship_id || null,
-        relationship_other || null,
-        memberId,
-        id
-      ]
-    );
+  `UPDATE household_members
+   SET last_name = ?, first_name = ?, middle_name = ?, suffix_id = ?,
+       birth_place = ?, birth_date = ?, sex = ?, sex_other = ?, civil_status = ?,
+       citizenship = ?, occupation = ?, relationship_id = ?, relationship_other = ?
+   WHERE id = ? AND household_id = ?`,
+  [
+    last_name,
+    first_name,
+    middle_name,
+    suffixIdToSave || null,
+    birth_place,
+    birth_date,
+    sex,
+    sex_other || null,
+    civil_status,
+    citizenshipToSave,
+    occupationToSave,
+    relationship_id || null,
+    relationship_other || null,
+    memberId,
+    id
+  ]
+);
 
     if (result.affectedRows === 0) {
-      return res.status(404).json({ error: 'Member not found or does not belong to specified household' });
+      return res.status(404).json({ error: 'Member not found' });
     }
 
     res.json({ success: true, message: 'Member information updated successfully' });

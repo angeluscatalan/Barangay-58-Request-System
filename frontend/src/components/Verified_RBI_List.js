@@ -6,6 +6,7 @@ import BackupVerifiedRBIModal from "./BackupVerifiedRBIModal";
 import EditRBIModal from "./EditRBIModal";
 import AddHouseholdModal from "./AddHouseholdModal";
 import AddHouseholdMemberModal from "./AddHouseholdMemberModal";
+import { getSuffixLabel } from "./EditRBIModal"; // Import the helper
 
 
 function Verified_RBI_List() {
@@ -85,6 +86,7 @@ function Verified_RBI_List() {
       }));
     }
   };
+  
 
   // Delete selected items
   const handleDeleteSelected = async () => {
@@ -171,35 +173,46 @@ function Verified_RBI_List() {
 
   // Add this function to handle saving edits
   const handleSaveEdit = async (updatedData) => {
-    try {
-      const token = localStorage.getItem("token");
-      let response;
+  try {
+    // Process citizenship data
+    const processedData = {
+      ...updatedData,
+      // If citizenship is "Other" and citizenship_other has a value, use that
+      citizenship: updatedData.citizenship === "Other" && updatedData.citizenship_other 
+        ? updatedData.citizenship_other 
+        : updatedData.citizenship,
+      // Remove the citizenship_other field as we don't need to store it separately
+      citizenship_other: undefined
+    };
 
-      if (editType === 'household') {
-        response = await axios.put(
-          `http://localhost:5000/api/rbi/${currentEditItem.id}`,
-          updatedData,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-      } else {
-        const member = selectedItems.members[0];
-        response = await axios.put(
-          `http://localhost:5000/api/rbi/${member.householdId}/members/${member.id}`,
-          updatedData,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-      }
+    const token = localStorage.getItem("token");
+    let response;
 
-      if (response.data.success) {
-        alert("Changes saved successfully!");
-        setEditModalOpen(false);
-        fetchRbiRequests("approved");
-      }
-    } catch (error) {
-      console.error("Error saving changes:", error);
-      alert("Failed to save changes");
+    if (editType === 'household') {
+      response = await axios.put(
+        `http://localhost:5000/api/rbi/${currentEditItem.id}`,
+        processedData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+    } else {
+      const member = selectedItems.members[0];
+      response = await axios.put(
+        `http://localhost:5000/api/rbi/${member.householdId}/members/${member.id}`,
+        processedData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
     }
-  };
+
+    if (response.data.success) {
+      alert("Changes saved successfully!");
+      setEditModalOpen(false);
+      fetchRbiRequests("approved");
+    }
+  } catch (error) {
+    console.error("Error saving changes:", error);
+    alert("Failed to save changes");
+  }
+};
 
   const handleAddHousehold = async (householdData) => {
     try {
@@ -290,6 +303,10 @@ function Verified_RBI_List() {
     }
   };
 
+  // Helper for citizenship display
+  const getCitizenshipDisplay = (citizenship) => {
+  return citizenship || "Not specified";
+};
   // Add search filter function
   const filterRecords = useCallback(() => {
     if (!rbiRequests.records) return [];
@@ -390,19 +407,19 @@ function Verified_RBI_List() {
   };
 
   const getRelationshipDisplay = (relationshipId, relationshipOther) => {
-    switch (String(relationshipId)) {
-      case "1": return "Mother";
-      case "2": return "Father";
-      case "3": return "Son";
-      case "4": return "Daughter";
-      case "5": return "Brother";
-      case "6": return "Sister";
-      case "7": return "Grandmother";
-      case "8": return "Grandfather";
-      case "9": return relationshipOther ? relationshipOther : "Others";
-      default: return "";
-    }
+  const relationships = {
+    1: "Mother",
+    2: "Father",
+    3: "Son",
+    4: "Daughter",
+    5: "Brother",
+    6: "Sister",
+    7: "Grandmother",
+    8: "Grandfather",
+    9: relationshipOther || "Others"
   };
+  return relationships[relationshipId] || "Unknown";
+};
 
   return (
     <div className="request-manager">
@@ -562,7 +579,7 @@ function Verified_RBI_List() {
                   <td onClick={() => toggleHousehold(household.id)}>{household.head_first_name}</td>
                   <td onClick={() => toggleHousehold(household.id)}>{household.head_middle_name || "N/A"}</td>
                   <td onClick={() => toggleHousehold(household.id)}>
-                    {getSuffixDisplay(household.head_suffix_id)}
+                    {getSuffixLabel(household.head_suffix_id || household.head_suffix)}
                   </td>
                   <td onClick={() => toggleHousehold(household.id)}>
                     {getSexDisplay(household.sex, household.sex_other)}
@@ -570,7 +587,7 @@ function Verified_RBI_List() {
                   <td onClick={() => toggleHousehold(household.id)}>{new Date(household.birth_date).toLocaleDateString()}</td>
                   <td onClick={() => toggleHousehold(household.id)}>{household.birth_place}</td>
                   <td onClick={() => toggleHousehold(household.id)}>{household.civil_status}</td>
-                  <td onClick={() => toggleHousehold(household.id)}>{household.citizenship}</td>
+                  <td onClick={() => toggleHousehold(household.id)}>{getCitizenshipDisplay(household.citizenship, household.citizenship_other)}</td>
                   <td onClick={() => toggleHousehold(household.id)}>{household.occupation}</td>
                   <td onClick={() => toggleHousehold(household.id)}>{household.email_address}</td>
                   <td onClick={() => toggleHousehold(household.id)}>{household.house_unit_no}</td>
@@ -606,9 +623,12 @@ function Verified_RBI_List() {
                       <td>{member.civil_status}</td>
                       <td>{member.citizenship}</td>
                       <td>{member.occupation}</td>
-                      <td colSpan="5">
-                        Relationship to Household Leader: {getRelationshipDisplay(member.relationship_id, member.relationship_other)}
-                      </td>
+                      <td>
+                              {getRelationshipDisplay(
+                                member.relationship_id, 
+                                member.relationship_other
+                              )}
+                            </td>
                     </tr>
                   ))}
               </React.Fragment>

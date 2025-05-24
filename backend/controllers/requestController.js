@@ -200,10 +200,34 @@ exports.getRequests = async (req, res) => {
     }
 
     query += ` ORDER BY r.created_at DESC`;
-    const [rows] = await pool.query(query, params);
-    res.status(200).json(rows);
+
+    try {
+      const [rows] = await pool.query(query, params);
+      res.status(200).json(rows);
+    } catch (sqlError) {
+      // Log the full SQL error and try a minimal query for debugging
+      console.error("SQL error in getRequests:", sqlError.stack || sqlError);
+
+      // Try a minimal query to see if the requests table itself is OK
+      try {
+        const [rows] = await pool.query("SELECT * FROM requests LIMIT 5");
+        res.status(500).json({
+          message: "Failed to fetch requests (see server logs for details)",
+          sqlError: sqlError.message,
+          requestsTableSample: rows
+        });
+      } catch (minimalError) {
+        console.error("Minimal query also failed:", minimalError.stack || minimalError);
+        res.status(500).json({
+          message: "Failed to fetch requests (minimal query also failed)",
+          sqlError: sqlError.message,
+          minimalError: minimalError.message
+        });
+      }
+    }
   } catch (error) {
-    console.error("Database error:", error);
+    // Enhanced error logging
+    console.error("Database error in getRequests (outer catch):", error.stack || error);
     res.status(500).json({ message: "Failed to fetch requests", error: error.message });
   }
 };
@@ -356,6 +380,8 @@ exports.deleteRequest = async (req, res) => {
 
 exports.getBackupRequests = async (req, res) => {
   try {
+    console.log('User accessing backups:', req.user.username);
+    
     const [rows] = await pool.query(`
       SELECT b.id, b.last_name, b.first_name, b.middle_name, 
              s.name as suffix, b.suffix_id,
@@ -376,10 +402,14 @@ exports.getBackupRequests = async (req, res) => {
       LEFT JOIN request_statuses rs ON b.status_id = rs.id
       ORDER BY b.created_at DESC
     `);
+    
     res.status(200).json(rows);
   } catch (error) {
     console.error("Database error:", error);
-    res.status(500).json({ message: "Failed to fetch backup requests", error: error.message });
+    res.status(500).json({ 
+      message: "Failed to fetch backup requests",
+      error: error.message 
+    });
   }
 };
 

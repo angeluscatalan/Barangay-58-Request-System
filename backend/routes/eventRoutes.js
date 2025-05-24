@@ -2,24 +2,23 @@ const express = require('express');
 const router = express.Router();
 const multer = require("multer");
 const eventsController = require("../controllers/eventsController");
-const { authenticateToken, verifyAdmin } = require("../controllers/authController"); 
-
-router.use(authenticateToken);
-router.use(verifyAdmin);
+const { authenticateToken, authorizeAdmin } = require("../Middleware/authMiddleware"); 
 
 const upload = multer({
     dest: "uploads/",
     limits: { fileSize: 2 * 1024 * 1024 }
 });
 
-// Main event routes
-router.post('/', upload.single('image'), eventsController.createEvent);
+// Public routes (no authentication needed)
 router.get('/', eventsController.getEvents);
-router.put('/:id', upload.single('image'), eventsController.updateEvent);
-router.delete('/:id', eventsController.deleteEvent);
 
-// Backup routes
-router.get('/backup/list', eventsController.getBackupEvents);
-router.post('/backup/restore', eventsController.restoreEvents);
+// Protected routes (require admin authentication)
+router.post('/', authenticateToken, authorizeAdmin, upload.single('image'), eventsController.createEvent);
+router.put('/:id', authenticateToken, authorizeAdmin, upload.single('image'), eventsController.updateEvent);
+router.delete('/:id', authenticateToken, authorizeAdmin, eventsController.deleteEvent);
+
+// Backup routes (require admin authentication)
+router.get('/backup/list', authenticateToken, authorizeAdmin, eventsController.getBackupEvents);
+router.post('/backup/restore', authenticateToken, authorizeAdmin, eventsController.restoreEvents);
 
 module.exports = router;
