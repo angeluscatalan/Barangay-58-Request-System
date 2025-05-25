@@ -268,7 +268,7 @@ console.log('Full requestData:', JSON.stringify(requestData, null, 2));
         const controlFieldName = {
     'IDApp': 'control_id',
     'BrgyCert': 'control_id',
-    'IndigencyCert': 'control_number'
+    'IndigencyCert': 'control_id'
 }[requestData.type_of_certificate];
 
 if (controlFieldName) {
